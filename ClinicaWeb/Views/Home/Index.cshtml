@@ -1,0 +1,275 @@
+﻿@{
+    ViewData["Title"] = "Sistema de gestión médica";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Sistema de gestión médica | Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0f0ff 0%, #f5f9ff 100%);
+            min-height: 100vh;
+        }
+
+        .home-container {
+            max-width: 1300px;
+            width: 100%;
+            margin: 2rem auto;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
+
+        .hero-section {
+            background: linear-gradient(120deg, #0a2b3e 0%, #1b4f6e 100%);
+            padding: 2rem 2.5rem 1.8rem 2.5rem;
+            color: white;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 2.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hero-title i {
+            font-size: 2.4rem;
+            color: #9cd4ff;
+        }
+
+        .hero-sub {
+            font-size: 1rem;
+            opacity: 0.85;
+            border-top: 1px solid rgba(255,255,255,0.25);
+            display: inline-block;
+            padding-top: 0.6rem;
+            margin-top: 0.6rem;
+        }
+
+        .images-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            padding: 2.5rem 2rem;
+            background: #ffffffd9;
+            border-bottom: 1px solid #e2edf2;
+        }
+
+        .image-card {
+            flex: 1;
+            min-width: 260px;
+            max-width: 380px;
+            background: white;
+            border-radius: 1.8rem;
+            box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            transition: transform 0.25s ease;
+            text-align: center;
+        }
+
+        .image-card:hover {
+            transform: translateY(-6px);
+        }
+
+        .img-caption {
+            padding: 0.8rem 0.5rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #1f4e6e;
+            background: #fafdff;
+        }
+
+        .info-panel {
+            padding: 2rem;
+            background: #ffffff;
+        }
+
+        .team-section {
+            background: #f8fafc;
+            border-radius: 1.5rem;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.8rem;
+            border-left: 6px solid #2c7da0;
+        }
+
+        .teacher-section {
+            background: #f1f6f9;
+            border-radius: 1.5rem;
+            padding: 1.5rem 2rem;
+            border-left: 6px solid #f4a261;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1f3b48;
+        }
+
+        .section-title i {
+            font-size: 1.6rem;
+            color: #2c7da0;
+        }
+
+        .teacher-section .section-title i {
+            color: #e76f51;
+        }
+
+        .member-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+        }
+
+        .member-card {
+            background: white;
+            border-radius: 1.2rem;
+            padding: 0.6rem 1.2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #1e4663;
+            border: 1px solid #e2edf2;
+        }
+
+        .member-card i {
+            font-size: 1.2rem;
+            color: #2c7da0;
+        }
+
+        .teacher-card {
+            background: #ffffffea;
+            border-radius: 1.2rem;
+            padding: 0.8rem 1.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #2c3e4e;
+            border: 1px solid #f0cfb0;
+        }
+
+        .teacher-card i {
+            font-size: 1.3rem;
+            color: #e76f51;
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #5f7f90;
+            border-top: 1px solid #dfeef5;
+            padding-top: 1.2rem;
+        }
+
+        @@media (max-width: 750px) {
+            .hero-title {
+                font-size: 1.9rem;
+            }
+            .images-gallery {
+                padding: 1.8rem 1rem;
+            }
+            .team-section, .teacher-section {
+                padding: 1.2rem;
+            }
+            .member-card {
+                width: 100%;
+            }
+            .home-container {
+                margin: 1rem;
+                width: calc(100% - 2rem);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="home-container">
+    <div class="hero-section">
+        <div class="hero-title">
+            <i class="fas fa-notes-medical"></i> 
+            Sistema de gestión médica
+            <i class="fas fa-heartbeat"></i>
+        </div>
+        <div class="hero-sub">Plataforma integral para la administración clínica y hospitalaria</div>
+    </div>
+
+    <!-- SOLO LA IMAGEN DEL TECNOLÓGICO NACIONAL DE MÉXICO -->
+    <div class="images-gallery">
+        <div class="image-card">
+            <div style="background: #0b2f3f; padding: 1.5rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px;">
+                <div style="font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; color: #f7d44a;">TECNOLÓGICO</div>
+                <div style="font-weight: 800; font-size: 1.3rem; letter-spacing: 1px; color: #f7d44a; margin-top: 0.2rem;">NACIONAL DE MÉXICO</div>
+                <div style="margin-top: 0.8rem; width: 50px; height: 3px; background: #f7b32b;"></div>
+                <div style="font-size: 0.7rem; color: #cdedff; margin-top: 0.6rem;"><i class="fas fa-university"></i> Excelencia educativa</div>
+            </div>
+            <div class="img-caption">
+                <i class="fas fa-graduation-cap"></i> Instituto Tecnológico · Formación profesional
+            </div>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <div class="team-section">
+            <div class="section-title">
+                <i class="fas fa-users"></i> 
+                Equipo de desarrollo
+            </div>
+            <div class="member-list">
+                <div class="member-card">
+                    <i class="fas fa-user-astronaut"></i> Novelo Astorga Kain Alejandro - 22211623
+                </div>
+                <div class="member-card">
+                    <i class="fas fa-user-graduate"></i> López Félix Nicolás - C21212706
+                </div>
+                <div class="member-card">
+                    <i class="fas fa-user-md"></i> Alberto Carlos Ruvalcaba Fernandez - 22211653
+                </div>
+            </div>
+        </div>
+
+        <div class="teacher-section">
+            <div class="section-title">
+                <i class="fas fa-chalkboard-user"></i> 
+                Docente / Asesor
+            </div>
+            <div class="teacher-card">
+                <i class="fas fa-person-chalkboard"></i> 
+                <span>JUAN JOSE ROGELIO OROZCO GARIBAY</span>
+                <span style="font-size: 0.75rem; background: #eef2f5; padding: 2px 8px; border-radius: 40px; margin-left: 8px;">Profesor titular</span>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            <i class="fas fa-database"></i> Sistema de gestión médica · Módulo administrativo y clínico | <i class="fas fa-code-branch"></i> Versión 1.0
+        </div>
+    </div>
+</div>
+</body>
+</html>
