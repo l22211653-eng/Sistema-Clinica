@@ -1,34 +1,38 @@
 # ============================================
 # ETAPA 1: Compilación
 # ============================================
-# Usamos la imagen oficial del SDK de .NET 8 para compilar
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# 1. Copiamos los archivos .csproj de cada proyecto
-#    Esto permite que Docker cachee la restauración de NuGet
+# Copiar los archivos .csproj
 COPY ["ClinicaWeb/ClinicaWeb.csproj", "ClinicaWeb/"]
 COPY ["ClinicaData/ClinicaData.csproj", "ClinicaData/"]
 COPY ["ClinicaEntidades/ClinicaEntidades.csproj", "ClinicaEntidades/"]
 
-# 2. Restauramos los paquetes NuGet
+# Restaurar paquetes NuGet
 RUN dotnet restore "ClinicaWeb/ClinicaWeb.csproj"
 
-# 3. Copiamos TODO el código fuente
+# Copiar TODO el código (incluyendo wwwroot, Views, lib, etc.)
 COPY . .
 
-# 4. Compilamos y publicamos en modo Release
+# Compilar y publicar
 WORKDIR "/src/ClinicaWeb"
 RUN dotnet build "ClinicaWeb.csproj" -c Release -o /app/build
 RUN dotnet publish "ClinicaWeb.csproj" -c Release -o /app/publish
 
 # ============================================
-# ETAPA 2: Ejecución (imagen final ligera)
+# ETAPA 2: Ejecución
 # ============================================
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
+
+# 👇 Copiar TODA la carpeta publicada, incluyendo wwwroot
 COPY --from=build /app/publish .
 
-# Railway asigna un puerto dinámico a través de la variable PORT
+# Verificar que wwwroot exista
+RUN ls -la /app/wwwroot || echo "No hay wwwroot"
+
 ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT:-8080}
+ENV ASPNETCORE_ENVIRONMENT=Production
+
 ENTRYPOINT ["dotnet", "ClinicaWeb.dll"]
