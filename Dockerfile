@@ -24,5 +24,5 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # 👇 ESTA LÍNEA ES LA CLAVE
-ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT:-8080}
+ENV ASPNETCORE_URLS=http://*:$PORT
 ENTRYPOINT ["dotnet", "ClinicaWeb.dll"]
