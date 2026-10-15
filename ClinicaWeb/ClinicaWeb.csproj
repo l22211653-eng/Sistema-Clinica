@@ -15,4 +15,14 @@
     <ProjectReference Include="..\ClinicaData\ClinicaData.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Content Include="wwwroot\**" CopyToPublishDirectory="PreserveNewest" />
+	</ItemGroup>
+	
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
