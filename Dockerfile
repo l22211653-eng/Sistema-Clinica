@@ -4,18 +4,18 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# 1. Copiar los archivos de proyecto
+# Copiar los archivos de proyecto
 COPY ["ClinicaWeb/ClinicaWeb.csproj", "ClinicaWeb/"]
 COPY ["ClinicaData/ClinicaData.csproj", "ClinicaData/"]
 COPY ["ClinicaEntidades/ClinicaEntidades.csproj", "ClinicaEntidades/"]
 
-# 2. Restaurar dependencias
+# Restaurar dependencias
 RUN dotnet restore "ClinicaWeb/ClinicaWeb.csproj"
 
-# 3. Copiar TODO el código fuente (incluyendo wwwroot y appsettings.json)
+# Copiar TODO el código fuente
 COPY . .
 
-# 4. Compilar y publicar
+# Compilar y publicar
 WORKDIR "/src/ClinicaWeb"
 RUN dotnet build "ClinicaWeb.csproj" -c Release -o /app/build
 RUN dotnet publish "ClinicaWeb.csproj" -c Release -o /app/publish
@@ -25,9 +25,13 @@ RUN dotnet publish "ClinicaWeb.csproj" -c Release -o /app/publish
 # ==========================================
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
+
+# ⚠️ ESTO ES LO NUEVO: Instalar la librería que necesita Npgsql para Kerberos
+RUN apt-get update && apt-get install -y libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/publish .
 
-# 5. Puerto dinámico de Railway
+# Configurar el puerto dinámico de Railway
 ENV ASPNETCORE_URLS=http://*:$PORT
 ENV ASPNETCORE_ENVIRONMENT=Production
 
