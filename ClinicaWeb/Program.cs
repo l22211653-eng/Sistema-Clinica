@@ -4,11 +4,10 @@ using ClinicaData.Implementacion;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
+// Configurar el puerto dinámico de Railway
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+builder.WebHost.UseUrls($"http://*:{port}");
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -39,8 +38,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();  // <-- Asegúrate de tener esta línea
 app.UseAuthorization();
-
 
 app.MapControllerRoute(
     name: "default",
