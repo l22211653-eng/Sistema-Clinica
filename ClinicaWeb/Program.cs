@@ -9,10 +9,20 @@ var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://*:{port}");
 
+// ⚠️ FORZAR la lectura de la cadena de conexión desde variables de entorno
+// Esto sobrescribe lo que esté en appsettings.json si la variable existe
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__CadenaSQL") 
+                       ?? builder.Configuration.GetConnectionString("CadenaSQL");
+
+// Registrar manualmente la configuración con la cadena obtenida
+builder.Services.Configure<ConnectionStrings>(options =>
+{
+    options.CadenaSQL = connectionString ?? throw new InvalidOperationException("La cadena de conexión 'CadenaSQL' no está configurada.");
+});
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.Configure<ConnectionStrings>(builder.Configuration.GetSection("ConnectionStrings"));
 builder.Services.AddScoped<ICitaRepositorio, CitaRepositorio>();
 builder.Services.AddScoped<IDoctorRepositorio, DoctorRepositorio>();
 builder.Services.AddScoped<IEspecialidadRepositorio, EspecialidadRepositorio>();
@@ -38,7 +48,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication();  // <-- Asegúrate de tener esta línea
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
