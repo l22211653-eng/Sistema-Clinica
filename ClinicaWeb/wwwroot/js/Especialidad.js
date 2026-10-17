@@ -112,20 +112,19 @@ $("#btnGuardar").on("click", function () {
             text: "Debe ingresar el nombre.",
             icon: "warning"
         });
-        return
-    }
-
-    let objeto = {
-        IdEspecialidad: idEditar,
-        Nombre: $("#txtNombre").val().trim()
+        return;
     }
 
     if (idEditar != 0) {
-
+        // --- EDITAR ---
+        let objetoEditar = {
+            IdEspecialidad: idEditar,
+            Nombre: $("#txtNombre").val().trim()
+        };
         fetch(`/${controlador}/Editar`, {
             method: "PUT",
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
-            body: JSON.stringify(objeto)
+            body: JSON.stringify(objetoEditar)
         }).then(response => {
             return response.ok ? response.json() : Promise.reject(response);
         }).then(responseJson => {
@@ -147,15 +146,20 @@ $("#btnGuardar").on("click", function () {
         }).catch((error) => {
             Swal.fire({
                 title: "Error!",
-                text: "No se pudo editar.",
+                text: "No se pudo editar. Revisa la consola.",
                 icon: "warning"
             });
-        })
+        });
     } else {
+        // --- GUARDAR (NUEVO) ---
+        let objetoGuardar = {
+            Nombre: $("#txtNombre").val().trim()
+        };
+
         fetch(`/${controlador}/Guardar`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
-            body: JSON.stringify(objeto)
+            body: JSON.stringify(objetoGuardar)
         }).then(response => {
             return response.ok ? response.json() : Promise.reject(response);
         }).then(responseJson => {
@@ -176,9 +180,9 @@ $("#btnGuardar").on("click", function () {
         }).catch((error) => {
             Swal.fire({
                 title: "Error!",
-                text: "No se pudo registrar.",
+                text: "No se pudo registrar. Revisa la consola.",
                 icon: "warning"
             });
-        })
+        });
     }
 });
