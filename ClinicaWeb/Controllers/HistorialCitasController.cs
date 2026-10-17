@@ -57,5 +57,28 @@ namespace ClinicaWeb.Controllers
                 });
             }
         }
+        // 1. Método para guardar la reseña
+        [HttpPost]
+        public async Task<IActionResult> GuardarResena([FromBody] Resena objeto)
+        {
+            // Aquí deberías obtener el ID del usuario logueado desde la sesión o cookies
+            // Por ahora, lo simulamos buscando en la sesión o poniendo un ID fijo para probar.
+            // objeto.IdUsuario = ObtenerIdUsuarioLogueado(); 
+
+            string respuesta = await _repositorioCita.GuardarResena(objeto);
+
+            if (string.IsNullOrEmpty(respuesta))
+                return Json(new { success = true, message = "Reseña guardada" });
+            else
+                return Json(new { success = false, message = respuesta });
+        }
+
+        // 2. Método para obtener las recetas de una cita
+        [HttpGet]
+        public async Task<IActionResult> ListaRecetasCita(int idCita)
+        {
+            List<Receta> lista = await _repositorioCita.ListaRecetasCita(idCita);
+            return Json(lista);
+        }
     }
 }

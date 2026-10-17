@@ -1,6 +1,4 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@* For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860 *@
 @section Estilos {
     <link href="~/lib/datatables2/css/dataTables.dataTables.css" rel="stylesheet" />
     <link href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
@@ -27,8 +25,13 @@
             </div>
 
         </div>
+
     </div>
 </div>
+
+<!-- ========================================== -->
+<!-- MODAL 1: RESUMEN DE CITA (El que ya tenías) -->
+<!-- ========================================== -->
 <div class="modal fade" id="mdData" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -40,9 +43,8 @@
                 <div class="row mb-3">
                     <div class="col-sm-12">
                         <label for="txtIndicaciones" class="form-label">Indicaciones</label>
-                        <textarea class="form-control" id="txtIndicaciones" rows="3"></textarea>
+                        <textarea class="form-control" id="txtIndicaciones" rows="3" readonly></textarea>
                     </div>
-
                 </div>
             </div>
             <div class="modal-footer">
@@ -52,10 +54,90 @@
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- MODAL 2: NUEVO - CALIFICAR DOCTOR (Reseña) -->
+<!-- ========================================== -->
+<div class="modal fade" id="mdResena" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Calificar Atención</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="txtIdCitaResena" />
+                <input type="hidden" id="txtIdDoctorResena" />
+
+                <div class="row mb-3">
+                    <div class="col-sm-12 text-center">
+                        <label class="form-label d-block mb-2">¿Cómo calificarías al doctor?</label>
+                        <!-- Estrellas visuales (simuladas con íconos) -->
+                        <div class="fs-2 text-warning" id="contenedorEstrellas">
+                            <i class="far fa-star" style="cursor:pointer;" data-val="1"></i>
+                            <i class="far fa-star" style="cursor:pointer;" data-val="2"></i>
+                            <i class="far fa-star" style="cursor:pointer;" data-val="3"></i>
+                            <i class="far fa-star" style="cursor:pointer;" data-val="4"></i>
+                            <i class="far fa-star" style="cursor:pointer;" data-val="5"></i>
+                        </div>
+                        <input type="hidden" id="txtPuntuacion" value="0" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-12">
+                        <label for="txtComentario" class="form-label">Comentario (Opcional)</label>
+                        <textarea class="form-control" id="txtComentario" rows="3" placeholder="Cuéntanos tu experiencia..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarResena">Enviar Reseña</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL 3: NUEVO - VER RECETA MÉDICA         -->
+<!-- ========================================== -->
+<div class="modal fade" id="mdReceta" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-file-medical"></i> Receta Médica</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered" id="tbReceta">
+                    <thead>
+                        <tr>
+                            <th>Medicamento</th>
+                            <th>Dosis</th>
+                            <th>Indicaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="mensajeSinReceta" class="alert alert-warning d-none">
+                    No se recetaron medicamentos en esta cita.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/lib/datatables2/js/moment.min.js"></script>
     <script src="~/lib/datatables2/js/dataTables.js"></script>
     <script src="~/lib/select2/js/select2.min.js"></script>
+
+    <!-- Asegúrate de tener FontAwesome para las estrellas y SweetAlert2 -->
+    <script src="~/lib/fontawesome/all.js"></script>
+    <script src="~/lib/sweetAlert2/js/sweetalert2.js"></script>
     <script src="~/js/HistorialCita.js"></script>
 
 }
