@@ -79,7 +79,7 @@ namespace ClinicaData.Implementacion
                     }
                     catch (Exception ex)
                     {
-                        respuesta = "SE GUARDO CORRECTO: " + ex.Message;
+                        respuesta = "Error al guardar la especialidad: " + ex.Message;
                     }
                 }
             }
