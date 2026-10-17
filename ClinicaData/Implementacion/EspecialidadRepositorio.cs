@@ -67,7 +67,7 @@ namespace ClinicaData.Implementacion
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
-                
+
                 using (var cmd = new NpgsqlCommand("SELECT sp_guardarEspecialidad(@p_Nombre::varchar)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_Nombre", objeto.Nombre);
@@ -79,7 +79,8 @@ namespace ClinicaData.Implementacion
                     }
                     catch (Exception ex)
                     {
-                        respuesta = "Error al guardar la especialidad: " + ex.Message;
+                        // IMPORTANTE: Cambiar esto para que nos muestre el error exacto
+                        respuesta = "ERROR REAL DE POSTGRES: " + ex.Message;
                     }
                 }
             }
