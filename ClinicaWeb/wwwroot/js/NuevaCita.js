@@ -164,14 +164,25 @@ $("#btnSiguiente").on("click", function () {
 $("#btnRegresar").on("click", function () {
 
     const indexTab = $("ul li.ui-state-active").index();
-    let habilitarIndex = indexTab;
-    if (indexTab - 1 >= 0) habilitarIndex = indexTab - 1;
 
+    // Si estamos en la primera pestaña (Especialidad), volvemos a la página anterior
+    if (indexTab === 0) {
+        window.location.href = '/Citas/Index'; // O la ruta de donde vengas
+        return;
+    }
+
+    // Si estamos en otra pestaña, retrocedemos una
+    let habilitarIndex = indexTab - 1;
+
+    // Desbloqueamos la pestaña a la que vamos a ir
     bloquearIndex = IndexTabs.filter((i) => i != habilitarIndex);
     $("#tabs").tabs("option", "disabled", bloquearIndex);
     $("#tabs").tabs({ active: habilitarIndex });
-    $("#btnSiguiente").prop("disabled", true);
 
+    // Habilitamos el botón "Siguiente" porque ya hay una selección previa
+    $("#btnSiguiente").prop("disabled", false);
+
+    // Limpiamos las selecciones visuales y volvemos a cargar los datos
     if (habilitarIndex == 0) {
         $("#txtBuscarEspecialidad").val("");
         $("#txtBuscarEspecialidad").trigger("focus");
