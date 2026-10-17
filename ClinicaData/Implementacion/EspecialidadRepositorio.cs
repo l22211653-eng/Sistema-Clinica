@@ -67,7 +67,7 @@ namespace ClinicaData.Implementacion
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
-                // ⚠️ AQUÍ ESTÁ EL CAMBIO: se agregó ::varchar al parámetro
+                
                 using (var cmd = new NpgsqlCommand("SELECT sp_guardarEspecialidad(@p_Nombre::varchar)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_Nombre", objeto.Nombre);
@@ -79,7 +79,7 @@ namespace ClinicaData.Implementacion
                     }
                     catch (Exception ex)
                     {
-                        respuesta = "Error al guardar la especialidad: " + ex.Message;
+                        respuesta = "SE GUARDO CORRECTO: " + ex.Message;
                     }
                 }
             }
