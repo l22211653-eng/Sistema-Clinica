@@ -67,7 +67,8 @@ namespace ClinicaData.Implementacion
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
-                using (var cmd = new NpgsqlCommand("SELECT sp_guardarEspecialidad(@p_Nombre)", conexion))
+                // ⚠️ AQUÍ ESTÁ EL CAMBIO: se agregó ::varchar al parámetro
+                using (var cmd = new NpgsqlCommand("SELECT sp_guardarEspecialidad(@p_Nombre::varchar)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_Nombre", objeto.Nombre);
 
