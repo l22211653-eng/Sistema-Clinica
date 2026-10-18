@@ -37,7 +37,7 @@ namespace ClinicaWeb.Controllers
 
                 if (string.IsNullOrEmpty(idUsuario))
                 {
-                    return Unauthorized();
+                    return StatusCode(401, new { error = "No hay sesión activa. Vuelve a iniciar sesión." });
                 }
 
                 List<Cita> lista = await _repositorioCita.ListaHistorialCitas(int.Parse(idUsuario));
@@ -47,11 +47,10 @@ namespace ClinicaWeb.Controllers
             }
             catch (Exception ex)
             {
-                // Esto imprimirá el error exacto en los Deploy Logs de Railway
-                _logger.LogError(ex, "ERROR CRÍTICO al listar historial de citas");
 
-                // Devolvemos una lista vacía para que DataTables no explote
-                return Json(new List<Cita>());
+                _logger.LogError(ex, "ERROR CRÍTICO al listar historial de citas");
+                // Devolvemos un error controlado (DataTables mostrará un mensaje de error)
+                return StatusCode(500, new { error = "Error interno del servidor: " + ex.Message });
             }
         }
 

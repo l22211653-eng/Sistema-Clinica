@@ -10,18 +10,26 @@ document.addEventListener("DOMContentLoaded", function (event) {
         "ajax": {
             "url": `/${controlador}/ListaHistorialCitas`,
             "type": "GET",
-            "datatype": "json"
+            "datatype": "json",
+            // ⚠️ VALIDACIÓN: Si el servidor devuelve un error, mostramos una alerta y evitamos que la tabla explote
+            "dataSrc": function (json) {
+                if (json && json.error) {
+                    Swal.fire("Error del Servidor", json.error, "error");
+                    return []; // Devolvemos lista vacía para que la tabla no se rompa
+                }
+                return json || [];
+            }
         },
         "columns": [
             { title: "Fecha Cita", "data": "fechaCita", width: "120px" },
             {
                 title: "Especialidad", "data": "especialidad", render: function (data, type, row) {
-                    return data.nombre
+                    return data ? data.nombre : '';
                 }
             },
             {
                 title: "Doctor", "data": "doctor", render: function (data, type, row) {
-                    return `${data.nombres} ${data.apellidos}`
+                    return data ? `${data.nombres} ${data.apellidos}` : '';
                 }
             },
             {
