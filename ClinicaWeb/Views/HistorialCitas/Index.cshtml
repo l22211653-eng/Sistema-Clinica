@@ -3,8 +3,10 @@
     <link href="~/lib/datatables2/css/dataTables.dataTables.css" rel="stylesheet" />
     <link href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
     <link href="~/lib/select2/css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+    <!-- FontAwesome 6 desde CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 }
+
 <h2 class="mt-4 mb-4">Historial Citas</h2>
 
 <div class="row">
@@ -31,7 +33,7 @@
 </div>
 
 <!-- ========================================== -->
-<!-- MODAL 1: RESUMEN DE CITA (El que ya tenías) -->
+<!-- MODAL 1: RESUMEN DE CITA (INDICACIONES)    -->
 <!-- ========================================== -->
 <div class="modal fade" id="mdData" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -56,7 +58,7 @@
 </div>
 
 <!-- ========================================== -->
-<!-- MODAL 2: NUEVO - CALIFICAR DOCTOR (Reseña) -->
+<!-- MODAL 2: CALIFICAR DOCTOR (Reseña)         -->
 <!-- ========================================== -->
 <div class="modal fade" id="mdResena" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -72,13 +74,13 @@
                 <div class="row mb-3">
                     <div class="col-sm-12 text-center">
                         <label class="form-label d-block mb-2">¿Cómo calificarías al doctor?</label>
-                        <!-- Estrellas visuales (simuladas con íconos) -->
+                        <!-- Estrellas visuales con FontAwesome 6 -->
                         <div class="fs-2 text-warning" id="contenedorEstrellas">
-                            <i class="far fa-star" style="cursor:pointer;" data-val="1"></i>
-                            <i class="far fa-star" style="cursor:pointer;" data-val="2"></i>
-                            <i class="far fa-star" style="cursor:pointer;" data-val="3"></i>
-                            <i class="far fa-star" style="cursor:pointer;" data-val="4"></i>
-                            <i class="far fa-star" style="cursor:pointer;" data-val="5"></i>
+                            <i class="fa-regular fa-star" style="cursor:pointer;" data-val="1"></i>
+                            <i class="fa-regular fa-star" style="cursor:pointer;" data-val="2"></i>
+                            <i class="fa-regular fa-star" style="cursor:pointer;" data-val="3"></i>
+                            <i class="fa-regular fa-star" style="cursor:pointer;" data-val="4"></i>
+                            <i class="fa-regular fa-star" style="cursor:pointer;" data-val="5"></i>
                         </div>
                         <input type="hidden" id="txtPuntuacion" value="0" />
                     </div>
@@ -100,7 +102,7 @@
 </div>
 
 <!-- ========================================== -->
-<!-- MODAL 3: NUEVO - VER RECETA MÉDICA         -->
+<!-- MODAL 3: VER RECETA MÉDICA                 -->
 <!-- ========================================== -->
 <div class="modal fade" id="mdReceta" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -136,9 +138,7 @@
     <script src="~/lib/datatables2/js/dataTables.js"></script>
     <script src="~/lib/select2/js/select2.min.js"></script>
 
-    <!-- Asegúrate de tener FontAwesome para las estrellas y SweetAlert2 -->
-    <script src="~/lib/fontawesome/all.js"></script>
+
     <script src="~/lib/sweetAlert2/js/sweetalert2.js"></script>
     <script src="~/js/HistorialCita.js"></script>
-
 }
