@@ -42,13 +42,14 @@ namespace ClinicaWeb.Controllers
 
                 List<Cita> lista = await _repositorioCita.ListaHistorialCitas(int.Parse(idUsuario));
 
-                // ⚠️ IMPORTANTE: Devolvemos la lista directamente, SIN envolverla en { data: ... }
+
                 return Json(lista ?? new List<Cita>());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al listar historial de citas");
-                return StatusCode(500, new { error = "Error al cargar los datos." });
+                // ⚠️ Devolvemos una lista vacía para que DataTables no se rompa
+                return Json(new List<Cita>());
             }
         }
 
