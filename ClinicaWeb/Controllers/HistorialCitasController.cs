@@ -47,8 +47,10 @@ namespace ClinicaWeb.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al listar historial de citas");
-                // ⚠️ Devolvemos una lista vacía para que DataTables no se rompa
+                // Esto imprimirá el error exacto en los Deploy Logs de Railway
+                _logger.LogError(ex, "ERROR CRÍTICO al listar historial de citas");
+
+                // Devolvemos una lista vacía para que DataTables no explote
                 return Json(new List<Cita>());
             }
         }
