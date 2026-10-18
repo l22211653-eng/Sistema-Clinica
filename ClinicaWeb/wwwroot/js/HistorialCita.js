@@ -94,6 +94,14 @@ $("#contenedorEstrellas i").hover(function () {
 $("#contenedorEstrellas i").click(function () {
     puntuacionSeleccionada = $(this).data("val");
     $("#txtPuntuacion").val(puntuacionSeleccionada);
+    // Al hacer clic, forzamos que se pinten las estrellas hacia atrás
+    $("#contenedorEstrellas i").each(function (index) {
+        if (index < puntuacionSeleccionada) {
+            $(this).removeClass("far").addClass("fas");
+        } else {
+            $(this).removeClass("fas").addClass("far");
+        }
+    });
 });
 
 // Abrir modal de calificar
