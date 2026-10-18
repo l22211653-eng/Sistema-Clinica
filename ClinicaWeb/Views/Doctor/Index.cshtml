@@ -1,6 +1,4 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@* For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860 *@
 @section Estilos {
     <link href="~/lib/datatables2/css/dataTables.dataTables.css" rel="stylesheet" />
     <link href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
@@ -36,6 +34,7 @@
     </div>
 </div>
 
+<!-- MODAL PARA CREAR/EDITAR DOCTOR -->
 <div class="modal fade" id="mdData" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -79,10 +78,38 @@
     </div>
 </div>
 
+<!-- ⚠️ NUEVO MODAL: VER RESEÑAS (ADMIN) -->
+<div class="modal fade" id="mdResenasAdmin" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="fas fa-star"></i> Reseñas del Doctor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered" id="tbResenas">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Puntuación</th>
+                            <th>Comentario</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="mensajeSinResenas" class="alert alert-info d-none">
+                    Este doctor aún no tiene reseñas.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/lib/datatables2/js/moment.min.js"></script>
     <script src="~/lib/datatables2/js/dataTables.js"></script>
     <script src="~/lib/select2/js/select2.min.js"></script>
+    <script src="~/lib/fontawesome/all.js"></script> <!-- Asegúrate de tener esto para las estrellas -->
     <script src="~/js/Doctor.js"></script>
-
 }

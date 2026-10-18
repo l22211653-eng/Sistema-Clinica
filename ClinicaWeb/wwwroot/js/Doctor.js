@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
             "datatype": "json"
         },
         "columns": [
-            { title: "Nro Documento", "data": "numeroDocumentoIdentidad", width:"150px" },
+            { title: "Nro Documento", "data": "numeroDocumentoIdentidad", width: "150px" },
             { title: "Nombres", "data": "nombres" },
             { title: "Apellidos", "data": "apellidos" },
             { title: "Genero", "data": "genero" },
@@ -28,7 +28,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
             },
             { title: "Fecha Creacion", "data": "fechaCreacion" },
             {
-                title: "", "data": "idDoctor", width: "100px", render: function (data, type, row) {
+                title: "Acciones", "data": "idDoctor", width: "150px", render: function (data, type, row) {
+                    // ⚠️ Agregamos el botón de reseñas al dropdown
                     return `<div class="btn-group dropstart">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             Acción
@@ -36,6 +37,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
                         <ul class="dropdown-menu">
                             <li><button class="dropdown-item btn-editar">Editar</button></li>
                             <li><button class="dropdown-item btn-eliminar">Eliminar</button></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button class="dropdown-item btn-ver-resenas" data-iddoctor="${row.idDoctor}"><i class="fas fa-star text-warning"></i> Ver Reseñas</button></li>
                         </ul>`
                 }
             }
@@ -169,7 +172,7 @@ $("#btnGuardar").on("click", function () {
         });
         return
     }
-    
+
     let objeto = {
         IdDoctor: idEditar,
         NumeroDocumentoIdentidad: $("#txtNroDocumento").val().trim(),
@@ -242,4 +245,55 @@ $("#btnGuardar").on("click", function () {
             });
         })
     }
+});
+
+// ==========================================
+// NUEVO EVENTO: VER RESEÑAS DEL DOCTOR (ADMIN)
+// ==========================================
+$("#tbData tbody").on("click", ".btn-ver-resenas", function () {
+    let idDoctor = $(this).data("iddoctor");
+
+    // Mostrar carga
+    Swal.fire({ title: 'Buscando reseñas...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+    fetch(`/${controlador}/ListaResenas?idDoctor=${idDoctor}`, {
+        method: 'GET'
+    })
+        .then(response => response.json())
+        .then(data => {
+            Swal.close(); // Cerrar alerta de carga
+            let tbody = $("#tbResenas tbody");
+            tbody.empty();
+
+            if (data && data.length > 0) {
+                $("#mensajeSinResenas").addClass("d-none");
+                $("#tbResenas").removeClass("d-none");
+
+                data.forEach(resena => {
+                    // Generar estrellitas visuales (llenas o vacías)
+                    let estrellas = '';
+                    for (let i = 0; i < 5; i++) {
+                        estrellas += i < resena.puntuacion ? '<i class="fas fa-star text-warning"></i>' : '<i class="far fa-star text-warning"></i>';
+                    }
+
+                    tbody.append(`
+                    <tr>
+                        <td>${resena.paciente}</td>
+                        <td>${estrellas}</td>
+                        <td>${resena.comentario}</td>
+                        <td>${resena.fecha}</td>
+                    </tr>
+                `);
+                });
+            } else {
+                // No hay reseñas
+                $("#tbResenas").addClass("d-none");
+                $("#mensajeSinResenas").removeClass("d-none");
+            }
+
+            $("#mdResenasAdmin").modal('show');
+        })
+        .catch(error => {
+            Swal.fire("Error", "No se pudieron obtener las reseñas.", "error");
+        });
 });
