@@ -25,11 +25,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 }
             },
             {
-                // Nueva columna de Acciones
+
                 title: "Acciones", "data": null, width: "250px", render: function (data, type, row) {
-                    // Asumimos que en tu objeto Cita tienes el IdDoctor. Si no lo tienes, 
-                    // puedes obtenerlo del objeto doctor o ajustar el backend para que lo devuelva.
-                    let idDoctor = row.doctor && row.doctor.idDoctor ? row.doctor.idDoctor : 0;
+                    // Validación segura por si el doctor o el id no existen
+                    let idDoctor = (row.doctor && row.doctor.idDoctor) ? row.doctor.idDoctor : 0;
 
                     return `
                         <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-indicaciones" data-id="${row.idCita}">Indicaciones</button>
@@ -113,7 +112,7 @@ $("#btnGuardarResena").click(function () {
     let objetoResena = {
         IdCita: parseInt($("#txtIdCitaResena").val()),
         IdDoctor: parseInt($("#txtIdDoctorResena").val()),
-        IdUsuario: 0, // El backend debería obtener el ID del usuario de la sesión, no enviarlo desde aquí.
+        IdUsuario: 0, // Se llena automáticamente en el backend
         Puntuacion: puntuacion,
         Comentario: $("#txtComentario").val()
     };

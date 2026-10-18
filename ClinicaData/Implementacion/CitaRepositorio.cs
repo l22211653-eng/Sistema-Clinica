@@ -24,7 +24,7 @@ namespace ClinicaData.Implementacion
                 {
                     cmd.Parameters.AddWithValue("p_IdCita", IdCita);
                     cmd.Parameters.AddWithValue("p_IdEstado", IdEstado);
-                    // Manejo de nulos para el parámetro opcional
+
                     cmd.Parameters.AddWithValue("p_Indicaciones", (object)Indicaciones ?? DBNull.Value);
 
                     try
@@ -76,7 +76,7 @@ namespace ClinicaData.Implementacion
                     cmd.Parameters.AddWithValue("p_IdUsuario", objeto.Usuario.IdUsuario);
                     cmd.Parameters.AddWithValue("p_IdDetalle", objeto.DoctorHorarioDetalle.IdDoctorHorarioDetalle);
                     cmd.Parameters.AddWithValue("p_IdEstado", objeto.EstadoCita.IdEstadoCita);
-                    // Aseguramos que la fecha se envíe en el formato correcto DD/MM/YYYY
+
                     cmd.Parameters.AddWithValue("p_Fecha", objeto.FechaCita ?? DateTime.Now.ToString("dd/MM/yyyy"));
 
                     try
@@ -157,6 +157,8 @@ namespace ClinicaData.Implementacion
                                 },
                                 Doctor = new Doctor()
                                 {
+                                    // Leemos el IdDoctor que nos devuelve la función de PostgreSQL
+                                    IdDoctor = Convert.ToInt32(dr["IdDoctor"]),
                                     Nombres = dr["Nombres"].ToString()!,
                                     Apellidos = dr["Apellidos"].ToString()!,
                                 }
@@ -167,7 +169,10 @@ namespace ClinicaData.Implementacion
             }
             return lista;
         }
-        // 1. Guardar Reseña (Paciente)
+
+        // ==========================================
+        // MÉTODOS DE RESEÑAS
+        // ==========================================
         public async Task<string> GuardarResena(Resena objeto)
         {
             string respuesta = "";
@@ -192,7 +197,7 @@ namespace ClinicaData.Implementacion
             return respuesta;
         }
 
-        // 2. Listar Reseñas de un Doctor (Para el admin o perfil del doctor)
+
         public async Task<List<Resena>> ListaResenasDoctor(int idDoctor)
         {
             List<Resena> lista = new List<Resena>();
@@ -221,7 +226,9 @@ namespace ClinicaData.Implementacion
             return lista;
         }
 
-        // 3. Guardar Receta (Doctor)
+        // ==========================================
+        // MÉTODOS DE RECETAS
+        // ==========================================
         public async Task<string> GuardarReceta(Receta objeto)
         {
             string respuesta = "";
@@ -245,7 +252,7 @@ namespace ClinicaData.Implementacion
             return respuesta;
         }
 
-        // 4. Listar Recetas de una Cita (Paciente)
+
         public async Task<List<Receta>> ListaRecetasCita(int idCita)
         {
             List<Receta> lista = new List<Receta>();
@@ -271,33 +278,6 @@ namespace ClinicaData.Implementacion
                 }
             }
             return lista;
-        }
-
-        // Implementación para cumplir con la interfaz ICitaRepositorio
-        public async Task<List<Resena>> ListaResenas(int idDoctor)
-        {
-            // Reutiliza la lógica de ListaResenasDoctor para cumplir con la interfaz
-            return await ListaResenasDoctor(idDoctor);
-        }
-
-        public async Task<string> CancelarResena()
-        {
-            // Implementación básica para cumplir con la interfaz
-            // Debe ajustarse según la lógica de negocio real
-            return await Task.FromResult("Funcionalidad de cancelar reseña no implementada.");
-        }
-
-        public async Task<List<Receta>> ListaRecetas(int idCita)
-        {
-            // Reutiliza la lógica de ListaRecetasCita para cumplir con la interfaz
-            return await ListaRecetasCita(idCita);
-        }
-
-        public async Task<string> CancelarRecetas()
-        {
-            // Implementación básica para cumplir con la interfaz
-            // Debe ajustarse según la lógica de negocio real
-            return await Task.FromResult("Funcionalidad de cancelar recetas no implementada.");
         }
     }
 }
