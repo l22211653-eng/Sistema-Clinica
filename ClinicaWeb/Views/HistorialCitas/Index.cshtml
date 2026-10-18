@@ -74,13 +74,13 @@
                 <div class="row mb-3">
                     <div class="col-sm-12 text-center">
                         <label class="form-label d-block mb-2">¿Cómo calificarías al doctor?</label>
-                        <!-- Estrellas visuales con FontAwesome 6 -->
-                        <div class="fs-2 text-warning" id="contenedorEstrellas">
-                            <i class="fa-regular fa-star" style="cursor:pointer;" data-val="1"></i>
-                            <i class="fa-regular fa-star" style="cursor:pointer;" data-val="2"></i>
-                            <i class="fa-regular fa-star" style="cursor:pointer;" data-val="3"></i>
-                            <i class="fa-regular fa-star" style="cursor:pointer;" data-val="4"></i>
-                            <i class="fa-regular fa-star" style="cursor:pointer;" data-val="5"></i>
+                        <!-- Estrellas con Emojis para máxima compatibilidad -->
+                        <div class="fs-2" id="contenedorEstrellas" style="cursor:pointer; user-select:none;">
+                            <span class="estrella" data-val="1" style="color: #ccc; font-size: 2rem;">★</span>
+                            <span class="estrella" data-val="2" style="color: #ccc; font-size: 2rem;">★</span>
+                            <span class="estrella" data-val="3" style="color: #ccc; font-size: 2rem;">★</span>
+                            <span class="estrella" data-val="4" style="color: #ccc; font-size: 2rem;">★</span>
+                            <span class="estrella" data-val="5" style="color: #ccc; font-size: 2rem;">★</span>
                         </div>
                         <input type="hidden" id="txtPuntuacion" value="0" />
                     </div>

@@ -31,6 +31,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 title: "Doctor", "data": "doctor", render: function (data, type, row) {
                     return data ? `${data.nombres} ${data.apellidos}` : '';
                 }
+
+
             },
             {
 
@@ -65,56 +67,46 @@ $("#tbData tbody").on("click", ".btn-indicaciones", function () {
 });
 
 // ==========================================
-// 2. EVENTO: CALIFICAR (Estrellas)
+// 2. EVENTO: CALIFICAR (Estrellas con Emojis)
 // ==========================================
 let puntuacionSeleccionada = 0;
 
-// Efecto visual de las estrellas
-$("#contenedorEstrellas i").hover(function () {
-    let val = $(this).data("val");
-    $("#contenedorEstrellas i").each(function (index) {
-        if (index < val) {
-            $(this).removeClass("far").addClass("fas"); // Estrella llena
+// Función para pintar las estrellas según el valor
+function pintarEstrellas(valor) {
+    $("#contenedorEstrellas .estrella").each(function (index) {
+        if (index < valor) {
+            $(this).css("color", "#ffc107"); // Amarillo
         } else {
-            $(this).removeClass("fas").addClass("far"); // Estrella vacía
+            $(this).css("color", "#ccc"); // Gris
         }
     });
-}, function () {
-    // Al quitar el mouse, volvemos a la puntuación seleccionada
-    $("#contenedorEstrellas i").each(function (index) {
-        if (index < puntuacionSeleccionada) {
-            $(this).removeClass("far").addClass("fas");
-        } else {
-            $(this).removeClass("fas").addClass("far");
-        }
-    });
+
+}
+
+// Efecto al pasar el mouse
+$(document).on("mouseenter", "#contenedorEstrellas .estrella", function () {
+    let val = parseInt($(this).attr("data-val"));
+    pintarEstrellas(val);
+});
+
+// Al quitar el mouse
+$(document).on("mouseleave", "#contenedorEstrellas", function () {
+    pintarEstrellas(puntuacionSeleccionada);
 });
 
 // Al hacer clic en una estrella
-$("#contenedorEstrellas i").click(function () {
-    // Obtenemos el valor (1, 2, 3, 4 o 5)
-    puntuacionSeleccionada = parseInt($(this).data("val"));
-
-    // Guardamos el valor en el input oculto
+$(document).on("click", "#contenedorEstrellas .estrella", function () {
+    puntuacionSeleccionada = parseInt($(this).attr("data-val"));
     $("#txtPuntuacion").val(puntuacionSeleccionada);
-
-    // Pintamos las estrellas
-    $("#contenedorEstrellas i").each(function (index) {
-        if (index < puntuacionSeleccionada) {
-            $(this).removeClass("far").addClass("fas"); // Estrella llena
-        } else {
-            $(this).removeClass("fas").addClass("far"); // Estrella vacía
-        }
-    });
+    pintarEstrellas(puntuacionSeleccionada);
 });
 
-// Abrir modal de calificar
-$("#tbData tbody").on("click", ".btn-calificar", function () {
+// Abrir modal de calificar (Resetea todo a 0)
+$(document).on("click", ".btn-calificar", function () {
     puntuacionSeleccionada = 0;
     $("#txtPuntuacion").val(0);
     $("#txtComentario").val("");
-    // Reseteamos las estrellas a vacías
-    $("#contenedorEstrellas i").removeClass("fas").addClass("far");
+    pintarEstrellas(0); // Resetear a gris
 
     $("#txtIdCitaResena").val($(this).data("idcita"));
     $("#txtIdDoctorResena").val($(this).data("iddoctor"));
