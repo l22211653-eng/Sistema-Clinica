@@ -92,24 +92,29 @@ $("#contenedorEstrellas i").hover(function () {
 
 // Al hacer clic en una estrella
 $("#contenedorEstrellas i").click(function () {
-    puntuacionSeleccionada = $(this).data("val");
+    // Obtenemos el valor (1, 2, 3, 4 o 5)
+    puntuacionSeleccionada = parseInt($(this).data("val"));
+
+    // Guardamos el valor en el input oculto
     $("#txtPuntuacion").val(puntuacionSeleccionada);
-    // Al hacer clic, forzamos que se pinten las estrellas hacia atrás
+
+    // Pintamos las estrellas
     $("#contenedorEstrellas i").each(function (index) {
         if (index < puntuacionSeleccionada) {
-            $(this).removeClass("far").addClass("fas");
+            $(this).removeClass("far").addClass("fas"); // Estrella llena
         } else {
-            $(this).removeClass("fas").addClass("far");
+            $(this).removeClass("fas").addClass("far"); // Estrella vacía
         }
     });
 });
 
 // Abrir modal de calificar
 $("#tbData tbody").on("click", ".btn-calificar", function () {
-    puntuacionSeleccionada = 0; // Reiniciar
+    puntuacionSeleccionada = 0;
     $("#txtPuntuacion").val(0);
     $("#txtComentario").val("");
-    $("#contenedorEstrellas i").removeClass("fas").addClass("far"); // Resetear estrellas
+    // Reseteamos las estrellas a vacías
+    $("#contenedorEstrellas i").removeClass("fas").addClass("far");
 
     $("#txtIdCitaResena").val($(this).data("idcita"));
     $("#txtIdDoctorResena").val($(this).data("iddoctor"));
