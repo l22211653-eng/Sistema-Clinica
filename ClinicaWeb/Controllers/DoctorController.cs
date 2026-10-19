@@ -62,7 +62,9 @@ namespace ClinicaWeb.Controllers
             ClaimsPrincipal claimuser = HttpContext.User;
             string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
 
+            
             List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(int.Parse(idUsuario), IdEstadoCita);
+
             return StatusCode(StatusCodes.Status200OK, new { data = lista });
         }
 
