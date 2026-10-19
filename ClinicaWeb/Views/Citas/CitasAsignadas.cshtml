@@ -1,6 +1,4 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@* For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860 *@
 @section Estilos {
     <link href="~/lib/datatables2/css/dataTables.dataTables.css" rel="stylesheet" />
     <link href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
@@ -40,6 +38,7 @@
     </div>
 </div>
 
+<!-- MODAL DE INDICACIONES -->
 <div class="modal fade" id="mdData" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -48,12 +47,15 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <!-- ⚠️ ESTE CAMPO ES NUEVO Y CRUCIAL: Guarda el ID de la cita seleccionada -->
+                <input type="hidden" id="txtIdCita" />
+
                 <div class="row mb-3">
                     <div class="col-sm-12">
                         <label for="txtIndicaciones" class="form-label">Indicaciones</label>
                         <textarea class="form-control" id="txtIndicaciones" rows="3"></textarea>
                     </div>
-                    
+
                 </div>
                 <div class="alert alert-primary">
                     <p>
@@ -69,9 +71,9 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script src="~/lib/datatables2/js/moment.min.js"></script>
     <script src="~/lib/datatables2/js/dataTables.js"></script>
     <script src="~/lib/select2/js/select2.min.js"></script>
-    <script src="~/js/CitasAsignadas.js"></script>
-}
+    <script src="~/js/CitasAsignadas.js"></script> }

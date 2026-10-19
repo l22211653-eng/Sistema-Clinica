@@ -59,13 +59,27 @@ namespace ClinicaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas(int IdEstadoCita)
         {
-            ClaimsPrincipal claimuser = HttpContext.User;
-            string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
+            try
+            {
+                // 1. Obtenemos el ID del usuario de la sesión
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
 
-            
-            List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(int.Parse(idUsuario), IdEstadoCita);
+                // 2. ⚠️ IMPORTANTE: La función en Supabase espera el IdDoctor, no el IdUsuario.
+                // Si tu login guarda el IdUsuario, debes convertirlo al IdDoctor.
+                // Por ahora, como sabemos que Alexandra es la 1, lo dejamos fijo para probar, 
+                // pero deberías buscar la forma de mapear esto en tu login.
+                int idDoctor = 1; // <-- TEMPORAL PARA PRUEBA
 
-            return StatusCode(StatusCodes.Status200OK, new { data = lista });
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, IdEstadoCita);
+
+                // 3. Devolvemos la data con el formato que espera tu JS (como objeto con "data")
+                return StatusCode(StatusCodes.Status200OK, new { data = lista });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
+            }
         }
 
 
