@@ -48,12 +48,15 @@
                 margin: 4px 12px;
                 padding: 10px 15px;
                 transition: all 0.2s ease;
+                display: flex;
+                align-items: center; /* Alinea el ícono y el texto */
             }
 
                 .sb-sidenav-dark .sb-sidenav-menu .nav-link:hover {
                     background-color: #f1f5f9;
                     color: #0ea5e9 !important; /* Azul al pasar el mouse */
                 }
+
                 /* Resaltar el enlace activo (el que tiene la clase active) */
                 .sb-sidenav-dark .sb-sidenav-menu .nav-link.active {
                     background-color: #e0f2fe !important; /* Azul muy claro */
@@ -61,19 +64,31 @@
                     font-weight: 600;
                 }
 
-            .sb-sidenav-dark .sb-sidenav-menu .sb-nav-link-icon {
-                color: inherit;
-                margin-right: 10px;
-            }
+        /* ⚠️ ARREGLO PARA LOS ICONOS DEL MENÚ LATERAL */
+        .sb-nav-link-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            font-size: 1rem;
+            color: #64748b; /* Color gris por defecto */
+        }
 
-            .sb-sidenav-dark .sb-sidenav-menu-heading {
-                color: #94a3b8;
-                font-size: 0.75rem;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                padding: 15px 25px 5px 25px;
-            }
+        /* Cuando el enlace está activo, el ícono se pone azul */
+        .sb-sidenav-dark .sb-sidenav-menu .nav-link.active .sb-nav-link-icon {
+            color: #0284c7 !important;
+        }
+
+        .sb-sidenav-dark .sb-sidenav-menu-heading {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 15px 25px 5px 25px;
+        }
 
         .sb-sidenav-footer {
             background-color: #f8fafc !important;
@@ -161,6 +176,32 @@
             .modal-header .btn-close {
                 filter: none;
             }
+
+        /* ⚠️ ARREGLO PARA EL MENÚ DE USUARIO (NAVBAR) */
+        .dropdown-menu {
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+            border-radius: 12px !important;
+            padding: 0.5rem 0 !important;
+        }
+
+        .dropdown-item {
+            color: #334155 !important;
+            font-weight: 500 !important;
+            padding: 0.6rem 1.5rem !important;
+            transition: all 0.2s ease;
+        }
+
+            .dropdown-item:hover {
+                background-color: #f1f5f9 !important;
+                color: #0ea5e9 !important;
+            }
+
+        .sb-topnav .nav-link {
+            color: #1e293b !important;
+            font-weight: 600;
+        }
     </style>
     @await RenderSectionAsync("Estilos", required: false)
 </head>
@@ -289,4 +330,5 @@
     </script>
 
     @RenderSection("Scripts", required: false)
-</body></html>
+</body>
+</html>
