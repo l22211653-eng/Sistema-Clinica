@@ -1,123 +1,295 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@* For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860 *@
 @section Estilos {
     <link href="~/lib/jquery-ui/jquery-ui.css" rel="stylesheet" />
+
     <style>
-        .ui-datepicker-highlight-disabled a{
-            border: 1px solid #c5c5c5 !important;
-            background: #fff !important;
-            font-weight: normal !important;
-            color: #454545 !important;
+        /* --- ESTILOS PERSONALIZADOS PARA NUEVA CITA --- */
+
+        .page-header {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border-left: 5px solid #0ea5e9;
         }
 
+            .page-header h2 {
+                margin: 0;
+                font-weight: 700;
+                color: #1e293b;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .page-header i {
+                color: #0ea5e9;
+            }
+
+        /* Estilos para las pestañas de jQuery UI (Wizard) */
+        #tabs {
+            border: none;
+            background: transparent;
+            padding: 0;
+        }
+
+        .ui-tabs-nav {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 12px !important;
+            padding: 10px !important;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+            .ui-tabs-nav li {
+                flex: 1;
+                margin: 0 5px !important;
+                border: none !important;
+                background: transparent !important;
+            }
+
+                .ui-tabs-nav li a {
+                    display: block;
+                    text-align: center;
+                    padding: 12px !important;
+                    border-radius: 8px !important;
+                    font-weight: 600;
+                    color: #64748b !important;
+                    transition: all 0.3s ease;
+                }
+
+                /* Pestaña Activa */
+                .ui-tabs-nav li.ui-tabs-active a {
+                    background: #0ea5e9 !important;
+                    color: white !important;
+                    box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+                }
+
+        .ui-tabs-panel {
+            padding: 1.5rem !important;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Tarjetas de Especialidad y Doctor */
+        .card-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #ffffff;
+            height: 100%;
+        }
+
+            .card-select:hover {
+                border-color: #0ea5e9;
+                transform: translateY(-3px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            }
+
+            .card-select i {
+                font-size: 2rem;
+                color: #0ea5e9;
+                margin-bottom: 10px;
+            }
+
+            .card-select h6 {
+                margin: 0;
+                font-weight: 600;
+                color: #1e293b;
+            }
+
+            /* Clase para cuando se selecciona una tarjeta */
+            .card-select.selected {
+                background-color: #0ea5e9 !important;
+                border-color: #0ea5e9 !important;
+                color: white !important;
+            }
+
+                .card-select.selected h6,
+                .card-select.selected i {
+                    color: white !important;
+                }
+
+        /* Clase para cuando se selecciona una hora */
+        .btn-hora.active {
+            background-color: #0ea5e9 !important;
+            color: white !important;
+            border-color: #0ea5e9 !important;
+        }
+
+        /* Botones de Horas (Turnos) */
+        .btn-hora {
+            width: 100%;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+
+            .btn-hora:hover {
+                background: #e0f2fe;
+                border-color: #0ea5e9;
+                color: #0284c7;
+            }
+
+            .btn-hora.active {
+                background: #0ea5e9 !important;
+                color: white !important;
+                border-color: #0ea5e9 !important;
+            }
+
+        /* Modal Resumen */
+        .modal-header {
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+            color: white;
+        }
+
+            .modal-header .btn-close {
+                filter: invert(1);
+            }
     </style>
 }
-<h2 class="mt-4 mb-4">Nueva Cita</h2>
 
-<div class="card">
-    <div id="tabs">
-        <ul class="tabs-opcion">
-            <li><a href="#tab-especialidad">Especialidad</a></li>
-            <li><a href="#tab-doctor">Doctor</a></li>
-            <li><a href="#tab-horario">Horario</a></li>
-        </ul>
-        <div id="tab-especialidad">
-            <div>
-                <div class="row mb-4">
-                    <div class="col-sm-12">
-                        <h6 class="mb-3" style="font-weight:bold">Buscar Especialidad:</h6>
-                        <input type="text" class="form-control" id="txtBuscarEspecialidad" autocomplete="off">
+<!-- Encabezado -->
+<div class="page-header">
+    <h2><i class="fas fa-calendar-plus"></i> Agendar Nueva Cita</h2>
+</div>
+
+<div class="card shadow-sm border-0" style="border-radius: 16px;">
+    <div class="card-body p-4">
+
+        <div id="tabs">
+            <!-- Pestañas -->
+            <ul class="tabs-opcion">
+                <li><a href="#tab-especialidad"><i class="fas fa-stethoscope me-2"></i>1. Especialidad</a></li>
+                <li><a href="#tab-doctor"><i class="fas fa-user-md me-2"></i>2. Doctor</a></li>
+                <li><a href="#tab-horario"><i class="fas fa-clock me-2"></i>3. Horario</a></li>
+            </ul>
+
+            <!-- TAB 1: ESPECIALIDAD -->
+            <div id="tab-especialidad">
+                <div class="mb-4">
+                    <h6 class="mb-3 text-secondary fw-bold">Buscar Especialidad</h6>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" class="form-control" id="txtBuscarEspecialidad" autocomplete="off" placeholder="Ej: Psicología, Pediatría...">
                     </div>
                 </div>
-                <div id="contenedor-especialidades" class="row row-cols-3">
+                <div id="contenedor-especialidades" class="row row-cols-1 row-cols-md-3 g-3">
+                    <!-- El JS llenará esto -->
                 </div>
             </div>
-        </div>
-        <div id="tab-doctor">
-            <div>
-                <div class="row mb-4">
-                    <div class="col-sm-12">
-                        <h6 class="mb-3" style="font-weight:bold">Buscar Doctor:</h6>
-                        <input type="text" class="form-control" id="txtBuscarDoctor" autocomplete="off">
+
+            <!-- TAB 2: DOCTOR -->
+            <div id="tab-doctor">
+                <div class="mb-4">
+                    <h6 class="mb-3 text-secondary fw-bold">Buscar Doctor</h6>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" class="form-control" id="txtBuscarDoctor" autocomplete="off" placeholder="Nombre del doctor...">
                     </div>
                 </div>
-                <div id="contenedor-doctores" class="row row-cols-3">
+                <div id="contenedor-doctores" class="row row-cols-1 row-cols-md-3 g-3">
+                    <!-- El JS llenará esto -->
                 </div>
             </div>
-        </div>
-        <div id="tab-horario">
-            <div>
-                <div class="row mb-4">
-                    <div class="col-sm-12">
-                        <h6 class="mb-3" style="font-weight:bold">Fecha Cita</h6>
-                       @*  <input type="text" class="form-control" id="txtFechaCita" autocomplete="off"> *@
+
+            <!-- TAB 3: HORARIO -->
+            <div id="tab-horario">
+                <div class="row">
+                    <div class="col-md-5 mb-4">
+                        <h6 class="mb-3 text-secondary fw-bold"><i class="fas fa-calendar-day me-2"></i>Seleccione la Fecha</h6>
                         <div id="txtFechaCita"></div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-6">
-                        <h6 class="mb-3" style="font-weight:bold">Turno Mañana</h6>
-                        <div id="contenedor-am" class="row row-cols-4">
-                            
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <h6 class="mb-3" style="font-weight:bold">Turno Tarde</h6>
-                        <div id="contenedor-pm" class="row row-cols-4">
+
+                    <div class="col-md-7">
+                        <h6 class="mb-3 text-secondary fw-bold"><i class="fas fa-clock me-2"></i>Horarios Disponibles</h6>
+
+                        <div class="row">
+                            <!-- Turno Mañana -->
+                            <div class="col-sm-6 mb-3">
+                                <div class="alert alert-info py-2 text-center fw-bold" style="background-color: #e0f2fe; color: #0284c7; border: none;">
+                                    <i class="fas fa-sun me-1"></i> Turno Mañana
+                                </div>
+                                <div id="contenedor-am" class="row row-cols-2 g-2">
+                                    <!-- El JS llenará esto -->
+                                </div>
+                            </div>
+
+                            <!-- Turno Tarde -->
+                            <div class="col-sm-6 mb-3">
+                                <div class="alert alert-warning py-2 text-center fw-bold" style="background-color: #fef3c7; color: #d97706; border: none;">
+                                    <i class="fas fa-moon me-1"></i> Turno Tarde
+                                </div>
+                                <div id="contenedor-pm" class="row row-cols-2 g-2">
+                                    <!-- El JS llenará esto -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 
-
-
-    <div class="card-footer">
-        <button type="button" class="btn btn-secondary float-start me-2" id="btnRegresar">Regresar</button>
-        <button type="button" class="btn btn-primary float-end" id="btnSiguiente">Siguiente</button>
+    <div class="card-footer bg-light border-0 p-3 d-flex justify-content-between" style="border-radius: 0 0 16px 16px;">
+        <button type="button" class="btn btn-outline-secondary" id="btnRegresar">
+            <i class="fas fa-arrow-left me-1"></i> Regresar
+        </button>
+        <button type="button" class="btn btn-primary px-4" id="btnSiguiente">
+            Siguiente <i class="fas fa-arrow-right ms-1"></i>
+        </button>
     </div>
 </div>
 
-
+<!-- MODAL RESUMEN FINAL -->
 <div class="modal fade" id="mdData" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
             <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Resumen Cita</h5>
+                <h5 class="modal-title" id="staticBackdropLabel"><i class="fas fa-check-circle me-2"></i>Confirmar Cita</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <label class="col-form-label">Especialidad:</label>
-                        <input type="text" class="form-control" id="txtEspecialidad" autocomplete="off" disabled>
-                    </div>
-                    
+            <div class="modal-body p-4">
+                <div class="alert alert-success border-0 mb-4">
+                    <i class="fas fa-info-circle me-2"></i> Revisa los datos antes de confirmar.
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small mb-1">Especialidad</label>
+                    <input type="text" class="form-control fw-bold text-dark bg-light" id="txtEspecialidad" disabled>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small mb-1">Doctor/a</label>
+                    <input type="text" class="form-control fw-bold text-dark bg-light" id="txtDoctor" disabled>
                 </div>
                 <div class="row">
-                    <div class="col-sm-12">
-                        <label class="col-form-label">Doctor/a:</label>
-                        <input type="text" class="form-control" id="txtDoctor" autocomplete="off" disabled>
+                    <div class="col-6 mb-3">
+                        <label class="form-label text-muted small mb-1">Fecha</label>
+                        <input type="text" class="form-control fw-bold text-dark bg-light" id="txtFechadeCita" disabled>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-12">
-                        <label class="col-form-label">Fecha Cita:</label>
-                        <input type="text" class="form-control" id="txtFechadeCita" autocomplete="off" disabled>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-12">
-                        <label class="col-form-label">Hora Cita:</label>
-                        <input type="text" class="form-control" id="txtHoraCita" autocomplete="off" disabled>
+                    <div class="col-6 mb-3">
+                        <label class="form-label text-muted small mb-1">Hora</label>
+                        <input type="text" class="form-control fw-bold text-dark bg-light" id="txtHoraCita" disabled>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
-                <button type="button" class="btn btn-primary" id="btnAgendar">Agendar</button>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver</button>
+                <button type="button" class="btn btn-success px-4" id="btnAgendar">
+                    <i class="fas fa-calendar-check me-1"></i> Confirmar y Agendar
+                </button>
             </div>
         </div>
     </div>

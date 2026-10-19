@@ -1,34 +1,80 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@* For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860 *@
 @section Estilos {
     <link href="~/lib/datatables2/css/dataTables.dataTables.css" rel="stylesheet" />
     <link href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
     <link href="~/lib/select2/css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+    <style>
+        /* Estilos personalizados para esta vista */
+        .page-header {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 5px solid #10b981; /* Verde esmeralda para salud */
+        }
+
+            .page-header h2 {
+                margin: 0;
+                font-weight: 700;
+                color: #1e293b;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .page-header i {
+                color: #10b981;
+            }
+
+        /* Botón de Nueva Cita destacado */
+        .btn-new-cita {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.6rem 1.2rem;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+        }
+
+            .btn-new-cita:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+                color: white;
+            }
+    </style>
 }
-<h2 class="mt-4 mb-4">Mis Citas</h2>
+
+<!-- Encabezado de la Página -->
+<div class="page-header">
+    <h2><i class="fas fa-calendar-check"></i> Mis Próximas Citas</h2>
+    <a asp-controller="Citas" asp-action="NuevaCita" class="btn btn-new-cita">
+        <i class="fas fa-plus-circle me-2"></i> Agendar Nueva Cita
+    </a>
+</div>
 
 <div class="row">
     <div class="col-sm-12">
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="fas fa-chart-bar me-1"></i>
-                Lista de citas
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-sm-3">
-                        <a asp-controller="Citas" asp-action="NuevaCita" class="btn btn-success">Nueva Cita</a>
-                    </div>
+        <div class="card shadow-sm border-0" style="border-radius: 16px;">
+
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0 text-secondary fw-bold"><i class="fas fa-list-alt me-2 text-success"></i>Listado de Citas Pendientes</h5>
                 </div>
-                <hr />
-                <div class="row">
-                    <div class="col-sm-12">
-                        <table class="display" id="tbData" cellspacing="0" style="width:100%">
-                            <tbody></tbody>
-                        </table>
-                    </div>
+
+                <div class="table-responsive">
+                    <table class="display" id="tbData" cellspacing="0" style="width:100%">
+                        <tbody></tbody>
+                    </table>
+
                 </div>
+
 
             </div>
 
@@ -41,6 +87,4 @@
     <script src="~/lib/datatables2/js/moment.min.js"></script>
     <script src="~/lib/datatables2/js/dataTables.js"></script>
     <script src="~/lib/select2/js/select2.min.js"></script>
-    <script src="~/js/Cita.js"></script>
-
-}
+    <script src="~/js/Cita.js"></script>}

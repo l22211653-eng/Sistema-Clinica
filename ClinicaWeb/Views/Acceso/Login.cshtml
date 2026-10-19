@@ -3,77 +3,204 @@
     Layout = null;
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
-    <title>Login - SB Admin</title>
-    <link href="~/css/styles.css" rel="stylesheet" />
-    <script src="~/lib/fontawesome/all.js"></script>
+    <title>Iniciar Sesión - Clínica</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            width: 100%;
+            max-width: 420px;
+            border: none;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            padding: 2.5rem 2rem 2rem;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+            .login-header h3 {
+                font-weight: 700;
+                font-size: 1.8rem;
+                margin-bottom: 0.5rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            .login-header p {
+                color: rgba(255,255,255,0.8);
+                font-size: 0.9rem;
+                margin: 0;
+                position: relative;
+                z-index: 1;
+            }
+
+            .login-header i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+                color: #bae6fd;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* Efecto de círculos en el header */
+            .login-header::before, .login-header::after {
+                content: '';
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.1);
+            }
+
+            .login-header::before {
+                width: 150px;
+                height: 150px;
+                top: -50px;
+                left: -50px;
+            }
+
+            .login-header::after {
+                width: 100px;
+                height: 100px;
+                bottom: -30px;
+                right: -30px;
+            }
+
+        .login-body {
+            padding: 2rem;
+        }
+
+        .input-group-text {
+            background-color: #f8fafc;
+            border-right: none;
+            color: #64748b;
+        }
+
+        .form-control {
+            border-left: none;
+            background-color: #f8fafc;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+        }
+
+            .form-control:focus {
+                box-shadow: none;
+                border-color: #0ea5e9;
+                background-color: white;
+            }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem;
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+        }
+
+            .btn-login:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
+                color: white;
+            }
+
+        .login-footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
 </head>
-<body class="bg-primary">
-    <div id="layoutAuthentication">
-        <div id="layoutAuthentication_content">
-            <main>
-                <div class="container">
-                    <div class="row justify-content-center">
-                        <div class="col-lg-5">
-                            <div class="card shadow-lg border-0 rounded-lg mt-5">
-                                <div class="card-header"><h3 class="text-center font-weight-light my-4">Login</h3></div>
-                                <div class="card-body">
-                                    
-                                    <form asp-controller="Acceso" asp-action="Login" method="post">
-                                        <div class="form-floating mb-3">
-                                            <input class="form-control" type="text" placeholder="Nro Documento" asp-for="DocumentoIdentidad" required />
-                                            <label for="inputEmail">Nro Documento</label>
-                                        </div>
-                                        <div class="form-floating mb-3">
-                                            <input class="form-control" type="password" placeholder="Contraseña" asp-for="Clave" required />
-                                            <label for="inputPassword">Contraseña</label>
-                                        </div>
-                                        @if (ViewData["Mensaje"] != null)
-                                        {
-                                            <div class="form-group">
-                                                <div class="alert alert-danger" role="alert">
-                                                    @ViewData["Mensaje"]
-                                                </div>
-                                            </div>
-                                        }
+<body>
 
-                                        <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
-                                            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-                                        </div>
-                                    </form>
-
-                                </div>
-                                <div class="card-footer text-center py-3">
-                                    <div class="small"><a asp-controller="Acceso" asp-action="Registrarse">Necesitas una cuenta? Registrate!</a></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-heartbeat"></i>
+            <h3>Clínica</h3>
+            <p>Sistema de Gestión Médica</p>
         </div>
-        <div id="layoutAuthentication_footer">
-            <footer class="py-4 bg-light mt-auto">
-                <div class="container-fluid px-4">
-                    <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2026</div>
-                        <div>
-                            <a href="#">Privacy Policy</a>
-                            &middot;
-                            <a href="#">Terms &amp; Conditions</a>
-                        </div>
+
+        <div class="login-body">
+            <form asp-controller="Acceso" asp-action="Login" method="post">
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Número de Documento</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                        <input class="form-control" type="text" placeholder="Ingrese su documento" asp-for="DocumentoIdentidad" required />
                     </div>
                 </div>
-            </footer>
+
+                <div class="mb-4">
+                    <label class="form-label text-muted small fw-bold">Contraseña</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input class="form-control" type="password" placeholder="••••••••" asp-for="Clave" required />
+                    </div>
+                </div>
+
+                @if (ViewData["Mensaje"] != null)
+                {
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <div>@ViewData["Mensaje"]</div>
+                    </div>
+                }
+
+                <button type="submit" class="btn btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i> Iniciar Sesión
+                </button>
+            </form>
+        </div>
+
+        <div class="login-footer">
+            <div class="small text-muted">
+                ¿No tienes una cuenta?
+                <a asp-controller="Acceso" asp-action="Registrarse" class="fw-bold text-decoration-none" style="color: #0ea5e9;">Regístrate aquí</a>
+            </div>
         </div>
     </div>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/scripts.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

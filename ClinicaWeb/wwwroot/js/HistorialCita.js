@@ -11,11 +11,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
             "url": `/${controlador}/ListaHistorialCitas`,
             "type": "GET",
             "datatype": "json",
-            // ⚠️ VALIDACIÓN: Si el servidor devuelve un error, mostramos una alerta y evitamos que la tabla explote
             "dataSrc": function (json) {
                 if (json && json.error) {
                     Swal.fire("Error del Servidor", json.error, "error");
-                    return []; // Devolvemos lista vacía para que la tabla no se rompa
+                    return [];
                 }
                 return json || [];
             }
@@ -31,19 +30,21 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 title: "Doctor", "data": "doctor", render: function (data, type, row) {
                     return data ? `${data.nombres} ${data.apellidos}` : '';
                 }
-
-
             },
             {
-
                 title: "Acciones", "data": null, width: "250px", render: function (data, type, row) {
-                    // Validación segura por si el doctor o el id no existen
                     let idDoctor = (row.doctor && row.doctor.idDoctor) ? row.doctor.idDoctor : 0;
 
                     return `
-                        <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-indicaciones" data-id="${row.idCita}">Indicaciones</button>
-                        <button type="button" class="btn btn-sm btn-outline-info me-1 btn-receta" data-id="${row.idCita}">Receta</button>
-                        <button type="button" class="btn btn-sm btn-outline-warning btn-calificar" data-idcita="${row.idCita}" data-iddoctor="${idDoctor}">Calificar</button>
+                   <button type="button" class="btn btn-outline-primary btn-sm me-1 btn-indicaciones" data-id="${row.idCita}" title="Ver Indicaciones">
+                   <i class="fas fa-eye"></i> Indicaciones
+                   </button>
+                   <button type="button" class="btn btn-outline-info btn-sm me-1 btn-receta" data-id="${row.idCita}" title="Ver Receta">
+                   <i class="fas fa-prescription"></i> Receta
+                   </button>
+                   <button type="button" class="btn btn-outline-warning btn-sm btn-calificar" data-idcita="${row.idCita}" data-iddoctor="${idDoctor}" title="Calificar Doctor">
+                   <i class="fas fa-star"></i> Calificar
+                   </button>
                     `;
                 }
             }
@@ -61,26 +62,24 @@ $("#tbData tbody").on("click", ".btn-indicaciones", function () {
     const filaSeleccionada = $(this).closest('tr');
     const data = tablaData.row(filaSeleccionada).data();
 
-    $("#txtIndicaciones").val(data.indicaciones)
+    $("#txtIndicaciones").val(data.indicaciones);
     $(`#${modal}`).modal('show');
     $("#txtIndicaciones").prop('disabled', true);
 });
 
 // ==========================================
-// 2. EVENTO: CALIFICAR (Estrellas con Emojis)
+// 2. EVENTO: CALIFICAR (Estrellas)
 // ==========================================
 let puntuacionSeleccionada = 0;
 
-// Función para pintar las estrellas según el valor
 function pintarEstrellas(valor) {
     $("#contenedorEstrellas .estrella").each(function (index) {
         if (index < valor) {
-            $(this).css("color", "#ffc107"); // Amarillo
+            $(this).css("color", "#f59e0b"); // Amarillo
         } else {
-            $(this).css("color", "#ccc"); // Gris
+            $(this).css("color", "#cbd5e1"); // Gris
         }
     });
-
 }
 
 // Efecto al pasar el mouse
@@ -101,12 +100,17 @@ $(document).on("click", "#contenedorEstrellas .estrella", function () {
     pintarEstrellas(puntuacionSeleccionada);
 });
 
-// Abrir modal de calificar (Resetea todo a 0)
+// Abrir modal de calificar
 $(document).on("click", ".btn-calificar", function () {
     puntuacionSeleccionada = 0;
     $("#txtPuntuacion").val(0);
     $("#txtComentario").val("");
-    pintarEstrellas(0); // Resetear a gris
+
+    // ⚠️ Pequeño truco: reseteamos las estrellas justo después de que el modal se muestre
+    // para asegurarnos de que se pinten bien visualmente.
+    setTimeout(() => {
+        pintarEstrellas(0);
+    }, 100);
 
     $("#txtIdCitaResena").val($(this).data("idcita"));
     $("#txtIdDoctorResena").val($(this).data("iddoctor"));
@@ -125,12 +129,11 @@ $("#btnGuardarResena").click(function () {
     let objetoResena = {
         IdCita: parseInt($("#txtIdCitaResena").val()),
         IdDoctor: parseInt($("#txtIdDoctorResena").val()),
-        IdUsuario: 0, // Se llena automáticamente en el backend
+        IdUsuario: 0,
         Puntuacion: puntuacion,
         Comentario: $("#txtComentario").val()
     };
 
-    // Mostrar carga
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
     fetch(`/HistorialCitas/GuardarResena`, {
@@ -158,7 +161,6 @@ $("#btnGuardarResena").click(function () {
 $("#tbData tbody").on("click", ".btn-receta", function () {
     let idCita = $(this).data("id");
 
-    // Mostrar carga
     Swal.fire({ title: 'Buscando receta...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
     fetch(`/HistorialCitas/ListaRecetasCita?idCita=${idCita}`, {
@@ -166,7 +168,7 @@ $("#tbData tbody").on("click", ".btn-receta", function () {
     })
         .then(response => response.json())
         .then(data => {
-            Swal.close(); // Cerrar alerta de carga
+            Swal.close();
             let tbody = $("#tbReceta tbody");
             tbody.empty();
 
@@ -176,15 +178,14 @@ $("#tbData tbody").on("click", ".btn-receta", function () {
 
                 data.forEach(receta => {
                     tbody.append(`
-                    <tr>
-                        <td>${receta.medicamento}</td>
-                        <td>${receta.dosis}</td>
-                        <td>${receta.indicaciones}</td>
-                    </tr>
-                `);
+                <tr>
+                    <td>${receta.medicamento}</td>
+                    <td>${receta.dosis}</td>
+                    <td>${receta.indicaciones}</td>
+                </tr>
+            `);
                 });
             } else {
-                // No hay recetas
                 $("#tbReceta").addClass("d-none");
                 $("#mensajeSinReceta").removeClass("d-none");
             }

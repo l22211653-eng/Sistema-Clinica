@@ -3,33 +3,108 @@
     <link href="~/lib/datatables2/css/dataTables.dataTables.css" rel="stylesheet" />
     <link href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
     <link href="~/lib/select2/css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+    <style>
+        /* Estilos personalizados para esta vista */
+        .page-header {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 5px solid #0ea5e9;
+        }
+            .page-header h2 {
+                margin: 0;
+                font-weight: 700;
+                color: #1e293b;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .page-header i {
+                color: #0ea5e9;
+            }
+
+        .filter-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+            .filter-card label {
+                font-weight: 600;
+                color: #475569;
+                margin-bottom: 0;
+            }
+
+        /* Estilo para el modal de receta */
+        .modal-recipe .modal-header {
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+            color: white;
+            border-bottom: none;
+        }
+
+            .modal-recipe .modal-header .btn-close {
+                filter: invert(1);
+            }
+
+        .recipe-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-recipe th {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+    </style>
 }
-<h2 class="mt-4 mb-4">Citas Asignadas</h2>
+
+<!-- Encabezado de la Página -->
+<div class="page-header">
+    <h2><i class="fas fa-clipboard-list"></i> Citas Asignadas</h2>
+    <span class="badge bg-primary fs-6 p-2"><i class="fas fa-user-md me-1"></i> Panel del Doctor</span>
+</div>
 
 <div class="row">
     <div class="col-sm-12">
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="fas fa-chart-bar me-1"></i>
-                Citas Asignadas
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-sm-3">
-                        <label class="col-form-label">Estado Cita:</label>
-                        <select id="cboEstadoCita" class="form-select">
-                            <option value="1">Pendiente</option>
-                            <option value="2">Atendido</option>
-                        </select>
-                    </div>
+        <div class="card shadow-sm border-0" style="border-radius: 16px;">
+
+            <div class="card-body p-4">
+                <!-- Filtro de Estado -->
+                <div class="filter-card">
+                    <i class="fas fa-filter text-primary fs-5"></i>
+                    <label>Filtrar por Estado:</label>
+                    <select id="cboEstadoCita" class="form-select w-auto">
+                        <option value="1">Pendiente</option>
+                        <option value="2">Atendido</option>
+                    </select>
                 </div>
-                <hr />
-                <div class="row">
-                    <div class="col-sm-12">
-                        <table class="display" id="tbData" cellspacing="0" style="width:100%">
-                            <tbody></tbody>
-                        </table>
-                    </div>
+
+                <!-- Tabla de Citas -->
+                <div class="table-responsive">
+                    <table class="display" id="tbData" cellspacing="0" style="width:100%">
+                        <tbody></tbody>
+                    </table>
+
                 </div>
 
             </div>
@@ -38,62 +113,81 @@
     </div>
 </div>
 
-<!-- MODAL DE INDICACIONES Y RECETA -->
-<div class="modal fade" id="mdData" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <!-- Hacemos el modal más grande -->
-        <div class="modal-content">
+<!-- MODAL DE INDICACIONES Y RECETA (Mejorado) -->
+<div class="modal fade modal-recipe" id="mdData" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
+
             <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Resumen Cita y Receta</h5>
+                <h5 class="modal-title" id="staticBackdropLabel"><i class="fas fa-notes-medical me-2"></i>Resumen Cita y Receta</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
 
+
+            <div class="modal-body p-4">
                 <input type="hidden" id="txtIdCita" />
 
-                <div class="row mb-3">
-                    <div class="col-sm-12">
-                        <label for="txtIndicaciones" class="form-label">Indicaciones Generales</label>
-                        <textarea class="form-control" id="txtIndicaciones" rows="2"></textarea>
+                <!-- Indicaciones Generales -->
+                <div class="mb-4">
+                    <label for="txtIndicaciones" class="form-label fw-bold text-secondary">
+                        <i class="fas fa-clipboard-check me-1"></i> Indicaciones Generales
+                    </label>
+                    <textarea class="form-control" id="txtIndicaciones" rows="3" placeholder="Escriba las indicaciones para el paciente..."></textarea>
+                </div>
+
+                <!-- Sección de Receta -->
+                <div class="recipe-section">
+                    <h6 class="fw-bold mb-3 text-success"><i class="fas fa-pills me-2"></i> Receta Médica (Opcional)</h6>
+
+                    <div class="row mb-3 align-items-end">
+                        <div class="col-sm-5">
+                            <label class="form-label small text-muted">Medicamento</label>
+                            <input type="text" class="form-control" id="txtMedicamento" placeholder="Ej: Paracetamol 500mg">
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="form-label small text-muted">Dosis</label>
+                            <input type="text" class="form-control" id="txtDosis" placeholder="Ej: 1 tableta cada 8h">
+                        </div>
+                        <div class="col-sm-3">
+                            <button type="button" class="btn btn-success w-100" id="btnAgregarMedicamento">
+                                <i class="fas fa-plus me-1"></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-recipe table-hover align-middle" id="tbRecetaTemporal">
+                            <thead>
+                                <tr>
+                                    <th>Medicamento</th>
+                                    <th>Dosis</th>
+                                    <th class="text-center" width="80px">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Aquí se agregan las filas dinámicamente -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <hr />
-                <h6><i class="fas fa-pills"></i> Receta Médica (Opcional)</h6>
-                <div class="row mb-2">
-                    <div class="col-sm-5">
-                        <input type="text" class="form-control" id="txtMedicamento" placeholder="Medicamento (Ej: Paracetamol)">
+                <div class="alert alert-info d-flex align-items-center border-0 rounded-3">
+                    <i class="fas fa-info-circle fs-4 me-3"></i>
+                    <div>
+                        Después de ingresar las indicaciones y recetas, presione <strong>"Terminar Cita"</strong> para marcar como ATENDIDO.
                     </div>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="txtDosis" placeholder="Dosis (Ej: 1 tableta cada 8h)">
-                    </div>
-                    <div class="col-sm-3">
-                        <button type="button" class="btn btn-success w-100" id="btnAgregarMedicamento">Agregar</button>
-                    </div>
-                </div>
-
-                <table class="table table-sm table-bordered mt-2" id="tbRecetaTemporal">
-                    <thead>
-                        <tr>
-                            <th>Medicamento</th>
-                            <th>Dosis</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-
-                <div class="alert alert-primary mt-2">
-                    <p class="mb-0">
-                        Después de ingresar las indicaciones y recetas,<br />
-                        Presione "Terminar Cita" para marcar como ATENDIDO.
-                    </p>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
-                <button type="button" class="btn btn-primary" id="btnTerminarCita">Terminar Cita</button>
+
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Volver
+                </button>
+                <button type="button" class="btn btn-primary" id="btnTerminarCita">
+                    <i class="fas fa-check-circle me-1"></i> Terminar Cita
+                </button>
             </div>
+
         </div>
     </div>
 </div>
@@ -102,4 +196,5 @@
     <script src="~/lib/datatables2/js/moment.min.js"></script>
     <script src="~/lib/datatables2/js/dataTables.js"></script>
     <script src="~/lib/select2/js/select2.min.js"></script>
-    <script src="~/js/CitasAsignadas.js"></script> }
+    <script src="~/js/CitasAsignadas.js"></script>
+}

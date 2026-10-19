@@ -5,30 +5,92 @@
     <link href="~/lib/select2/css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
     <!-- FontAwesome 6 desde CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        /* Estilos personalizados para esta vista */
+        .page-header {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 5px solid #0ea5e9; /* Celeste para historial */
+        }
+
+            .page-header h2 {
+                margin: 0;
+                font-weight: 700;
+                color: #1e293b;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .page-header i {
+                color: #0ea5e9;
+            }
+
+        /* Modales */
+        .modal-header {
+            border-bottom: none;
+        }
+
+            .modal-header.bg-info {
+                background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%) !important;
+            }
+
+            .modal-header.bg-primary {
+                background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%) !important;
+            }
+
+            .modal-header.bg-success {
+                background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+            }
+
+            .modal-header .btn-close {
+                filter: invert(1);
+            }
+
+        /* Estrellas de Calificación */
+        #contenedorEstrellas .estrella {
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.1s ease;
+        }
+
+            #contenedorEstrellas .estrella:hover {
+                transform: scale(1.2);
+            }
+
+            #contenedorEstrellas .estrella.activa {
+                color: #f59e0b !important; /* Amarillo */
+            }
+    </style>
 }
 
-<h2 class="mt-4 mb-4">Historial Citas</h2>
+<!-- Encabezado de la Página -->
+<div class="page-header">
+    <h2><i class="fas fa-history"></i> Historial de Citas</h2>
+    <span class="badge bg-info text-dark fs-6 p-2"><i class="fas fa-notes-medical me-1"></i> Mi Registro Médico</span>
+</div>
 
 <div class="row">
     <div class="col-sm-12">
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="fas fa-chart-bar me-1"></i>
-                Historial de citas
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <table class="display" id="tbData" cellspacing="0" style="width:100%">
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
+        <div class="card shadow-sm border-0" style="border-radius: 16px;">
 
+            <div class="card-body p-4">
+                <h5 class="mb-4 text-secondary fw-bold"><i class="fas fa-list me-2 text-info"></i>Mis Citas Atendidas</h5>
+
+                <div class="table-responsive">
+                    <table class="display" id="tbData" cellspacing="0" style="width:100%">
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
-
     </div>
 </div>
 
@@ -36,22 +98,20 @@
 <!-- MODAL 1: RESUMEN DE CITA (INDICACIONES)    -->
 <!-- ========================================== -->
 <div class="modal fade" id="mdData" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Resumen Cita</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header bg-primary">
+                <h5 class="modal-title text-white" id="staticBackdropLabel"><i class="fas fa-clipboard-list me-2"></i>Indicaciones Médicas</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row mb-3">
-                    <div class="col-sm-12">
-                        <label for="txtIndicaciones" class="form-label">Indicaciones</label>
-                        <textarea class="form-control" id="txtIndicaciones" rows="3" readonly></textarea>
-                    </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label for="txtIndicaciones" class="form-label fw-bold text-secondary">Indicaciones del Doctor</label>
+                    <textarea class="form-control bg-light" id="txtIndicaciones" rows="4" readonly style="resize: none;"></textarea>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -61,41 +121,36 @@
 <!-- MODAL 2: CALIFICAR DOCTOR (Reseña)         -->
 <!-- ========================================== -->
 <div class="modal fade" id="mdResena" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Calificar Atención</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header bg-success">
+                <h5 class="modal-title text-white"><i class="fas fa-star me-2"></i>Calificar Atención</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4 text-center">
                 <input type="hidden" id="txtIdCitaResena" />
                 <input type="hidden" id="txtIdDoctorResena" />
 
-                <div class="row mb-3">
-                    <div class="col-sm-12 text-center">
-                        <label class="form-label d-block mb-2">¿Cómo calificarías al doctor?</label>
-                        <!-- Estrellas con Emojis para máxima compatibilidad -->
-                        <div class="fs-2" id="contenedorEstrellas" style="cursor:pointer; user-select:none;">
-                            <span class="estrella" data-val="1" style="color: #ccc; font-size: 2rem;">★</span>
-                            <span class="estrella" data-val="2" style="color: #ccc; font-size: 2rem;">★</span>
-                            <span class="estrella" data-val="3" style="color: #ccc; font-size: 2rem;">★</span>
-                            <span class="estrella" data-val="4" style="color: #ccc; font-size: 2rem;">★</span>
-                            <span class="estrella" data-val="5" style="color: #ccc; font-size: 2rem;">★</span>
-                        </div>
-                        <input type="hidden" id="txtPuntuacion" value="0" />
-                    </div>
-                </div>
+                <h6 class="mb-3 fw-bold text-secondary">¿Cómo calificarías al doctor?</h6>
 
-                <div class="row mb-3">
-                    <div class="col-sm-12">
-                        <label for="txtComentario" class="form-label">Comentario (Opcional)</label>
-                        <textarea class="form-control" id="txtComentario" rows="3" placeholder="Cuéntanos tu experiencia..."></textarea>
-                    </div>
+                <!-- Estrellas -->
+                <div class="mb-4" id="contenedorEstrellas" style="user-select:none; font-size: 3rem; line-height: 1;">
+                    <span class="estrella" data-val="1" style="color: #cbd5e1;">★</span>
+                    <span class="estrella" data-val="2" style="color: #cbd5e1;">★</span>
+                    <span class="estrella" data-val="3" style="color: #cbd5e1;">★</span>
+                    <span class="estrella" data-val="4" style="color: #cbd5e1;">★</span>
+                    <span class="estrella" data-val="5" style="color: #cbd5e1;">★</span>
+                </div>
+                <input type="hidden" id="txtPuntuacion" value="0" />
+
+                <div class="text-start mb-2">
+                    <label for="txtComentario" class="form-label fw-bold text-secondary">Comentario (Opcional)</label>
+                    <textarea class="form-control" id="txtComentario" rows="3" placeholder="Cuéntanos tu experiencia con el doctor..."></textarea>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btnGuardarResena">Enviar Reseña</button>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnGuardarResena"><i class="fas fa-paper-plane me-1"></i> Enviar Reseña</button>
             </div>
         </div>
     </div>
@@ -105,29 +160,31 @@
 <!-- MODAL 3: VER RECETA MÉDICA                 -->
 <!-- ========================================== -->
 <div class="modal fade" id="mdReceta" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-info text-white">
-                <h5 class="modal-title"><i class="fas fa-file-medical"></i> Receta Médica</h5>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header bg-info">
+                <h5 class="modal-title text-white"><i class="fas fa-file-prescription me-2"></i>Receta Médica</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <table class="table table-bordered" id="tbReceta">
-                    <thead>
-                        <tr>
-                            <th>Medicamento</th>
-                            <th>Dosis</th>
-                            <th>Indicaciones</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-                <div id="mensajeSinReceta" class="alert alert-warning d-none">
-                    No se recetaron medicamentos en esta cita.
+            <div class="modal-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle" id="tbReceta">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Medicamento</th>
+                                <th>Dosis</th>
+                                <th>Indicaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="mensajeSinReceta" class="alert alert-warning d-none text-center">
+                    <i class="fas fa-info-circle me-2"></i> No se recetaron medicamentos en esta cita.
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -137,8 +194,6 @@
     <script src="~/lib/datatables2/js/moment.min.js"></script>
     <script src="~/lib/datatables2/js/dataTables.js"></script>
     <script src="~/lib/select2/js/select2.min.js"></script>
-
-
     <script src="~/lib/sweetAlert2/js/sweetalert2.js"></script>
     <script src="~/js/HistorialCita.js"></script>
 }

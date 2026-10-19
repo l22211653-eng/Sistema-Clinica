@@ -1,275 +1,313 @@
 ﻿@{
-    ViewData["Title"] = "Sistema de gestión médica";
+    ViewData["Title"] = "Dashboard";
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Sistema de gestión médica | Home</title>
+<!-- ⚠️ NOTA: Ya no necesitamos <html>, <head> ni <body> porque el Layout ya los tiene. -->
+@section Estilos {
+    <!-- Fuente Inter para un look moderno -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #e0f0ff 0%, #f5f9ff 100%);
-            min-height: 100vh;
         }
 
-        .home-container {
-            max-width: 1300px;
-            width: 100%;
-            margin: 2rem auto;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(2px);
-            border-radius: 2.5rem;
-            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
+        /* Hero Section */
+        .hero-card {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
             overflow: hidden;
         }
 
-        .hero-section {
-            background: linear-gradient(120deg, #0a2b3e 0%, #1b4f6e 100%);
-            padding: 2rem 2.5rem 1.8rem 2.5rem;
-            color: white;
-            text-align: center;
-        }
+            .hero-card::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+                transform: rotate(45deg);
+            }
 
         .hero-title {
-            font-size: 2.6rem;
+            font-size: 2.5rem;
             font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
         }
 
-        .hero-title i {
-            font-size: 2.4rem;
-            color: #9cd4ff;
-        }
+            .hero-title i {
+                color: #38bdf8;
+            }
 
         .hero-sub {
-            font-size: 1rem;
-            opacity: 0.85;
-            border-top: 1px solid rgba(255,255,255,0.25);
-            display: inline-block;
-            padding-top: 0.6rem;
-            margin-top: 0.6rem;
+            font-size: 1.1rem;
+            color: #94a3b8;
+            position: relative;
+            z-index: 1;
         }
 
-        .images-gallery {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 2rem;
-            padding: 2.5rem 2rem;
-            background: #ffffffd9;
-            border-bottom: 1px solid #e2edf2;
-        }
-
-        .image-card {
-            flex: 1;
-            min-width: 260px;
-            max-width: 380px;
+        /* Tarjeta del Tecnológico */
+        .tech-card {
             background: white;
-            border-radius: 1.8rem;
-            box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
             overflow: hidden;
-            transition: transform 0.25s ease;
-            text-align: center;
-        }
-
-        .image-card:hover {
-            transform: translateY(-6px);
-        }
-
-        .img-caption {
-            padding: 0.8rem 0.5rem;
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: #1f4e6e;
-            background: #fafdff;
-        }
-
-        .info-panel {
-            padding: 2rem;
-            background: #ffffff;
-        }
-
-        .team-section {
-            background: #f8fafc;
-            border-radius: 1.5rem;
-            padding: 1.5rem 2rem;
-            margin-bottom: 1.8rem;
-            border-left: 6px solid #2c7da0;
-        }
-
-        .teacher-section {
-            background: #f1f6f9;
-            border-radius: 1.5rem;
-            padding: 1.5rem 2rem;
-            border-left: 6px solid #f4a261;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: #1f3b48;
+            justify-content: space-between;
+            padding: 2rem;
+            border-left: 6px solid #0b2f3f;
         }
 
-        .section-title i {
-            font-size: 1.6rem;
-            color: #2c7da0;
+        .tech-logo-box {
+            background: #0b2f3f;
+            padding: 2rem 3rem;
+            border-radius: 15px;
+            text-align: center;
+            color: #f7d44a;
         }
 
-        .teacher-section .section-title i {
-            color: #e76f51;
+            .tech-logo-box h3 {
+                font-weight: 800;
+                font-size: 1.5rem;
+                margin: 0;
+                letter-spacing: 1px;
+            }
+
+            .tech-logo-box h4 {
+                font-weight: 800;
+                font-size: 1.2rem;
+                margin: 0.2rem 0 0 0;
+                letter-spacing: 1px;
+            }
+
+        .tech-info {
+            flex: 1;
+            padding-left: 2rem;
         }
+
+            .tech-info h5 {
+                color: #1e293b;
+                font-weight: 700;
+                font-size: 1.3rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .tech-info p {
+                color: #64748b;
+                margin: 0;
+                font-size: 1rem;
+            }
+
+        /* Secciones de Equipo y Docente */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+        }
+
+        .info-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+            .info-card-header i {
+                background: #e0f2fe;
+                color: #0284c7;
+                padding: 10px;
+                border-radius: 10px;
+                font-size: 1.2rem;
+            }
 
         .member-list {
             display: flex;
-            flex-wrap: wrap;
-            gap: 1.2rem;
+            flex-direction: column;
+            gap: 1rem;
         }
 
-        .member-card {
-            background: white;
-            border-radius: 1.2rem;
-            padding: 0.6rem 1.2rem;
-            display: inline-flex;
+        .member-item {
+            display: flex;
             align-items: center;
-            gap: 12px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            color: #1e4663;
-            border: 1px solid #e2edf2;
+            gap: 15px;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s ease;
         }
 
-        .member-card i {
+            .member-item:hover {
+                transform: translateX(5px);
+                border-color: #38bdf8;
+            }
+
+        .member-icon {
+            width: 45px;
+            height: 45px;
+            background: #e0f2fe;
+            color: #0284c7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.2rem;
-            color: #2c7da0;
+
         }
 
+        .member-details h6 {
+            margin: 0;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .member-details small {
+            color: #64748b;
+        }
+
+        /* Estilos específicos para el Docente */
         .teacher-card {
-            background: #ffffffea;
-            border-radius: 1.2rem;
-            padding: 0.8rem 1.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 14px;
-            font-size: 1rem;
-            font-weight: 500;
-            color: #2c3e4e;
-            border: 1px solid #f0cfb0;
+            border-left: 6px solid #f59e0b;
         }
 
-        .teacher-card i {
-            font-size: 1.3rem;
-            color: #e76f51;
-        }
+            .teacher-card .info-card-header i {
+                background: #fef3c7;
+                color: #d97706;
+            }
 
-        .footer-note {
-            margin-top: 2rem;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #5f7f90;
-            border-top: 1px solid #dfeef5;
-            padding-top: 1.2rem;
-        }
+            .teacher-card .member-icon {
+                background: #fef3c7;
+                color: #d97706;
+            }
 
-        @@media (max-width: 750px) {
-            .hero-title {
-                font-size: 1.9rem;
+        /* Responsividad */
+        @@media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
             }
-            .images-gallery {
-                padding: 1.8rem 1rem;
+
+            .tech-card {
+                flex-direction: column;
+                text-align: center;
             }
-            .team-section, .teacher-section {
-                padding: 1.2rem;
-            }
-            .member-card {
-                width: 100%;
-            }
-            .home-container {
-                margin: 1rem;
-                width: calc(100% - 2rem);
+
+            .tech-info {
+                padding-left: 0;
+                margin-top: 1.5rem;
             }
         }
     </style>
-</head>
-<body>
-<div class="home-container">
-    <div class="hero-section">
+}
+
+<div class="dashboard-container">
+
+    <!-- 1. HERO SECTION -->
+    <div class="hero-card">
         <div class="hero-title">
-            <i class="fas fa-notes-medical"></i> 
-            Sistema de gestión médica
+            <i class="fas fa-notes-medical"></i>
+            Sistema de Gestión Médica
             <i class="fas fa-heartbeat"></i>
         </div>
         <div class="hero-sub">Plataforma integral para la administración clínica y hospitalaria</div>
     </div>
 
-    <!-- SOLO LA IMAGEN DEL TECNOLÓGICO NACIONAL DE MÉXICO -->
-    <div class="images-gallery">
-        <div class="image-card">
-            <div style="background: #0b2f3f; padding: 1.5rem 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px;">
-                <div style="font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; color: #f7d44a;">TECNOLÓGICO</div>
-                <div style="font-weight: 800; font-size: 1.3rem; letter-spacing: 1px; color: #f7d44a; margin-top: 0.2rem;">NACIONAL DE MÉXICO</div>
-                <div style="margin-top: 0.8rem; width: 50px; height: 3px; background: #f7b32b;"></div>
-                <div style="font-size: 0.7rem; color: #cdedff; margin-top: 0.6rem;"><i class="fas fa-university"></i> Excelencia educativa</div>
-            </div>
-            <div class="img-caption">
-                <i class="fas fa-graduation-cap"></i> Instituto Tecnológico · Formación profesional
-            </div>
+    <!-- 2. INSTITUCIÓN -->
+    <div class="tech-card">
+        <div class="tech-logo-box">
+            <h3>TECNOLÓGICO</h3>
+            <h4>NACIONAL DE MÉXICO</h4>
+        </div>
+        <div class="tech-info">
+            <h5><i class="fas fa-university text-primary me-2"></i> Instituto Tecnológico</h5>
+            <p>Excelencia educativa y formación profesional. Este sistema ha sido desarrollado como proyecto académico.</p>
         </div>
     </div>
 
-    <div class="info-panel">
-        <div class="team-section">
-            <div class="section-title">
-                <i class="fas fa-users"></i> 
-                Equipo de desarrollo
+    <!-- 3. EQUIPO Y DOCENTE (Grid) -->
+    <div class="info-grid">
+
+        <!-- Tarjeta del Equipo de Desarrollo -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <i class="fas fa-users"></i>
+                Equipo de Desarrollo
             </div>
             <div class="member-list">
-                <div class="member-card">
-                    <i class="fas fa-user-astronaut"></i> Novelo Astorga Kain Alejandro - 22211623
+                <div class="member-item">
+                    <div class="member-icon"><i class="fas fa-user-astronaut"></i></div>
+                    <div class="member-details">
+                        <h6>Novelo Astorga Kain Alejandro</h6>
+                        <small>Matrícula: 22211623</small>
+                    </div>
                 </div>
-                <div class="member-card">
-                    <i class="fas fa-user-graduate"></i> López Félix Nicolás - C21212706
+                <div class="member-item">
+                    <div class="member-icon"><i class="fas fa-user-graduate"></i></div>
+                    <div class="member-details">
+                        <h6>Espinoza Villa David Salvador</h6>
+                        <small>Matrícula: 22211556</small>
+                    </div>
                 </div>
-                <div class="member-card">
-                    <i class="fas fa-user-md"></i> Alberto Carlos Ruvalcaba Fernandez - 22211653
+                <div class="member-item">
+                    <div class="member-icon"><i class="fas fa-user-md"></i></div>
+                    <div class="member-details">
+                        <h6>Alberto Carlos Ruvalcaba Fernandez</h6>
+                        <small>Matrícula: 22211653</small>
+                    </div>
+
                 </div>
+
             </div>
         </div>
 
-        <div class="teacher-section">
-            <div class="section-title">
-                <i class="fas fa-chalkboard-user"></i> 
+        <!-- Tarjeta del Docente -->
+        <div class="info-card teacher-card">
+            <div class="info-card-header">
+                <i class="fas fa-chalkboard-user"></i>
                 Docente / Asesor
             </div>
-            <div class="teacher-card">
-                <i class="fas fa-person-chalkboard"></i> 
-                <span>JUAN JOSE ROGELIO OROZCO GARIBAY</span>
-                <span style="font-size: 0.75rem; background: #eef2f5; padding: 2px 8px; border-radius: 40px; margin-left: 8px;">Profesor titular</span>
+            <div class="member-item">
+                <div class="member-icon"><i class="fas fa-person-chalkboard"></i></div>
+                <div class="member-details">
+                    <h6>Miguel Angel Lopez Ramirez</h6>
+                    <small>Profesor Titular</small>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 rounded" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+                <p class="mb-0 text-muted small">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Sistema de gestión médica · Módulo administrativo y clínico | Versión 1.0
+                </p>
             </div>
         </div>
 
-        <div class="footer-note">
-            <i class="fas fa-database"></i> Sistema de gestión médica · Módulo administrativo y clínico | <i class="fas fa-code-branch"></i> Versión 1.0
-        </div>
-    </div>
-</div>
-</body>
-</html>
+    </div></div>

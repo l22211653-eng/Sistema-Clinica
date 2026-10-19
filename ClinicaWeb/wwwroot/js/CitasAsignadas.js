@@ -39,7 +39,8 @@ function cargarTabla(idEstadoCita) {
 
                 title: "Acciones", "data": null, width: "150px", render: function (data, type, row) {
                     if (row.estadoCita && row.estadoCita.nombre === "Pendiente") {
-                        return `<button type="button" class="btn btn-sm btn-outline-warning btn-indicaciones" data-id="${row.idCita}">Atender</button>`;
+                        // En lugar de: btn btn-outline-warning btn-indicaciones
+                        return `<button type="button" class="btn btn-primary btn-sm btn-indicaciones" data-id="${row.idCita}"> <i class="fas fa-notes-medical"> </i> Atender </button>`;
                     }
                     return '';
                 }

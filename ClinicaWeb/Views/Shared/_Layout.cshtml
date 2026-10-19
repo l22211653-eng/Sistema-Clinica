@@ -1,33 +1,184 @@
 ﻿
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
-    <title>Clinica - Net8</title>
+    <meta name="description" content="Sistema de Gestión Médica" />
+    <meta name="author" content="Tu Nombre" />
+    <title>Clínica - Sistema de Gestión</title>
+
+    <!-- CSS Original de SB Admin -->
     <link href="~/css/styles.css" rel="stylesheet" />
-    @RenderSection("Estilos", required: false)
+
+    <!-- FontAwesome -->
     <script src="~/lib/fontawesome/all.js"></script>
+
+    <!-- ⚠️ ESTILOS MODERNOS PERSONALIZADOS ⚠️ -->
+    <style>
+        /* 1. Fondo general y tipografía */
+        body {
+            background-color: #f0f4f8; /* Gris azulado muy suave */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #334155;
+        }
+
+        /* 2. Barra superior (Navbar) */
+        .sb-topnav.navbar-dark.bg-dark {
+            background-color: #ffffff !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .sb-topnav .navbar-brand, .sb-topnav .btn-link {
+            color: #0f172a !important; /* Texto oscuro */
+            font-weight: 700;
+        }
+
+        /* 3. Menú Lateral (Sidebar) - Estilo Claro */
+        .sb-sidenav-dark {
+            background-color: #ffffff !important;
+            border-right: 1px solid #e2e8f0;
+        }
+
+            .sb-sidenav-dark .sb-sidenav-menu .nav-link {
+                color: #475569 !important; /* Texto gris oscuro */
+                font-weight: 500;
+                border-radius: 8px;
+                margin: 4px 12px;
+                padding: 10px 15px;
+                transition: all 0.2s ease;
+            }
+
+                .sb-sidenav-dark .sb-sidenav-menu .nav-link:hover {
+                    background-color: #f1f5f9;
+                    color: #0ea5e9 !important; /* Azul al pasar el mouse */
+                }
+                /* Resaltar el enlace activo (el que tiene la clase active) */
+                .sb-sidenav-dark .sb-sidenav-menu .nav-link.active {
+                    background-color: #e0f2fe !important; /* Azul muy claro */
+                    color: #0284c7 !important; /* Azul fuerte */
+                    font-weight: 600;
+                }
+
+            .sb-sidenav-dark .sb-sidenav-menu .sb-nav-link-icon {
+                color: inherit;
+                margin-right: 10px;
+            }
+
+            .sb-sidenav-dark .sb-sidenav-menu-heading {
+                color: #94a3b8;
+                font-size: 0.75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding: 15px 25px 5px 25px;
+            }
+
+        .sb-sidenav-footer {
+            background-color: #f8fafc !important;
+            border-top: 1px solid #e2e8f0;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        /* 4. Tarjetas (Cards) */
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            margin-bottom: 1.5rem;
+            background-color: #ffffff;
+        }
+
+        .card-header {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #f1f5f9;
+            font-weight: 600;
+            color: #1e293b;
+            border-top-left-radius: 16px !important;
+            border-top-right-radius: 16px !important;
+            padding: 1.25rem 1.5rem;
+        }
+
+        /* 5. Tablas (DataTables) */
+        table.dataTable {
+            border-collapse: collapse !important;
+            width: 100% !important;
+        }
+
+            table.dataTable thead th {
+                background-color: #f8fafc;
+                color: #64748b;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.75rem;
+                letter-spacing: 0.5px;
+                border-bottom: 2px solid #e2e8f0 !important;
+                padding: 12px 15px;
+            }
+
+            table.dataTable tbody td {
+                padding: 12px 15px;
+                vertical-align: middle;
+                border-bottom: 1px solid #f1f5f9;
+                color: #334155;
+            }
+
+            table.dataTable tbody tr:hover {
+                background-color: #f8fafc;
+            }
+
+        /* 6. Botones */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sm {
+            border-radius: 6px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        /* 7. Modales */
+        .modal-content {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .modal-header {
+            background-color: #f8fafc;
+            color: #1e293b;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+            .modal-header .btn-close {
+                filter: none;
+            }
+    </style>
 </head>
 <body class="sb-nav-fixed">
+    <!-- Navbar Superior -->
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-        <!-- Navbar Brand-->
-        <a class="navbar-brand ps-3" href="#">Clinica</a>
+        <!-- Brand-->
+        <a class="navbar-brand ps-3" href="/Home/Index">
+            <i class="fas fa-heartbeat text-primary me-2"></i> Clínica
+        </a>
         <!-- Sidebar Toggle-->
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
-        <!-- Navbar Search-->
-        <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-            @*  <div class="input-group">
-            <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-            <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
-            </div> *@
-        </form>
-        <!-- Navbar-->
-        @await Component.InvokeAsync("MenuUsuario")
+
+        <!-- Navbar User -->
+        <div class="ms-auto me-3">
+            @await Component.InvokeAsync("MenuUsuario")
+        </div>
     </nav>
+
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
@@ -36,85 +187,105 @@
                         @if (User.IsInRole("Administrador"))
                         {
                             <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-line"></i></div>
                                 Dashboard
                             </a>
                         }
-                        
-                        <div class="sb-sidenav-menu-heading">Gestion</div>
+
+                        <div class="sb-sidenav-menu-heading">Gestión</div>
+
                         @if (User.IsInRole("Administrador"))
                         {
                             <a class="nav-link" asp-controller="Usuario" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Usuario
+                                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                Usuarios
                             </a>
                             <a class="nav-link" asp-controller="Especialidad" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Especialidad
+                                <div class="sb-nav-link-icon"><i class="fas fa-stethoscope"></i></div>
+                                Especialidades
                             </a>
                             <a class="nav-link" asp-controller="Doctor" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Doctor
+                                <div class="sb-nav-link-icon"><i class="fas fa-user-md"></i></div>
+                                Doctores
                             </a>
                             <a class="nav-link" asp-controller="DoctorHorario" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Doctor Horario
+                                <div class="sb-nav-link-icon"><i class="fas fa-calendar-alt"></i></div>
+                                Horarios
                             </a>
                         }
+
                         @if (User.IsInRole("Paciente"))
                         {
                             <a class="nav-link" asp-controller="Citas" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
                                 Mis Citas
                             </a>
                             <a class="nav-link" asp-controller="HistorialCitas" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Historial Citas
+                                <div class="sb-nav-link-icon"><i class="fas fa-history"></i></div>
+                                Historial
                             </a>
                         }
 
                         @if (User.IsInRole("Doctor"))
                         {
                             <a class="nav-link" asp-controller="Citas" asp-action="CitasAsignadas">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Citas
+                                <div class="sb-nav-link-icon"><i class="fas fa-clipboard-list"></i></div>
+                                Citas Asignadas
                             </a>
                         }
-
-                        
                     </div>
+
                 </div>
+
                 <div class="sb-sidenav-footer">
-                    <div class="small">Logged in as:</div>
-                    Start Bootstrap
+                    <div class="small">Sesión iniciada como:</div>
+                    <strong>@User.Identity?.Name</strong> <!-- Muestra el usuario logueado -->
                 </div>
             </nav>
         </div>
+
         <div id="layoutSidenav_content">
             <main>
-                <div class="container-fluid px-4">
+                <div class="container-fluid px-4 pt-4">
                     @RenderBody()
                 </div>
             </main>
-            <footer class="py-4 bg-light mt-auto">
+            <footer class="py-4 bg-transparent mt-auto">
                 <div class="container-fluid px-4">
-                    <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2026</div>
+                    <div class="d-flex align-items-center justify-content-between small text-muted">
+                        <div>Copyright &copy; Clínica 2026</div>
                         <div>
-                            <a href="#">Privacy Policy</a>
+                            <a href="#" class="text-decoration-none text-muted">Privacidad</a>
                             &middot;
-                            <a href="#">Terms &amp; Conditions</a>
+                            <a href="#" class="text-decoration-none text-muted">Términos</a>
                         </div>
                     </div>
                 </div>
             </footer>
         </div>
     </div>
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/scripts.js"></script>
     <script src="~/lib/sweetAlert2/js/sweetalert2.js"></script>
     <script src="~/lib/loadingoverlay/loadingoverlay.min.js"></script>
+
+    <!-- Script para marcar automáticamente el enlace activo en el menú -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var currentUrl = window.location.pathname.toLowerCase();
+            var navLinks = document.querySelectorAll('.sb-sidenav-menu .nav-link');
+
+            navLinks.forEach(function (link) {
+                var href = link.getAttribute('href');
+                if (href && currentUrl.includes(href.toLowerCase()) && href !== '/') {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
     @RenderSection("Scripts", required: false)
-</body>
-</html>
+</body></html>

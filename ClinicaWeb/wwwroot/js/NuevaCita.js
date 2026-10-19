@@ -9,15 +9,12 @@ let EspecialidadSeleccionada = "";
 let DoctorSeleccionado = "";
 let HoraSeleccionado = "";
 
-const IndexTabs = [0,1,2]
-
+const IndexTabs = [0, 1, 2];
 
 document.addEventListener("DOMContentLoaded", function (event) {
     $.datepicker.setDefaults($.datepicker.regional['es']);
     $("#tabs").tabs();
     $("#txtBuscarEspecialidad").trigger("focus");
-    
-
 
     $("#tab-especialidad").LoadingOverlay("show");
     fetch(`/Especialidad/Lista`, {
@@ -33,56 +30,54 @@ document.addEventListener("DOMContentLoaded", function (event) {
         }
     }).catch((error) => {
         $("#tab-especialidad").LoadingOverlay("hide");
-        console.log(error)
+        console.log(error);
         Swal.fire({
             title: "Error!",
             text: "No se encontraron coincidencias.",
             icon: "warning"
         });
-    })
+    });
 
- 
     $("#tabs").tabs("option", "disabled", [1, 2]);
     $("#btnSiguiente").prop("disabled", true);
-    
 });
 
 $("#txtBuscarEspecialidad").on("input", function () {
-
     IdEspecialidadSeleccionada = 0;
     BuscarEspecialidad($(this).val());
     $("#btnSiguiente").prop("disabled", true);
+    $(".card-select").removeClass("selected");
 });
-$("#txtBuscarDoctor").on("input", function () {
 
+$("#txtBuscarDoctor").on("input", function () {
     IdDoctorSeleccionado = 0;
     BuscarDoctor($(this).val());
     $("#btnSiguiente").prop("disabled", true);
+    $(".card-select").removeClass("selected");
 });
 
-
+// Selección de Especialidad
 $(document).on("click", "div.card-especialidad", function () {
-
-    $(".card-especialidad").removeClass("text-white bg-primary");
-    $(this).addClass("text-white bg-primary");
+    $(".card-especialidad").removeClass("selected");
+    $(this).addClass("selected");
     IdEspecialidadSeleccionada = $(this).data("id");
     EspecialidadSeleccionada = $(this).data("text");
     $("#btnSiguiente").prop("disabled", false);
 });
 
+// Selección de Doctor
 $(document).on("click", "div.card-doctor", function () {
-
-    $(".card-doctor").removeClass("text-white bg-primary");
-    $(this).addClass("text-white bg-primary");
+    $(".card-doctor").removeClass("selected");
+    $(this).addClass("selected");
     IdDoctorSeleccionado = $(this).data("id");
     DoctorSeleccionado = $(this).data("text");
     $("#btnSiguiente").prop("disabled", false);
 });
 
+// Selección de Hora
 $(document).on("click", "div.card-hora", function () {
-
-    $(".card-hora").removeClass("text-white bg-primary");
-    $(this).addClass("text-white bg-primary");
+    $(".card-hora").removeClass("active");
+    $(this).addClass("active");
     IdHoraSeleccionado = $(this).data("id");
     HoraSeleccionado = $(this).data("text");
 
@@ -90,51 +85,48 @@ $(document).on("click", "div.card-hora", function () {
         $("#btnSiguiente").prop("disabled", false);
 });
 
-
 function BuscarEspecialidad(valor) {
-    $("#contenedor-especialidades").html("")
+    $("#contenedor-especialidades").html("");
     const resultadosFiltrados = Especialidades.filter(element => element.nombre.toLowerCase().includes(valor.toLowerCase()));
-    const resumenFiltro = resultadosFiltrados.slice(0, 4);
+    const resumenFiltro = resultadosFiltrados.slice(0, 6); // Mostramos 6 para que llene bien la pantalla
 
     resumenFiltro.forEach(function (item) {
+        // Usamos las clases nuevas: card-select, card-especialidad
         $("#contenedor-especialidades").append(
-            `<div class="col mb-4">
-                <div class="card h-100 card-especialidad" style="cursor: pointer" data-id="${item.idEspecialidad}" data-text="${item.nombre}">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fa-solid fa-clipboard"></i> ${item.nombre}</h5>
-                    </div>
+            `<div class="col mb-3">
+                <div class="card-select card-especialidad" data-id="${item.idEspecialidad}" data-text="${item.nombre}">
+                    <i class="fa-solid fa-clipboard"></i>
+                    <h6>${item.nombre}</h6>
                 </div>
             </div>`
-        )
-    })
+        );
+    });
 }
 
 function BuscarDoctor(valor) {
-    $("#contenedor-doctores").html("")
-    const resultadosFiltrados = Doctores.filter(element => (element.nombres + element.apellidos).toLowerCase().includes(valor.toLowerCase()));
+    $("#contenedor-doctores").html("");
+    const resultadosFiltrados = Doctores.filter(element => (element.nombres + " " + element.apellidos).toLowerCase().includes(valor.toLowerCase()));
     resultadosFiltrados.forEach(function (item) {
-        const acronimo = item.genero == "F" ? "Dra.":"Dr."
+        const acronimo = item.genero == "F" ? "Dra." : "Dr.";
+        // Usamos las clases nuevas: card-select, card-doctor
         $("#contenedor-doctores").append(
-            `<div class="col mb-4">
-                <div class="card h-100 card-doctor" style="cursor: pointer" data-id="${item.idDoctor}" data-text="${acronimo} ${item.nombres} ${item.apellidos}">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fa-solid fa-user-doctor"></i> ${acronimo} ${item.nombres} ${item.apellidos}</h5>
-                    </div>
+            `<div class="col mb-3">
+                <div class="card-select card-doctor" data-id="${item.idDoctor}" data-text="${acronimo} ${item.nombres} ${item.apellidos}">
+                    <i class="fa-solid fa-user-doctor"></i>
+                    <h6>${acronimo} ${item.nombres} ${item.apellidos}</h6>
                 </div>
             </div>`
-        )
-    })
+        );
+    });
 }
-
 
 $("#btnSiguiente").on("click", function () {
     const indexTab = $("ul li.ui-state-active").index();
-
     let habilitarIndex = indexTab;
-    if (indexTab + 1 <= 2) {
 
+    if (indexTab + 1 <= 2) {
         habilitarIndex = indexTab + 1;
-        bloquearIndex = IndexTabs.filter((i) => i != habilitarIndex);
+        let bloquearIndex = IndexTabs.filter((i) => i != habilitarIndex);
         $("#tabs").tabs("option", "disabled", bloquearIndex);
         $("#tabs").tabs({ active: habilitarIndex });
         $("#btnSiguiente").prop("disabled", true);
@@ -142,64 +134,54 @@ $("#btnSiguiente").on("click", function () {
         if (habilitarIndex == 1) {
             $("#txtBuscarDoctor").val("");
             $("#txtBuscarDoctor").trigger("focus");
-            ObtenerDoctores()
+            ObtenerDoctores();
         } else if (habilitarIndex == 2) {
-            
             $("#txtFechaCita").val("");
-            ObtenerDoctoreHorarioDetalle()
-
-           
+            $("#contenedor-am").html("");
+            $("#contenedor-pm").html("");
+            ObtenerDoctoreHorarioDetalle();
         }
     }
+
     if (indexTab == 2) {
         $("#txtEspecialidad").val(EspecialidadSeleccionada);
         $("#txtDoctor").val(DoctorSeleccionado);
         $("#txtFechadeCita").val($("#txtFechaCita").val());
         $("#txtHoraCita").val(HoraSeleccionado);
-        $("#mdData").modal("show")
+        $("#mdData").modal("show");
     }
-    
 });
 
 $("#btnRegresar").on("click", function () {
-
     const indexTab = $("ul li.ui-state-active").index();
 
-    // Si estamos en la primera pestaña (Especialidad), volvemos a la página anterior
     if (indexTab === 0) {
-        window.location.href = '/Citas/Index'; // O la ruta de donde vengas
+        window.location.href = '/Citas/Index';
         return;
     }
 
-    // Si estamos en otra pestaña, retrocedemos una
     let habilitarIndex = indexTab - 1;
-
-    // Desbloqueamos la pestaña a la que vamos a ir
-    bloquearIndex = IndexTabs.filter((i) => i != habilitarIndex);
+    let bloquearIndex = IndexTabs.filter((i) => i != habilitarIndex);
     $("#tabs").tabs("option", "disabled", bloquearIndex);
     $("#tabs").tabs({ active: habilitarIndex });
 
-    // Habilitamos el botón "Siguiente" porque ya hay una selección previa
     $("#btnSiguiente").prop("disabled", false);
 
-    // Limpiamos las selecciones visuales y volvemos a cargar los datos
     if (habilitarIndex == 0) {
         $("#txtBuscarEspecialidad").val("");
         $("#txtBuscarEspecialidad").trigger("focus");
-        $(".card-especialidad").removeClass("text-white bg-primary");
+        $(".card-especialidad").removeClass("selected");
         BuscarEspecialidad("");
     } else if (habilitarIndex == 1) {
         $("#txtBuscarDoctor").val("");
         $("#txtBuscarDoctor").trigger("focus");
-        $(".card-doctor").removeClass("text-white bg-primary");
+        $(".card-doctor").removeClass("selected");
         BuscarDoctor("");
     }
 });
 
-
 function ObtenerDoctores() {
     $("#tab-doctor").LoadingOverlay("show");
-
     fetch(`/Doctor/Lista`, {
         method: "GET",
         headers: { 'Content-Type': 'application/json;charset=utf-8' }
@@ -208,19 +190,18 @@ function ObtenerDoctores() {
     }).then(responseJson => {
         if (responseJson.data.length > 0) {
             Doctores = responseJson.data.filter(element => element.especialidad.idEspecialidad == IdEspecialidadSeleccionada);
-            BuscarDoctor("")
+            BuscarDoctor("");
         }
         $("#tab-doctor").LoadingOverlay("hide");
     }).catch((error) => {
         $("#tab-doctor").LoadingOverlay("hide");
-        console.log(error)
+        console.log(error);
         Swal.fire({
             title: "Error!",
             text: "No se encontraron coincidencias.",
             icon: "warning"
         });
-    })
-
+    });
 }
 
 function ObtenerDoctoreHorarioDetalle() {
@@ -235,20 +216,16 @@ function ObtenerDoctoreHorarioDetalle() {
     }).then(response => {
         return response.ok ? response.json() : Promise.reject(response);
     }).then(responseJson => {
-      
         if (responseJson.data.length > 0) {
             const arraySoloFechas = responseJson.data.map(item => item.fecha);
-            DoctorHorario = responseJson.data
+            DoctorHorario = responseJson.data;
 
             $("#txtFechaCita").datepicker({
                 defaultDate: "",
                 minDate: 0,
                 beforeShowDay: function (date) {
-                    // Formatear la fecha actual al formato "YYYY-MM-DD"
                     var formattedDate = $.datepicker.formatDate("dd/mm/yy", date);
-                    // Verificar si la fecha está en el array de fechas permitidas
                     var esFechaPermitida = ($.inArray(formattedDate, arraySoloFechas) !== -1);
-                    // Habilitar o deshabilitar la fecha en el calendario
                     return [esFechaPermitida, ""];
                 },
                 onSelect: function (dateText, inst) {
@@ -257,33 +234,35 @@ function ObtenerDoctoreHorarioDetalle() {
                     $("#contenedor-pm").html("");
 
                     const selectedDate = $(this).val();
-                    
                     const Fecha = DoctorHorario.find(element => element.fecha == selectedDate);
-  
-                    const HorarioAM = Fecha.horarioDTO.filter(element => element.turno == "AM");
-                    const HorarioPM = Fecha.horarioDTO.filter(element => element.turno == "PM");
-                    HorarioAM.forEach(function (item) {
-                        $("#contenedor-am").append(
-                            `<div class="col mb-4" >
-                                <div class="text-center card-hora" style="cursor: pointer;border-radius: 0.375rem;border: 1px solid #ccc !important;" data-id="${item.idDoctorHorarioDetalle}" data-text="${item.turnoHora}">
-                                    <h6 class="card-title mt-2">${item.turnoHora}</h6>
-                                </div>
-                             </div>`
-                        )
-                    })
-                    HorarioPM.forEach(function (item) {
-                        $("#contenedor-pm").append(
-                            `<div class="col mb-4" >
-                                <div class="text-center card-hora" style="cursor: pointer;border-radius: 0.375rem;border: 1px solid #ccc !important;" data-id="${item.idDoctorHorarioDetalle}" data-text="${item.turnoHora}">
-                                    <h6 class="card-title mt-2">${item.turnoHora}</h6>
-                                </div>
-                             </div>`
-                        )
-                    })
+
+                    if (Fecha) {
+                        const HorarioAM = Fecha.horarioDTO.filter(element => element.turno == "AM");
+                        const HorarioPM = Fecha.horarioDTO.filter(element => element.turno == "PM");
+
+                        HorarioAM.forEach(function (item) {
+                            // Usamos las clases nuevas: btn-hora y card-hora
+                            $("#contenedor-am").append(
+                                `<div class="col">
+                                    <button type="button" class="btn btn-hora card-hora" data-id="${item.idDoctorHorarioDetalle}" data-text="${item.turnoHora}">
+                                        ${item.turnoHora}
+                                    </button>
+                                </div>`
+                            );
+                        });
+
+                        HorarioPM.forEach(function (item) {
+                            $("#contenedor-pm").append(
+                                `<div class="col">
+                                    <button type="button" class="btn btn-hora card-hora" data-id="${item.idDoctorHorarioDetalle}" data-text="${item.turnoHora}">
+                                        ${item.turnoHora}
+                                    </button>
+                                </div>`
+                            );
+                        });
+                    }
                 }
             });
-
-          
         } else {
             Swal.fire({
                 text: "No hay horarios disponibles.",
@@ -298,20 +277,19 @@ function ObtenerDoctoreHorarioDetalle() {
             text: "No se encontraron coincidencias.",
             icon: "warning"
         });
-    })
+    });
 }
 
 $("#btnAgendar").on("click", function () {
-
-    if ($("#txtFechaCita").val() == "" && IdHoraSeleccionado == 0) {
+    if ($("#txtFechaCita").val() == "" || IdHoraSeleccionado == 0) {
         Swal.fire({
             title: "Error!",
-            text: "Falta completar datos.",
+            text: "Falta seleccionar la fecha o la hora.",
             icon: "warning"
         });
-        return
+        return;
     }
-    
+
     let objeto = {
         DoctorHorarioDetalle: {
             IdDoctorHorarioDetalle: IdHoraSeleccionado
@@ -320,7 +298,7 @@ $("#btnAgendar").on("click", function () {
             IdEstadoCita: 1
         },
         FechaCita: moment($("#txtFechaCita").val(), "DD/MM/YYYY").format('DD/MM/YYYY')
-    }
+    };
 
     fetch(`/Citas/Guardar`, {
         method: "POST",
@@ -329,14 +307,13 @@ $("#btnAgendar").on("click", function () {
     }).then(response => {
         return response.ok ? response.json() : Promise.reject(response);
     }).then(responseJson => {
-        
         if (responseJson.data == "") {
             Swal.fire({
-                title: "Felicidades!",
+                title: "¡Felicidades!",
                 text: "Su cita fue registrada!",
                 icon: "success"
             }).then(function () {
-                window.location.href = '/Citas/Index'
+                window.location.href = '/Citas/Index';
             });
             $(`#${modal}`).modal('hide');
         } else {
@@ -352,5 +329,5 @@ $("#btnAgendar").on("click", function () {
             text: "No se pudo registrar.",
             icon: "warning"
         });
-    })
-})
+    });
+});
