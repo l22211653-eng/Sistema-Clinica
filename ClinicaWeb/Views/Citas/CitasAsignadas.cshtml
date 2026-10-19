@@ -38,29 +38,55 @@
     </div>
 </div>
 
-<!-- MODAL DE INDICACIONES -->
+<!-- MODAL DE INDICACIONES Y RECETA -->
 <div class="modal fade" id="mdData" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
+        <!-- Hacemos el modal más grande -->
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Resumen Cita</h5>
+                <h5 class="modal-title" id="staticBackdropLabel">Resumen Cita y Receta</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- ⚠️ ESTE CAMPO ES NUEVO Y CRUCIAL: Guarda el ID de la cita seleccionada -->
+
                 <input type="hidden" id="txtIdCita" />
 
                 <div class="row mb-3">
                     <div class="col-sm-12">
-                        <label for="txtIndicaciones" class="form-label">Indicaciones</label>
-                        <textarea class="form-control" id="txtIndicaciones" rows="3"></textarea>
+                        <label for="txtIndicaciones" class="form-label">Indicaciones Generales</label>
+                        <textarea class="form-control" id="txtIndicaciones" rows="2"></textarea>
                     </div>
-
                 </div>
-                <div class="alert alert-primary">
-                    <p>
-                        Despues de ingresar las indicaciones,<br />
-                        Presione "Terminar Cita" para marcar como ATENDIDO la cita.
+
+                <hr />
+                <h6><i class="fas fa-pills"></i> Receta Médica (Opcional)</h6>
+                <div class="row mb-2">
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" id="txtMedicamento" placeholder="Medicamento (Ej: Paracetamol)">
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="txtDosis" placeholder="Dosis (Ej: 1 tableta cada 8h)">
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-success w-100" id="btnAgregarMedicamento">Agregar</button>
+                    </div>
+                </div>
+
+                <table class="table table-sm table-bordered mt-2" id="tbRecetaTemporal">
+                    <thead>
+                        <tr>
+                            <th>Medicamento</th>
+                            <th>Dosis</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+                <div class="alert alert-primary mt-2">
+                    <p class="mb-0">
+                        Después de ingresar las indicaciones y recetas,<br />
+                        Presione "Terminar Cita" para marcar como ATENDIDO.
                     </p>
                 </div>
             </div>

@@ -42,6 +42,20 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> GuardarReceta([FromBody] Receta objeto)
+        {
+            try
+            {
+                string respuesta = await _citaRepositorio.GuardarReceta(objeto);
+                return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = "Error: " + ex.Message });
+            }
+        }
+
         [HttpPut]
         public async Task<IActionResult> Editar([FromBody] Doctor objeto)
         {
