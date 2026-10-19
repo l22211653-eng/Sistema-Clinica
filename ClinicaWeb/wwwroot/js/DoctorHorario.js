@@ -1,17 +1,18 @@
 ﻿let tablaData;
 let idEditar = 0;
+let fechasSeleccionadas = []; // ⚠️ NUEVO: Para guardar las fechas del calendario
 const controlador = "DoctorHorario";
 const modal = "mdData";
 const preguntaEliminar = "Desea eliminar el horario";
 const confirmaEliminar = "El horario fue eliminado.";
 const confirmaRegistro = "Horario registrado!";
 const meses = [{ value: 1, text: "Enero" }, { value: 2, text: "Febrero" }, { value: 3, text: "Marzo" }, { value: 4, text: "Abril" },
-    { value: 5, text: "Mayo" }, { value: 6, text: "Junio" }, { value: 7, text: "Julio" }, { value: 8, text: "Agosto" }, { value: 9, text: "Septiembre" }
+{ value: 5, text: "Mayo" }, { value: 6, text: "Junio" }, { value: 7, text: "Julio" }, { value: 8, text: "Agosto" }, { value: 9, text: "Septiembre" }
     , { value: 10, text: "Octubre" }, { value: 11, text: "Noviembre" }, { value: 12, text: "Diciembre" }]
 const mesActual = new Date().getMonth() + 1;
 
 document.addEventListener("DOMContentLoaded", function (event) {
-   
+
     tablaData = $('#tbData').DataTable({
         responsive: true,
         scrollX: true,
@@ -22,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         },
         "columns": [
             {
-                title: "Nro Documento", "data": "doctor", width: "150px",render: function (data, type, row) {
+                title: "Nro Documento", "data": "doctor", width: "150px", render: function (data, type, row) {
                     return data.numeroDocumentoIdentidad
                 }
             },
@@ -34,14 +35,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
             {
                 title: "Mes", "data": "numeroMes", render: function (data, type, row) {
                     const mes = meses.find((m) => m.value == data);
-                    return mes.text;
+                    return mes ? mes.text : '';
                 }
             },
             { title: "Hora Inicio AM", "data": "horaInicioAM" },
             { title: "Hora Fin AM", "data": "horaFinAM" },
             { title: "Hora Inicio PM", "data": "horaInicioPM" },
             { title: "Hora Fin PM", "data": "horaFinPM" },
-            
             { title: "Fecha Creacion", "data": "fechaCreacion" },
             {
                 title: "", "data": "idDoctor", width: "100px", render: function (data, type, row) {
@@ -54,57 +54,25 @@ document.addEventListener("DOMContentLoaded", function (event) {
         },
     });
 
+    // Configuración de los Timepickers
     $('#txtHoraFinAM').timepicker({
-        timeFormat: 'h:mm p',
-        interval: 30,
-        minTime: '08',
-        maxTime: '11:30am',
-        startTime: '08:00',
-        dynamic: false,
-        dropdown: true,
-        scrollbar: true,
-        zindex: 9999999
+        timeFormat: 'h:mm p', interval: 30, minTime: '08', maxTime: '11:30am',
+        startTime: '08:00', dynamic: false, dropdown: true, scrollbar: true, zindex: 9999999
     });
-
     $('#txtHoraInicioAM').timepicker({
-        timeFormat: 'h:mm p',
-        interval: 30,
-        minTime: '08',
-        maxTime: '11:30am',
-        startTime: '08:00',
-        dynamic: false,
-        dropdown: true,
-        scrollbar: true,
-        zindex: 9999999,
-        change: MostrarHoraFinAM
+        timeFormat: 'h:mm p', interval: 30, minTime: '08', maxTime: '11:30am',
+        startTime: '08:00', dynamic: false, dropdown: true, scrollbar: true, zindex: 9999999, change: MostrarHoraFinAM
     });
-
     $('#txtHoraFinPM').timepicker({
-        timeFormat: 'h:mm p',
-        interval: 30,
-        minTime: '12',
-        maxTime: '19:30PM',
-        startTime: '12:00',
-        dynamic: false,
-        dropdown: true,
-        scrollbar: true,
-        zindex: 9999999
+        timeFormat: 'h:mm p', interval: 30, minTime: '12', maxTime: '19:30PM',
+        startTime: '12:00', dynamic: false, dropdown: true, scrollbar: true, zindex: 9999999
     });
-
     $('#txtHoraInicioPM').timepicker({
-        timeFormat: 'h:mm p',
-        interval: 30,
-        minTime: '12',
-        maxTime: '19:30PM',
-        startTime: '12:00',
-        dynamic: false,
-        dropdown: true,
-        scrollbar: true,
-        zindex: 9999999,
-        change: MostrarHoraFinPM
+        timeFormat: 'h:mm p', interval: 30, minTime: '12', maxTime: '19:30PM',
+        startTime: '12:00', dynamic: false, dropdown: true, scrollbar: true, zindex: 9999999, change: MostrarHoraFinPM
     });
-   
 
+    // Llenar combo de Doctores
     fetch(`/Doctor/Lista`, {
         method: "GET",
         headers: { 'Content-Type': 'application/json;charset=utf-8' }
@@ -123,35 +91,41 @@ document.addEventListener("DOMContentLoaded", function (event) {
             });
         }
     }).catch((error) => {
-        Swal.fire({
-            title: "Error!",
-            text: "No se encontraron coincidencias.",
-            icon: "warning"
-        });
-    })
+        Swal.fire({ title: "Error!", text: "No se encontraron coincidencias.", icon: "warning" });
+    });
 
-    const mesesActivos = meses.filter((m) => m.value >= mesActual);
-    $("#cboMesAtencion").append($("<option>").val("").text(""));
-    mesesActivos.forEach( (m) =>{
-        $("#cboMesAtencion").append($("<option>").val(m.value).text(m.text));
-    })
-    $('#cboMesAtencion').select2({
-        theme: 'bootstrap-5',
-        dropdownParent: $('#mdData'),
-        placeholder: "Seleccionar"
+    // ⚠️ NUEVO: Inicializar el calendario de jQuery UI
+    $("#calendarioFechas").datepicker({
+        dateFormat: 'dd/mm/yy',
+        firstDay: 1,
+        changeMonth: true,
+        changeYear: true,
+        minDate: 0,
+        onSelect: function (dateText, inst) {
+            let index = fechasSeleccionadas.indexOf(dateText);
+            if (index > -1) {
+                fechasSeleccionadas.splice(index, 1);
+            } else {
+                fechasSeleccionadas.push(dateText);
+            }
+            $("#txtFechasSeleccionadas").val(fechasSeleccionadas.join(","));
+        },
+        beforeShowDay: function (date) {
+            let string = jQuery.datepicker.formatDate('dd/mm/yy', date);
+            return [fechasSeleccionadas.indexOf(string) === -1];
+        }
     });
 
 });
 
 function MostrarHoraFinAM() {
-  
     const Hora = moment($("#txtHoraInicioAM").val(), "HH:mm");
     Hora.add(moment.duration("00:30"))
     $('#txtHoraFinAM').val('');
     $('#txtHoraFinAM').timepicker('option', 'minTime', Hora.format('HH:mm'))
     $('#txtHoraFinAM').timepicker('option', 'startTime', Hora.format('HH:mm'))
-  
 }
+
 function MostrarHoraFinPM() {
     const Hora = moment($("#txtHoraInicioPM").val(), ['h:mm A']);
     Hora.add(moment.duration("00:30"))
@@ -160,36 +134,25 @@ function MostrarHoraFinPM() {
     $('#txtHoraFinPM').timepicker('option', 'startTime', Hora.format('HH:mm'))
 }
 
-$("#tbData tbody").on("click", ".btn-editar", function () {
-    var filaSeleccionada = $(this).closest('tr');
-    var data = tablaData.row(filaSeleccionada).data();
-
-    idEditar = data.idDoctor;
-    $("#txtNroDocumento").val(data.numeroDocumentoIdentidad);
-    $("#txtNombres").val(data.nombres);
-    $("#txtApellidos").val(data.apellidos);
-    $("#cboGenero").select2("val", data.genero);
-    $("#cboEspecialidad").select2("val", data.especialidad.idEspecialidad.toString());
-    $(`#${modal}`).modal('show');
-})
-
-
 $("#btnNuevo").on("click", function () {
     idEditar = 0;
     $("#cboDoctor").val("").trigger('change');
-    $("#cboMesAtencion").val("").trigger('change');
     $("#txtHoraInicioAM").val("")
     $("#txtHoraFinAM").val("")
     $("#txtHoraInicioPM").val("")
     $("#txtHoraFinPM").val("")
-    $("#txtFechaAtencion").val("")
+
+    // ⚠️ NUEVO: Limpiar calendario
+    fechasSeleccionadas = [];
+    $("#txtFechasSeleccionadas").val("");
+    $("#calendarioFechas").datepicker("setDate", null);
+
     $(`#${modal}`).modal('show');
 })
 
 $("#tbData tbody").on("click", ".btn-eliminar", function () {
     var filaSeleccionada = $(this).closest('tr');
     var data = tablaData.row(filaSeleccionada).data();
-
 
     Swal.fire({
         text: `${preguntaEliminar}?`,
@@ -201,7 +164,6 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
         cancelButtonText: "No, volver"
     }).then((result) => {
         if (result.isConfirmed) {
-
             fetch(`/${controlador}/Eliminar?Id=${data.idDoctorHorario}`, {
                 method: "DELETE",
                 headers: { 'Content-Type': 'application/json;charset=utf-8' }
@@ -209,46 +171,29 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
                 return response.ok ? response.json() : Promise.reject(response);
             }).then(responseJson => {
                 if (responseJson.data == "") {
-                    Swal.fire({
-                        title: "Eliminado!",
-                        text: confirmaEliminar,
-                        icon: "success"
-                    });
+                    Swal.fire({ title: "Eliminado!", text: confirmaEliminar, icon: "success" });
                     tablaData.ajax.reload();
                 } else {
-                    Swal.fire({
-                        title: "Error!",
-                        text: "No se pudo eliminar.",
-                        icon: "warning"
-                    });
+                    Swal.fire({ title: "Error!", text: "No se pudo eliminar.", icon: "warning" });
                 }
             }).catch((error) => {
-                Swal.fire({
-                    title: "Error!",
-                    text: "No se pudo eliminar.",
-                    icon: "warning"
-                });
+                Swal.fire({ title: "Error!", text: "No se pudo eliminar.", icon: "warning" });
             })
         }
     });
 })
 
-
-
 $("#btnGuardar").on("click", function () {
 
-    if ($("#cboDoctor").val().trim() == "" ||
-        $("#txtHoraInicioAM").val().trim() == "" ||
-        $("#txtHoraFinAM").val().trim() == "" ||
+    if ($("#cboDoctor").val() == "" ||
+        $("#txtFechasSeleccionadas").val() == "" ||
+        $("#txtHoraInicioAM").val() == "" ||
+        $("#txtHoraFinAM").val() == "" ||
         $("#txtHoraInicioPM").val() == "" ||
         $("#txtHoraFinPM").val() == ""
     ) {
-        Swal.fire({
-            title: "Error!",
-            text: "Falta completar datos.",
-            icon: "warning"
-        });
-        return
+        Swal.fire({ title: "Error!", text: "Falta completar datos o seleccionar fechas.", icon: "warning" });
+        return;
     }
 
     const HoraInicioAM = moment($("#txtHoraInicioAM").val(), "HH:mm")
@@ -256,18 +201,21 @@ $("#btnGuardar").on("click", function () {
     const HoraInicioPM = moment($("#txtHoraInicioPM").val(), ['h:mm A'])
     const HoraFinPM = moment($("#txtHoraFinPM").val(), ['h:mm A'])
 
+    // ⚠️ NUEVO: Extraemos el mes de la primera fecha seleccionada
+    let primerFecha = $("#txtFechasSeleccionadas").val().split(",")[0];
+    let partes = primerFecha.split("/");
+    let mes = parseInt(partes[1]);
+
     const objeto = {
         IdDoctorHorario: idEditar,
-        Doctor: {
-            IdDoctor: $("#cboDoctor").val(),
-        },
-        NumeroMes: $("#cboMesAtencion").val(),
+        Doctor: { IdDoctor: $("#cboDoctor").val() },
+        NumeroMes: mes, // Enviamos el mes calculado
         HoraInicioAM: HoraInicioAM.format('HH:mm'),
         HoraFinAM: HoraFinAM.format('HH:mm'),
         HoraInicioPM: HoraInicioPM.format('HH:mm'),
         HoraFinPM: HoraFinPM.format('HH:mm'),
         DoctorHorarioDetalle: {
-            Fecha: $('#txtFechaAtencion').val().replace(/\n/g, ',').trim()
+            Fecha: $("#txtFechasSeleccionadas").val() // Enviamos las fechas del calendario
         }
     }
 
@@ -279,82 +227,54 @@ $("#btnGuardar").on("click", function () {
         return response.ok ? response.json() : Promise.reject(response);
     }).then(responseJson => {
         if (responseJson.data == "") {
-            Swal.fire({
-                text: confirmaRegistro,
-                icon: "success"
-            });
+            Swal.fire({ text: confirmaRegistro, icon: "success" });
             $(`#${modal}`).modal('hide');
             tablaData.ajax.reload();
         } else {
-            Swal.fire({
-                title: "Error!",
-                text: responseJson.data,
-                icon: "warning"
-            });
+            Swal.fire({ title: "Error!", text: responseJson.data, icon: "warning" });
         }
     }).catch((error) => {
-        Swal.fire({
-            title: "Error!",
-            text: "No se pudo registrar.",
-            icon: "warning"
-        });
+        Swal.fire({ title: "Error!", text: "No se pudo registrar.", icon: "warning" });
     })
 });
 
+// ==========================================
+// GRÁFICAS Y TABLAS DE RENDIMIENTO
+// ==========================================
 $(document).ready(function () {
-
     $.ajax({
         url: "/DoctorHorario/ListaDoctoresSinHorario",
         type: "GET",
         success: function (response) {
-
             $("#tbAdvertencia tbody").empty();
-
             response.data.forEach((item) => {
-
                 $("#tbAdvertencia tbody").append(
                     `<tr>
                         <td>${item.nombres} ${item.apellidos}</td>
                         <td>${item.especialidad.nombre}</td>
                     </tr>`
                 )
-
             })
-
         }
     })
-
 })
 
 $.ajax({
     url: "/DoctorHorario/ListaRendimiento30Dias",
     type: "GET",
     success: function (response) {
-
         const datos = response.data;
-
         const agrupado = {};
-
         datos.forEach(item => {
-
-            if (!agrupado[item.especialidad]) {
-
-                agrupado[item.especialidad] = [];
-            }
-
+            if (!agrupado[item.especialidad]) { agrupado[item.especialidad] = []; }
             agrupado[item.especialidad].push(item);
         });
 
         Object.keys(agrupado).forEach((especialidad, index) => {
-
             const canvasId = "grafica_" + index;
-
             $("#contenedorGraficas").append(`
-
                 <div class="col-md-6 mb-4">
-
                     <div class="card shadow-sm h-100">
-
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0">${especialidad}</h5>
                         </div>
@@ -374,67 +294,27 @@ $.ajax({
 
             const ctx = document.getElementById(canvasId);
 
-            new Chart(ctx, {
-
+            new Chart(ctx,
+                {
                 type: 'bar',
-
                 data: {
-
                     labels: labels,
-
                     datasets: [{
-
                         label: 'Citas Atendidas',
-
                         data: valores,
-
                         borderWidth: 1,
-
                         borderRadius: 8,
-
-                        backgroundColor: [
-                            '#4e73df',
-                            '#1cc88a',
-                            '#36b9cc',
-                            '#f6c23e',
-                            '#e74a3b',
-                            '#858796'
-                        ]
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
                     }]
                 },
 
                 options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
+                    responsive: true, maintainAspectRatio: false,
                     plugins: {
-
-                        legend: {
-                            display: false
-                        },
-
-                        title: {
-                            display: true,
-                            text: 'Pacientes atendidos últimos 30 días',
-                            font: {
-                                size: 16
-                            }
-                        }
+                        legend: { display: false },
+                        title: { display: true, text: 'Pacientes atendidos últimos 30 días', font: { size: 16 } }
                     },
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            ticks: {
-                                precision: 0
-                            }
-                        }
-                    }
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
         });
@@ -461,15 +341,7 @@ $.ajax({
                     <td>${item.doctor}</td>
 
                     <td>${item.especialidad}</td>
-
-                    <td>
-
-                        <span class="badge bg-danger">
-                            ${item.totalAtendidas}
-                        </span>
-
-                    </td>
-
+                    <td><span class="badge bg-danger">${item.totalAtendidas}</span></td>
                 </tr>
 
             `);

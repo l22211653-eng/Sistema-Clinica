@@ -52,12 +52,14 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = lista });
         }
 
-        public async Task<IActionResult> Guardar([FromBody] DoctorHorario objeto)
+        [HttpPost]
+        public async Task<IActionResult> RegistrarHorario([FromBody] DoctorHorario objeto)
         {
             string respuesta = await _repositorio.RegistrarHorario(objeto);
 
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
+
 
         [HttpDelete]
         public async Task<IActionResult> Eliminar(int Id)
