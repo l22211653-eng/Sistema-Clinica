@@ -74,8 +74,10 @@ $(document).on("click", "div.card-doctor", function () {
     $("#btnSiguiente").prop("disabled", false);
 });
 
-// Selección de Hora
-$(document).on("click", "div.card-hora", function () {
+// Selección de Hora (⚠️ CORREGIDO con e.preventDefault())
+$(document).on("click", "div.card-hora", function (e) {
+    e.preventDefault(); // Evita que el botón recargue la página o envíe el formulario
+
     $(".card-hora").removeClass("active");
     $(this).addClass("active");
     IdHoraSeleccionado = $(this).data("id");
@@ -88,10 +90,9 @@ $(document).on("click", "div.card-hora", function () {
 function BuscarEspecialidad(valor) {
     $("#contenedor-especialidades").html("");
     const resultadosFiltrados = Especialidades.filter(element => element.nombre.toLowerCase().includes(valor.toLowerCase()));
-    const resumenFiltro = resultadosFiltrados.slice(0, 6); // Mostramos 6 para que llene bien la pantalla
+    const resumenFiltro = resultadosFiltrados.slice(0, 6); 
 
     resumenFiltro.forEach(function (item) {
-        // Usamos las clases nuevas: card-select, card-especialidad
         $("#contenedor-especialidades").append(
             `<div class="col mb-3">
                 <div class="card-select card-especialidad" data-id="${item.idEspecialidad}" data-text="${item.nombre}">
@@ -108,7 +109,6 @@ function BuscarDoctor(valor) {
     const resultadosFiltrados = Doctores.filter(element => (element.nombres + " " + element.apellidos).toLowerCase().includes(valor.toLowerCase()));
     resultadosFiltrados.forEach(function (item) {
         const acronimo = item.genero == "F" ? "Dra." : "Dr.";
-        // Usamos las clases nuevas: card-select, card-doctor
         $("#contenedor-doctores").append(
             `<div class="col mb-3">
                 <div class="card-select card-doctor" data-id="${item.idDoctor}" data-text="${acronimo} ${item.nombres} ${item.apellidos}">
@@ -120,8 +120,12 @@ function BuscarDoctor(valor) {
     });
 }
 
-$("#btnSiguiente").on("click", function () {
-    const indexTab = $("ul li.ui-state-active").index();
+// ⚠️ LÓGICA CORREGIDA DEL BOTÓN SIGUIENTE
+$("#btnSiguiente").on("click", function (e) {
+    e.preventDefault(); // Evita recargas
+    
+    // Obtenemos el índice de la pestaña activa usando la clase de jQuery UI
+    const indexTab = $("#tabs ul li.ui-tabs-active").index();
     let habilitarIndex = indexTab;
 
     if (indexTab + 1 <= 2) {
@@ -143,6 +147,7 @@ $("#btnSiguiente").on("click", function () {
         }
     }
 
+    // Si estamos en la última pestaña (Horario), abrimos el modal
     if (indexTab == 2) {
         $("#txtEspecialidad").val(EspecialidadSeleccionada);
         $("#txtDoctor").val(DoctorSeleccionado);
@@ -153,7 +158,7 @@ $("#btnSiguiente").on("click", function () {
 });
 
 $("#btnRegresar").on("click", function () {
-    const indexTab = $("ul li.ui-state-active").index();
+    const indexTab = $("#tabs ul li.ui-tabs-active").index();
 
     if (indexTab === 0) {
         window.location.href = '/Citas/Index';
@@ -241,7 +246,6 @@ function ObtenerDoctoreHorarioDetalle() {
                         const HorarioPM = Fecha.horarioDTO.filter(element => element.turno == "PM");
 
                         HorarioAM.forEach(function (item) {
-                            // Usamos las clases nuevas: btn-hora y card-hora
                             $("#contenedor-am").append(
                                 `<div class="col">
                                     <button type="button" class="btn btn-hora card-hora" data-id="${item.idDoctorHorarioDetalle}" data-text="${item.turnoHora}">
