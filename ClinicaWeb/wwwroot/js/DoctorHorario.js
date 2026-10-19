@@ -1,6 +1,6 @@
 ﻿let tablaData;
 let idEditar = 0;
-let fechasSeleccionadas = []; // ⚠️ NUEVO: Para guardar las fechas del calendario
+let fechasSeleccionadas = [];
 const controlador = "DoctorHorario";
 const modal = "mdData";
 const preguntaEliminar = "Desea eliminar el horario";
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         Swal.fire({ title: "Error!", text: "No se encontraron coincidencias.", icon: "warning" });
     });
 
-    // ⚠️ NUEVO: Inicializar el calendario de jQuery UI
+    // Inicializar el calendario de jQuery UI
     $("#calendarioFechas").datepicker({
         dateFormat: 'dd/mm/yy',
         firstDay: 1,
@@ -104,15 +104,26 @@ document.addEventListener("DOMContentLoaded", function (event) {
         onSelect: function (dateText, inst) {
             let index = fechasSeleccionadas.indexOf(dateText);
             if (index > -1) {
+                // Si ya estaba, lo quitamos
                 fechasSeleccionadas.splice(index, 1);
             } else {
+                // Si no estaba, lo agregamos
                 fechasSeleccionadas.push(dateText);
             }
             $("#txtFechasSeleccionadas").val(fechasSeleccionadas.join(","));
+
+            // ⚠️ Forzamos a que el calendario se redibuje para mostrar/ocultar la clase azul
+            $(this).datepicker('refresh');
         },
         beforeShowDay: function (date) {
             let string = jQuery.datepicker.formatDate('dd/mm/yy', date);
-            return [fechasSeleccionadas.indexOf(string) === -1];
+            let seleccionado = fechasSeleccionadas.indexOf(string) !== -1;
+
+            if (seleccionado) {
+                return [true, "dia-seleccionado", "Seleccionado"];
+            } else {
+                return [true, "", ""];
+            }
         }
     });
 
@@ -142,10 +153,11 @@ $("#btnNuevo").on("click", function () {
     $("#txtHoraInicioPM").val("")
     $("#txtHoraFinPM").val("")
 
-    // ⚠️ NUEVO: Limpiar calendario
+    // Limpiar calendario
     fechasSeleccionadas = [];
     $("#txtFechasSeleccionadas").val("");
     $("#calendarioFechas").datepicker("setDate", null);
+    $("#calendarioFechas").datepicker('refresh'); // Refrescamos visualmente
 
     $(`#${modal}`).modal('show');
 })
@@ -201,7 +213,7 @@ $("#btnGuardar").on("click", function () {
     const HoraInicioPM = moment($("#txtHoraInicioPM").val(), ['h:mm A'])
     const HoraFinPM = moment($("#txtHoraFinPM").val(), ['h:mm A'])
 
-    // ⚠️ NUEVO: Extraemos el mes de la primera fecha seleccionada
+    // Extraemos el mes de la primera fecha seleccionada
     let primerFecha = $("#txtFechasSeleccionadas").val().split(",")[0];
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
@@ -209,13 +221,13 @@ $("#btnGuardar").on("click", function () {
     const objeto = {
         IdDoctorHorario: idEditar,
         Doctor: { IdDoctor: $("#cboDoctor").val() },
-        NumeroMes: mes, // Enviamos el mes calculado
+        NumeroMes: mes,
         HoraInicioAM: HoraInicioAM.format('HH:mm'),
         HoraFinAM: HoraFinAM.format('HH:mm'),
         HoraInicioPM: HoraInicioPM.format('HH:mm'),
         HoraFinPM: HoraFinPM.format('HH:mm'),
         DoctorHorarioDetalle: {
-            Fecha: $("#txtFechasSeleccionadas").val() // Enviamos las fechas del calendario
+            Fecha: $("#txtFechasSeleccionadas").val()
         }
     }
 
@@ -289,60 +301,50 @@ $.ajax({
 
             `);
             const labels = agrupado[especialidad].map(x => x.doctor);
-
             const valores = agrupado[especialidad].map(x => x.totalAtendidas);
-
             const ctx = document.getElementById(canvasId);
 
             new Chart(ctx,
                 {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Citas Atendidas',
-                        data: valores,
-                        borderWidth: 1,
-                        borderRadius: 8,
-                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
-                    }]
-                },
-
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: 'Pacientes atendidos últimos 30 días', font: { size: 16 } }
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Citas Atendidas',
+                            data: valores,
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
+                        }]
                     },
-                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-                }
-            });
+
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'Pacientes atendidos últimos 30 días', font: { size: 16 } }
+                        },
+                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    }
+                });
         });
 
     }
 });
 
 $.ajax({
-
     url: "/DoctorHorario/ListaDoctoresBajoRendimiento",
-
     type: "GET",
-
     success: function (response) {
-
         $("#tbBajoRendimiento tbody").empty();
-
         response.data.forEach(item => {
-
             $("#tbBajoRendimiento tbody").append(`
-
                 <tr>
-
                     <td>${item.doctor}</td>
-
                     <td>${item.especialidad}</td>
                     <td><span class="badge bg-danger">${item.totalAtendidas}</span></td>
                 </tr>
+
 
             `);
 
