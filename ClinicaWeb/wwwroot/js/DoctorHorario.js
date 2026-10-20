@@ -104,15 +104,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
         onSelect: function (dateText, inst) {
             let index = fechasSeleccionadas.indexOf(dateText);
             if (index > -1) {
-                // Si ya estaba, lo quitamos
                 fechasSeleccionadas.splice(index, 1);
             } else {
-                // Si no estaba, lo agregamos
                 fechasSeleccionadas.push(dateText);
             }
             $("#txtFechasSeleccionadas").val(fechasSeleccionadas.join(","));
-
-            // ⚠️ Forzamos a que el calendario se redibuje para mostrar/ocultar la clase azul
             $(this).datepicker('refresh');
         },
         beforeShowDay: function (date) {
@@ -153,11 +149,10 @@ $("#btnNuevo").on("click", function () {
     $("#txtHoraInicioPM").val("")
     $("#txtHoraFinPM").val("")
 
-    // Limpiar calendario
     fechasSeleccionadas = [];
     $("#txtFechasSeleccionadas").val("");
     $("#calendarioFechas").datepicker("setDate", null);
-    $("#calendarioFechas").datepicker('refresh'); // Refrescamos visualmente
+    $("#calendarioFechas").datepicker('refresh');
 
     $(`#${modal}`).modal('show');
 })
@@ -213,7 +208,6 @@ $("#btnGuardar").on("click", function () {
     const HoraInicioPM = moment($("#txtHoraInicioPM").val(), ['h:mm A'])
     const HoraFinPM = moment($("#txtHoraFinPM").val(), ['h:mm A'])
 
-    // Extraemos el mes de la primera fecha seleccionada
     let primerFecha = $("#txtFechasSeleccionadas").val().split(",")[0];
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
@@ -231,12 +225,18 @@ $("#btnGuardar").on("click", function () {
         }
     }
 
-    fetch(`/${controlador}/Guardar`, {
+    // ⚠️ AQUÍ ESTÁ EL CAMBIO: Ahora llama a /RegistrarHorario en lugar de /Guardar
+    fetch(`/${controlador}/RegistrarHorario`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json;charset=utf-8' },
         body: JSON.stringify(objeto)
-    }).then(response => {
-        return response.ok ? response.json() : Promise.reject(response);
+    }).then(async response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.data || "Error en el servidor");
+        }
     }).then(responseJson => {
         if (responseJson.data == "") {
             Swal.fire({ text: confirmaRegistro, icon: "success" });
@@ -246,7 +246,8 @@ $("#btnGuardar").on("click", function () {
             Swal.fire({ title: "Error!", text: responseJson.data, icon: "warning" });
         }
     }).catch((error) => {
-        Swal.fire({ title: "Error!", text: "No se pudo registrar.", icon: "warning" });
+        // Muestra el error real si algo falla
+        Swal.fire({ title: "Error al guardar", text: error.message, icon: "error" });
     })
 });
 

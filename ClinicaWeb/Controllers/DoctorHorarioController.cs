@@ -24,7 +24,6 @@ namespace ClinicaWeb.Controllers
         public async Task<IActionResult> Lista()
         {
             List<DoctorHorario> lista = await _repositorio.ListaDoctorHorario();
-
             return StatusCode(StatusCodes.Status200OK, new { data = lista });
         }
 
@@ -32,7 +31,6 @@ namespace ClinicaWeb.Controllers
         public async Task<IActionResult> ListaDoctoresSinHorario()
         {
             var lista = await _repositorio.ListaDoctoresSinHorario();
-
             return StatusCode(StatusCodes.Status200OK, new { data = lista });
         }
 
@@ -40,7 +38,6 @@ namespace ClinicaWeb.Controllers
         public async Task<IActionResult> ListaRendimiento30Dias()
         {
             var lista = await _repositorio.ListaRendimiento30Dias();
-
             return StatusCode(StatusCodes.Status200OK, new { data = lista });
         }
 
@@ -48,26 +45,30 @@ namespace ClinicaWeb.Controllers
         public async Task<IActionResult> ListaDoctoresBajoRendimiento()
         {
             var lista = await _repositorio.ListaDoctoresBajoRendimiento();
-
             return StatusCode(StatusCodes.Status200OK, new { data = lista });
         }
 
         [HttpPost]
         public async Task<IActionResult> RegistrarHorario([FromBody] DoctorHorario objeto)
         {
-            string respuesta = await _repositorio.RegistrarHorario(objeto);
-
-            return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+            try
+            {
+                string respuesta = await _repositorio.RegistrarHorario(objeto);
+                return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+            }
+            catch (Exception ex)
+            {
+                // Esto imprimirá el error real en los logs de Railway si algo falla
+                Console.WriteLine("ERROR AL GUARDAR HORARIO: " + ex.Message);
+                return StatusCode(500, new { data = "Error en el servidor: " + ex.Message });
+            }
         }
-
 
         [HttpDelete]
         public async Task<IActionResult> Eliminar(int Id)
         {
             string respuesta = await _repositorio.EliminarHorario(Id);
-
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
-
     }
 }
