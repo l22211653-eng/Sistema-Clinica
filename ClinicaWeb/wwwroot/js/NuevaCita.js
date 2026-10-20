@@ -8,7 +8,7 @@ let IdHoraSeleccionado = 0;
 let EspecialidadSeleccionada = "";
 let DoctorSeleccionado = "";
 let HoraSeleccionado = "";
-let FechaSeleccionadaTexto = ""; // ⚠️ Nueva variable para guardar la fecha del calendario
+let FechaSeleccionadaTexto = "";
 
 const IndexTabs = [0, 1, 2];
 
@@ -71,21 +71,20 @@ $(document).on("click", ".card-doctor", function () {
     $("#btnSiguiente").prop("disabled", false);
 });
 
-// ⚠️ Selección de Hora (Corregido para funcionar con los botones)
+// ⚠️ Selección de Hora (Corregido)
 $(document).on("click", ".card-hora", function (e) {
-    e.preventDefault(); // Evita que se envíe el formulario
+    e.preventDefault();
 
-    // Quitamos la clase 'active' a TODOS los botones de hora (tanto AM como PM)
+    // Quitamos la clase 'active' a todos los botones de hora
     $("#contenedor-am .card-hora").removeClass("active");
     $("#contenedor-pm .card-hora").removeClass("active");
 
-    // Le ponemos la clase 'active' solo al botón clickeado
+    // Se la ponemos solo al botón clickeado
     $(this).addClass("active");
 
     IdHoraSeleccionado = $(this).data("id");
     HoraSeleccionado = $(this).data("text");
 
-    // Si ya hay una fecha seleccionada, habilitamos el botón Siguiente
     if (FechaSeleccionadaTexto !== "" && IdHoraSeleccionado != 0) {
         $("#btnSiguiente").prop("disabled", false);
     }
@@ -151,7 +150,7 @@ $("#btnSiguiente").on("click", function (e) {
     if (indexTab == 2) {
         $("#txtEspecialidad").val(EspecialidadSeleccionada);
         $("#txtDoctor").val(DoctorSeleccionado);
-        $("#txtFechadeCita").val(FechaSeleccionadaTexto); // Usamos la variable global
+        $("#txtFechadeCita").val(FechaSeleccionadaTexto);
         $("#txtHoraCita").val(HoraSeleccionado);
         $("#mdData").modal("show");
     }
@@ -221,7 +220,6 @@ function ObtenerDoctoreHorarioDetalle() {
                     return [esFechaPermitida, ""];
                 },
                 onSelect: function (dateText, inst) {
-                    // ⚠️ Guardamos la fecha seleccionada en la variable global
                     FechaSeleccionadaTexto = dateText;
 
                     $("#btnSiguiente").prop("disabled", true);
@@ -234,7 +232,6 @@ function ObtenerDoctoreHorarioDetalle() {
                         const HorarioAM = Fecha.horarioDTO.filter(element => element.turno == "AM");
                         const HorarioPM = Fecha.horarioDTO.filter(element => element.turno == "PM");
 
-                        // Generamos los botones con la clase correcta
                         HorarioAM.forEach(function (item) {
                             $("#contenedor-am").append(
                                 `<div class="col">
