@@ -24,7 +24,6 @@ namespace ClinicaData.Implementacion
                 {
                     cmd.Parameters.AddWithValue("p_IdCita", IdCita);
                     cmd.Parameters.AddWithValue("p_IdEstado", IdEstado);
-
                     cmd.Parameters.AddWithValue("p_Indicaciones", (object)Indicaciones ?? DBNull.Value);
 
                     try
@@ -76,7 +75,6 @@ namespace ClinicaData.Implementacion
                     cmd.Parameters.AddWithValue("p_IdUsuario", objeto.Usuario.IdUsuario);
                     cmd.Parameters.AddWithValue("p_IdDetalle", objeto.DoctorHorarioDetalle.IdDoctorHorarioDetalle);
                     cmd.Parameters.AddWithValue("p_IdEstado", objeto.EstadoCita.IdEstadoCita);
-
                     cmd.Parameters.AddWithValue("p_Fecha", objeto.FechaCita ?? DateTime.Now.ToString("dd/MM/yyyy"));
 
                     try
@@ -113,7 +111,7 @@ namespace ClinicaData.Implementacion
                                 IdCita = Convert.ToInt32(dr["IdCita"]),
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
-                                YaCalificado = Convert.ToBoolean(dr["YaCalificado"]),
+                                // ⚠️ Quitamos YaCalificado e IdDoctor porque no vienen en esta función
                                 Especialidad = new Especialidad()
                                 {
                                     Nombre = dr["NombreEspecialidad"].ToString()!,
@@ -152,13 +150,13 @@ namespace ClinicaData.Implementacion
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
                                 Indicaciones = dr["Indicaciones"].ToString()!,
+                                YaCalificado = Convert.ToBoolean(dr["YaCalificado"]), // ⚠️ Este sí viene en el historial
                                 Especialidad = new Especialidad()
                                 {
                                     Nombre = dr["NombreEspecialidad"].ToString()!,
                                 },
                                 Doctor = new Doctor()
                                 {
-                                    // Leemos el IdDoctor que nos devuelve la función de PostgreSQL
                                     IdDoctor = Convert.ToInt32(dr["IdDoctor"]),
                                     Nombres = dr["Nombres"].ToString()!,
                                     Apellidos = dr["Apellidos"].ToString()!,
@@ -197,7 +195,6 @@ namespace ClinicaData.Implementacion
             }
             return respuesta;
         }
-
 
         public async Task<List<Resena>> ListaResenasDoctor(int idDoctor)
         {
@@ -252,7 +249,6 @@ namespace ClinicaData.Implementacion
             }
             return respuesta;
         }
-
 
         public async Task<List<Receta>> ListaRecetasCita(int idCita)
         {
