@@ -1,7 +1,9 @@
 ﻿using ClinicaData.Contrato;
+using ClinicaData.Implementacion;
 using ClinicaEntidades;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ClinicaWeb.Controllers
 {
@@ -27,27 +29,6 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = lista });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> ListaDoctoresSinHorario()
-        {
-            var lista = await _repositorio.ListaDoctoresSinHorario();
-            return StatusCode(StatusCodes.Status200OK, new { data = lista });
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ListaRendimiento30Dias()
-        {
-            var lista = await _repositorio.ListaRendimiento30Dias();
-            return StatusCode(StatusCodes.Status200OK, new { data = lista });
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ListaDoctoresBajoRendimiento()
-        {
-            var lista = await _repositorio.ListaDoctoresBajoRendimiento();
-            return StatusCode(StatusCodes.Status200OK, new { data = lista });
-        }
-
         [HttpPost]
         public async Task<IActionResult> RegistrarHorario([FromBody] DoctorHorario objeto)
         {
@@ -58,8 +39,6 @@ namespace ClinicaWeb.Controllers
             }
             catch (Exception ex)
             {
-                // Esto imprimirá el error real en los logs de Railway si algo falla
-                Console.WriteLine("ERROR AL GUARDAR HORARIO: " + ex.Message);
                 return StatusCode(500, new { data = "Error en el servidor: " + ex.Message });
             }
         }
@@ -67,8 +46,38 @@ namespace ClinicaWeb.Controllers
         [HttpDelete]
         public async Task<IActionResult> Eliminar(int Id)
         {
-            string respuesta = await _repositorio.EliminarHorario(Id);
-            return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+            try
+            {
+                // Llamamos al repositorio. 
+                // Si retorna "", se borró bien. Si retorna texto, es el error real.
+                string respuesta = await _repositorio.EliminarHorario(Id);
+                return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = "Error en el servidor: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ListaDoctoresSinHorario()
+        {
+            var lista = await _repositorio.ListaDoctoresSinHorario();
+            return Json(new { data = lista });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ListaRendimiento30Dias()
+        {
+            var lista = await _repositorio.ListaRendimiento30Dias();
+            return Json(new { data = lista });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ListaDoctoresBajoRendimiento()
+        {
+            var lista = await _repositorio.ListaDoctoresBajoRendimiento();
+            return Json(new { data = lista });
         }
     }
 }

@@ -157,6 +157,7 @@ $("#btnNuevo").on("click", function () {
     $(`#${modal}`).modal('show');
 })
 
+// ⚠️ LÓGICA DE ELIMINAR CORREGIDA PARA MOSTRAR EL ERROR REAL
 $("#tbData tbody").on("click", ".btn-eliminar", function () {
     var filaSeleccionada = $(this).closest('tr');
     var data = tablaData.row(filaSeleccionada).data();
@@ -175,22 +176,26 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
                 method: "DELETE",
                 headers: { 'Content-Type': 'application/json;charset=utf-8' }
             }).then(response => {
-                return response.ok ? response.json() : Promise.reject(response);
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.data || "Error desconocido"); });
+                }
+                return response.json();
             }).then(responseJson => {
-                if (responseJson.data == "") {
+                if (responseJson.data === "") {
                     Swal.fire({ title: "Eliminado!", text: confirmaEliminar, icon: "success" });
                     tablaData.ajax.reload();
                 } else {
-                    Swal.fire({ title: "Error!", text: "No se pudo eliminar.", icon: "warning" });
+                    // Muestra el mensaje real de la base de datos
+                    Swal.fire({ title: "Atención", text: responseJson.data, icon: "warning" });
                 }
             }).catch((error) => {
-                Swal.fire({ title: "Error!", text: "No se pudo eliminar.", icon: "warning" });
-            })
+                Swal.fire({ title: "Error del Servidor", text: error.message, icon: "error" });
+            });
         }
     });
-})
+});
 
-// ⚠️ LÓGICA CORREGIDA PARA PERMITIR TURNOS OPCIONALES
+// ⚠️ LÓGICA PARA PERMITIR TURNOS OPCIONALES
 $("#btnGuardar").on("click", function () {
 
     // 1. Validar Doctor y Fechas
