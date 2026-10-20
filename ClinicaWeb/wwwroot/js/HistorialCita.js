@@ -1,15 +1,6 @@
 ﻿let tablaData;
-let idEditar = 0;
-let fechasSeleccionadas = [];
-const controlador = "DoctorHorario";
+const controlador = "HistorialCitas";
 const modal = "mdData";
-const preguntaEliminar = "Desea eliminar el horario";
-const confirmaEliminar = "El horario fue eliminado.";
-const confirmaRegistro = "Horario registrado!";
-const meses = [{ value: 1, text: "Enero" }, { value: 2, text: "Febrero" }, { value: 3, text: "Marzo" }, { value: 4, text: "Abril" },
-{ value: 5, text: "Mayo" }, { value: 6, text: "Junio" }, { value: 7, text: "Julio" }, { value: 8, text: "Agosto" }, { value: 9, text: "Septiembre" }
-    , { value: 10, text: "Octubre" }, { value: 11, text: "Noviembre" }, { value: 12, text: "Diciembre" }]
-const mesActual = new Date().getMonth() + 1;
 
 document.addEventListener("DOMContentLoaded", function (event) {
 
@@ -17,35 +8,57 @@ document.addEventListener("DOMContentLoaded", function (event) {
         responsive: true,
         scrollX: true,
         "ajax": {
-            "url": `/${controlador}/Lista`,
+            "url": `/${controlador}/ListaHistorialCitas`,
             "type": "GET",
-            "datatype": "json"
+            "datatype": "json",
+            "dataSrc": function (json) {
+                if (json && json.error) {
+                    Swal.fire("Error del Servidor", json.error, "error");
+                    return [];
+                }
+                return json || [];
+            }
         },
         "columns": [
+            { title: "Fecha Cita", "data": "fechaCita", width: "120px" },
             {
-                title: "Nro Documento", "data": "doctor", width: "150px", render: function (data, type, row) {
-                    return data.numeroDocumentoIdentidad
+                title: "Especialidad", "data": "especialidad", render: function (data, type, row) {
+                    return data ? data.nombre : '';
                 }
             },
             {
                 title: "Doctor", "data": "doctor", render: function (data, type, row) {
-                    return `${data.nombres} ${data.apellidos}`
+                    return data ? `${data.nombres} ${data.apellidos}` : '';
                 }
             },
             {
-                title: "Mes", "data": "numeroMes", render: function (data, type, row) {
-                    const mes = meses.find((m) => m.value == data);
-                    return mes ? mes.text : '';
-                }
-            },
-            { title: "Hora Inicio AM", "data": "horaInicioAM" },
-            { title: "Hora Fin AM", "data": "horaFinAM" },
-            { title: "Hora Inicio PM", "data": "horaInicioPM" },
-            { title: "Hora Fin PM", "data": "horaFinPM" },
-            { title: "Fecha Creacion", "data": "fechaCreacion" },
-            {
-                title: "", "data": "idDoctor", width: "100px", render: function (data, type, row) {
-                    return `<button type="button" class="btn btn-sm btn-outline-danger me-1 btn-eliminar"><i class="fas fa-trash"></i></button>`
+                title: "Acciones", "data": null, width: "300px", render: function (data, type, row) {
+                    let idDoctor = (row.doctor && row.doctor.idDoctor) ? row.doctor.idDoctor : 0;
+
+                    // Si ya calificó, el botón se ve gris y deshabilitado
+                    let botonCalificar = row.yaCalificado
+                        ? `<button type="button" class="btn btn-secondary btn-sm ms-1" disabled title="Ya has calificado esta cita">
+                                <i class="fas fa-check"></i> Calificado
+                           </button>`
+                        : `<button type="button" class="btn btn-outline-warning btn-sm ms-1 btn-calificar" data-idcita="${row.idCita}" data-iddoctor="${idDoctor}" title="Calificar Doctor">
+                                <i class="fas fa-star"></i> Calificar
+                           </button>`;
+
+                    // Botón de eliminar/cancelar del historial
+                    let botonEliminar = `<button type="button" class="btn btn-outline-danger btn-sm ms-1 btn-eliminar" data-id="${row.idCita}" title="Eliminar del historial">
+                                            <i class="fas fa-trash"></i>
+                                         </button>`;
+
+                    return `
+                   <button type="button" class="btn btn-outline-primary btn-sm me-1 btn-indicaciones" data-id="${row.idCita}" title="Ver Indicaciones">
+                   <i class="fas fa-eye"></i> Indicaciones
+                   </button>
+                   <button type="button" class="btn btn-outline-info btn-sm me-1 btn-receta" data-id="${row.idCita}" title="Ver Receta">
+                   <i class="fas fa-prescription"></i> Receta
+                   </button>
+                   ${botonCalificar}
+                   ${botonEliminar}
+                    `;
                 }
             }
         ],
@@ -53,116 +66,158 @@ document.addEventListener("DOMContentLoaded", function (event) {
             url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
         },
     });
-
-    // Configuración de los Timepickers
-    $('#txtHoraFinAM').timepicker({
-        timeFormat: 'h:mm p', interval: 30, minTime: '08', maxTime: '11:30am',
-        startTime: '08:00', dynamic: false, dropdown: true, scrollbar: true, zindex: 9999999
-    });
-    $('#txtHoraInicioAM').timepicker({
-        timeFormat: 'h:mm p', interval: 30, minTime: '08', maxTime: '11:30am',
-        startTime: '08:00', dynamic: false, dropdown: true, scrollbar: true, zindex: 9999999, change: MostrarHoraFinAM
-    });
-    $('#txtHoraFinPM').timepicker({
-        timeFormat: 'h:mm p', interval: 30, minTime: '12', maxTime: '19:30PM',
-        startTime: '12:00', dynamic: false, dropdown: true, scrollbar: true, zindex: 9999999
-    });
-    $('#txtHoraInicioPM').timepicker({
-        timeFormat: 'h:mm p', interval: 30, minTime: '12', maxTime: '19:30PM',
-        startTime: '12:00', dynamic: false, dropdown: true, scrollbar: true, zindex: 9999999, change: MostrarHoraFinPM
-    });
-
-    // Llenar combo de Doctores
-    fetch(`/Doctor/Lista`, {
-        method: "GET",
-        headers: { 'Content-Type': 'application/json;charset=utf-8' }
-    }).then(response => {
-        return response.ok ? response.json() : Promise.reject(response);
-    }).then(responseJson => {
-        if (responseJson.data.length > 0) {
-            $("#cboDoctor").append($("<option>").val("").text(""));
-            responseJson.data.forEach((item) => {
-                $("#cboDoctor").append($("<option>").val(item.idDoctor).text(`${item.numeroDocumentoIdentidad} - ${item.nombres} ${item.apellidos}`));
-            });
-            $('#cboDoctor').select2({
-                theme: 'bootstrap-5',
-                dropdownParent: $('#mdData'),
-                placeholder: "Seleccionar"
-            });
-        }
-    }).catch((error) => {
-        Swal.fire({ title: "Error!", text: "No se encontraron coincidencias.", icon: "warning" });
-    });
-
-    // Inicializar el calendario de jQuery UI
-    $("#calendarioFechas").datepicker({
-        dateFormat: 'dd/mm/yy',
-        firstDay: 1,
-        changeMonth: true,
-        changeYear: true,
-        minDate: 0,
-        onSelect: function (dateText, inst) {
-            let index = fechasSeleccionadas.indexOf(dateText);
-            if (index > -1) {
-                fechasSeleccionadas.splice(index, 1);
-            } else {
-                fechasSeleccionadas.push(dateText);
-            }
-            $("#txtFechasSeleccionadas").val(fechasSeleccionadas.join(","));
-            $(this).datepicker('refresh');
-        },
-        beforeShowDay: function (date) {
-            let string = jQuery.datepicker.formatDate('dd/mm/yy', date);
-            let seleccionado = fechasSeleccionadas.indexOf(string) !== -1;
-
-            if (seleccionado) {
-                return [true, "dia-seleccionado", "Seleccionado"];
-            } else {
-                return [true, "", ""];
-            }
-        }
-    });
-
 });
 
-function MostrarHoraFinAM() {
-    const Hora = moment($("#txtHoraInicioAM").val(), "HH:mm");
-    Hora.add(moment.duration("00:30"))
-    $('#txtHoraFinAM').val('');
-    $('#txtHoraFinAM').timepicker('option', 'minTime', Hora.format('HH:mm'))
-    $('#txtHoraFinAM').timepicker('option', 'startTime', Hora.format('HH:mm'))
-}
+// ==========================================
+// 1. EVENTO: VER INDICACIONES
+// ==========================================
+$("#tbData tbody").on("click", ".btn-indicaciones", function () {
+    const filaSeleccionada = $(this).closest('tr');
+    const data = tablaData.row(filaSeleccionada).data();
 
-function MostrarHoraFinPM() {
-    const Hora = moment($("#txtHoraInicioPM").val(), ['h:mm A']);
-    Hora.add(moment.duration("00:30"))
-    $('#txtHoraFinPM').val('');
-    $('#txtHoraFinPM').timepicker('option', 'minTime', Hora.format('HH:mm'))
-    $('#txtHoraFinPM').timepicker('option', 'startTime', Hora.format('HH:mm'))
-}
-
-$("#btnNuevo").on("click", function () {
-    idEditar = 0;
-    $("#cboDoctor").val("").trigger('change');
-    $("#txtHoraInicioAM").val("")
-    $("#txtHoraFinAM").val("")
-    $("#txtHoraInicioPM").val("")
-    $("#txtHoraFinPM").val("")
-
-    fechasSeleccionadas = [];
-    $("#txtFechasSeleccionadas").val("");
-    $("#calendarioFechas").datepicker("setDate", null);
-    $("#calendarioFechas").datepicker('refresh');
-
+    $("#txtIndicaciones").val(data.indicaciones);
     $(`#${modal}`).modal('show');
-})
+    $("#txtIndicaciones").prop('disabled', true);
+});
 
+// ==========================================
+// 2. EVENTO: CALIFICAR (Estrellas)
+// ==========================================
+let puntuacionSeleccionada = 0;
+
+function pintarEstrellas(valor) {
+    $("#contenedorEstrellas .estrella").each(function (index) {
+        if (index < valor) {
+            $(this).css("color", "#f59e0b"); // Amarillo
+        } else {
+            $(this).css("color", "#cbd5e1"); // Gris
+        }
+    });
+}
+
+// Efecto al pasar el mouse
+$(document).on("mouseenter", "#contenedorEstrellas .estrella", function () {
+    let val = parseInt($(this).attr("data-val"));
+    pintarEstrellas(val);
+});
+
+// Al quitar el mouse
+$(document).on("mouseleave", "#contenedorEstrellas", function () {
+    pintarEstrellas(puntuacionSeleccionada);
+});
+
+// Al hacer clic en una estrella
+$(document).on("click", "#contenedorEstrellas .estrella", function () {
+    puntuacionSeleccionada = parseInt($(this).attr("data-val"));
+    $("#txtPuntuacion").val(puntuacionSeleccionada);
+    pintarEstrellas(puntuacionSeleccionada);
+});
+
+// Abrir modal de calificar
+$(document).on("click", ".btn-calificar", function () {
+    puntuacionSeleccionada = 0;
+    $("#txtPuntuacion").val(0);
+    $("#txtComentario").val("");
+
+    setTimeout(() => {
+        pintarEstrellas(0);
+    }, 100);
+
+    $("#txtIdCitaResena").val($(this).data("idcita"));
+    $("#txtIdDoctorResena").val($(this).data("iddoctor"));
+    $("#mdResena").modal('show');
+});
+
+// Guardar la reseña
+$("#btnGuardarResena").click(function () {
+    let puntuacion = parseInt($("#txtPuntuacion").val());
+
+    if (puntuacion === 0) {
+        Swal.fire("Atención", "Por favor, selecciona al menos 1 estrella.", "warning");
+        return;
+    }
+
+    let objetoResena = {
+        IdCita: parseInt($("#txtIdCitaResena").val()),
+        IdDoctor: parseInt($("#txtIdDoctorResena").val()),
+        IdUsuario: 0, // Se llena automáticamente en el backend
+        Puntuacion: puntuacion,
+        Comentario: $("#txtComentario").val()
+    };
+
+    Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+    fetch(`/HistorialCitas/GuardarResena`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(objetoResena)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire("¡Gracias!", "Tu reseña ha sido guardada.", "success");
+                $("#mdResena").modal('hide');
+                tablaData.ajax.reload(); // Recargamos para que el botón se bloquee
+            } else {
+                Swal.fire("Error", data.message, "error");
+            }
+        })
+        .catch(error => {
+            Swal.fire("Error", "No se pudo guardar la reseña.", "error");
+        });
+});
+
+// ==========================================
+// 3. EVENTO: VER RECETA MÉDICA
+// ==========================================
+$("#tbData tbody").on("click", ".btn-receta", function () {
+    let idCita = $(this).data("id");
+
+    Swal.fire({ title: 'Buscando receta...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+    fetch(`/HistorialCitas/ListaRecetasCita?idCita=${idCita}`, {
+        method: 'GET'
+    })
+        .then(response => response.json())
+        .then(data => {
+            Swal.close();
+            let tbody = $("#tbReceta tbody");
+            tbody.empty();
+
+            if (data && data.length > 0) {
+                $("#mensajeSinReceta").addClass("d-none");
+                $("#tbReceta").removeClass("d-none");
+
+                data.forEach(receta => {
+                    tbody.append(`
+                <tr>
+                    <td>${receta.medicamento}</td>
+                    <td>${receta.dosis}</td>
+                    <td>${receta.indicaciones}</td>
+                </tr>
+            `);
+                });
+            } else {
+                $("#tbReceta").addClass("d-none");
+                $("#mensajeSinReceta").removeClass("d-none");
+            }
+
+            $("#mdReceta").modal('show');
+        })
+        .catch(error => {
+            Swal.fire("Error", "No se pudo obtener la receta.", "error");
+        });
+});
+
+// ==========================================
+// 4. EVENTO: ELIMINAR / CANCELAR CITA (DESDE EL HISTORIAL)
+// ==========================================
 $("#tbData tbody").on("click", ".btn-eliminar", function () {
-    var filaSeleccionada = $(this).closest('tr');
-    var data = tablaData.row(filaSeleccionada).data();
+    let filaSeleccionada = $(this).closest('tr');
+    let data = tablaData.row(filaSeleccionada).data();
 
     Swal.fire({
-        text: `${preguntaEliminar}?`,
+        text: "¿Desea eliminar esta cita de su historial?",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
@@ -171,178 +226,25 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
         cancelButtonText: "No, volver"
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(`/${controlador}/Eliminar?Id=${data.idDoctorHorario}`, {
+            fetch(`/HistorialCitas/Cancelar?id=${data.idCita}`, {
                 method: "DELETE",
                 headers: { 'Content-Type': 'application/json;charset=utf-8' }
             }).then(response => {
-                return response.ok ? response.json() : Promise.reject(response);
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.data || "Error desconocido"); });
+                }
+                return response.json();
             }).then(responseJson => {
-                if (responseJson.data == "") {
-                    Swal.fire({ title: "Eliminado!", text: confirmaEliminar, icon: "success" });
+                if (responseJson.data === "") {
+                    Swal.fire({ title: "¡Listo!", text: "La cita fue eliminada.", icon: "success" });
                     tablaData.ajax.reload();
                 } else {
-                    Swal.fire({ title: "Error!", text: "No se pudo eliminar.", icon: "warning" });
+                    // Muestra el mensaje real de la base de datos
+                    Swal.fire({ title: "Atención", text: responseJson.data, icon: "warning" });
                 }
             }).catch((error) => {
-                Swal.fire({ title: "Error!", text: "No se pudo eliminar.", icon: "warning" });
-            })
+                Swal.fire({ title: "Error del Servidor", text: error.message, icon: "error" });
+            });
         }
     });
-})
-
-$("#btnGuardar").on("click", function () {
-    // Validaciones básicas
-    if ($("#cboDoctor").val() == "" || $("#txtFechasSeleccionadas").val() == "") {
-        Swal.fire({ title: "Error!", text: "Falta seleccionar el doctor o las fechas.", icon: "warning" });
-        return;
-    }
-
-    // Validar que al menos un turno esté completo
-    let amLleno = $("#txtHoraInicioAM").val() != "" && $("#txtHoraFinAM").val() != "";
-    let pmLleno = $("#txtHoraInicioPM").val() != "" && $("#txtHoraFinPM").val() != "";
-
-    if (!amLleno && !pmLleno) {
-        Swal.fire({ title: "Error!", text: "Debe registrar al menos un turno (Mañana o Tarde) con su hora de inicio y fin.", icon: "warning" });
-        return;
-    }
-
-    // Si un turno no está completo, lo enviamos vacío
-    const HoraInicioAM = amLleno ? moment($("#txtHoraInicioAM").val(), "HH:mm").format('HH:mm') : "";
-    const HoraFinAM = amLleno ? moment($("#txtHoraFinAM").val(), "HH:mm").format('HH:mm') : "";
-    const HoraInicioPM = pmLleno ? moment($("#txtHoraInicioPM").val(), ['h:mm A']).format('HH:mm') : "";
-    const HoraFinPM = pmLleno ? moment($("#txtHoraFinPM").val(), ['h:mm A']).format('HH:mm') : "";
-
-    let primerFecha = $("#txtFechasSeleccionadas").val().split(",")[0];
-    let partes = primerFecha.split("/");
-    let mes = parseInt(partes[1]);
-
-    const objeto = {
-        IdDoctorHorario: idEditar,
-        Doctor: { IdDoctor: $("#cboDoctor").val() },
-        NumeroMes: mes,
-        HoraInicioAM: HoraInicioAM,
-        HoraFinAM: HoraFinAM,
-        HoraInicioPM: HoraInicioPM,
-        HoraFinPM: HoraFinPM,
-        DoctorHorarioDetalle: {
-            Fecha: $("#txtFechasSeleccionadas").val()
-        }
-    }
-
-    fetch(`/${controlador}/RegistrarHorario`, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json;charset=utf-8' },
-        body: JSON.stringify(objeto)
-    }).then(async response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.data || "Error en el servidor");
-        }
-    }).then(responseJson => {
-        if (responseJson.data == "") {
-            Swal.fire({ text: confirmaRegistro, icon: "success" });
-            $(`#${modal}`).modal('hide');
-            tablaData.ajax.reload();
-        } else {
-            Swal.fire({ title: "Error!", text: responseJson.data, icon: "warning" });
-        }
-    }).catch((error) => {
-        Swal.fire({ title: "Error al guardar", text: error.message, icon: "error" });
-    })
-});
-
-// ==========================================
-// GRÁFICAS Y TABLAS DE RENDIMIENTO
-// ==========================================
-$(document).ready(function () {
-    $.ajax({
-        url: "/DoctorHorario/ListaDoctoresSinHorario",
-        type: "GET",
-        success: function (response) {
-            $("#tbAdvertencia tbody").empty();
-            response.data.forEach((item) => {
-                $("#tbAdvertencia tbody").append(
-                    `<tr>
-                        <td>${item.nombres} ${item.apellidos}</td>
-                        <td>${item.especialidad.nombre}</td>
-                    </tr>`
-                )
-            })
-        }
-    })
-})
-
-$.ajax({
-    url: "/DoctorHorario/ListaRendimiento30Dias",
-    type: "GET",
-    success: function (response) {
-        const datos = response.data;
-        const agrupado = {};
-        datos.forEach(item => {
-            if (!agrupado[item.especialidad]) { agrupado[item.especialidad] = []; }
-            agrupado[item.especialidad].push(item);
-        });
-
-        Object.keys(agrupado).forEach((especialidad, index) => {
-            const canvasId = "grafica_" + index;
-            $("#contenedorGraficas").append(`
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">${especialidad}</h5>
-                        </div>
-                        <div class="card-body" style="height: 250px; position: relative;">
-                            <canvas id="${canvasId}"></canvas>
-                        </div>
-                    </div>
-                </div>
-            `);
-
-            const labels = agrupado[especialidad].map(x => x.doctor);
-            const valores = agrupado[especialidad].map(x => x.totalAtendidas);
-            const ctx = document.getElementById(canvasId);
-
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Citas Atendidas',
-                        data: valores,
-                        borderWidth: 1,
-                        borderRadius: 8,
-                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: 'Pacientes atendidos últimos 30 días', font: { size: 16 } }
-                    },
-                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-                }
-            });
-        });
-    }
-});
-
-$.ajax({
-    url: "/DoctorHorario/ListaDoctoresBajoRendimiento",
-    type: "GET",
-    success: function (response) {
-        $("#tbBajoRendimiento tbody").empty();
-        response.data.forEach(item => {
-            $("#tbBajoRendimiento tbody").append(`
-                <tr>
-                    <td>${item.doctor}</td>
-                    <td>${item.especialidad}</td>
-                    <td><span class="badge bg-danger">${item.totalAtendidas}</span></td>
-                </tr>
-            `);
-        });
-    }
 });

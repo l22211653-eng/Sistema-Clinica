@@ -42,15 +42,27 @@ namespace ClinicaWeb.Controllers
 
                 List<Cita> lista = await _repositorioCita.ListaHistorialCitas(int.Parse(idUsuario));
 
-
                 return Json(lista ?? new List<Cita>());
             }
             catch (Exception ex)
             {
-
                 _logger.LogError(ex, "ERROR CRÍTICO al listar historial de citas");
-                // Devolvemos un error controlado (DataTables mostrará un mensaje de error)
                 return StatusCode(500, new { error = "Error interno del servidor: " + ex.Message });
+            }
+        }
+
+        // ⚠️ NUEVO MÉTODO: Para cancelar/eliminar la cita desde el historial
+        [HttpDelete]
+        public async Task<IActionResult> Cancelar(int id)
+        {
+            try
+            {
+                string respuesta = await _repositorioCita.Cancelar(id);
+                return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = "Error en el servidor: " + ex.Message });
             }
         }
 
@@ -59,8 +71,6 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // Aquí deberías obtener el ID del usuario logueado desde la sesión.
-                // Por ahora, para que funcione la prueba, lo sacamos de los Claims.
                 ClaimsPrincipal claimuser = HttpContext.User;
                 string idUsuario = claimuser.Claims
                     .Where(c => c.Type == ClaimTypes.NameIdentifier)
@@ -84,6 +94,7 @@ namespace ClinicaWeb.Controllers
                 return Json(new { success = false, message = "Error: " + ex.Message });
             }
         }
+
         [HttpGet]
         public async Task<IActionResult> ListaRecetasCita(int idCita)
         {
