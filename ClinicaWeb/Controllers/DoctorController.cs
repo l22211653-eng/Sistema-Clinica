@@ -9,14 +9,11 @@ namespace ClinicaWeb.Controllers
 {
     public class DoctorController : Controller
     {
-
         private readonly IDoctorRepositorio _doctorRepositorio;
         private readonly ICitaRepositorio _citaRepositorio;
 
-        // Constructor limpio y con los dos repositorios
         public DoctorController(IDoctorRepositorio doctorRepositorio, ICitaRepositorio citaRepositorio)
         {
-
             _doctorRepositorio = doctorRepositorio;
             _citaRepositorio = citaRepositorio;
         }
@@ -75,18 +72,14 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
-
-                // 1. Buscamos el documento del usuario logueado para identificar al doctor
-                // Como en tu login se guarda el documento en el Claim, o el Identity.Name
+                // 1. Obtenemos el documento del doctor desde la sesión
                 var usuarioDoc = User.Identity?.Name;
 
-                // 2. Buscamos en la lista de doctores quién tiene ese documento
+                // 2. Buscamos al doctor por su documento
                 var listaDoctores = await _doctorRepositorio.Lista();
                 var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
 
-                // 3. Si lo encontramos, usamos su ID. Si no, usamos 1 por defecto (para pruebas)
+                // 3. Asignamos su ID (si no lo encuentra, usa 1 por defecto para no romper)
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, IdEstadoCita);
@@ -103,12 +96,10 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
-
-                // ⚠️ IMPORTANTE: Por ahora usamos el ID 1 fijo para que pruebes con Alexandra, 
-                // igual que hicimos en CitasAsignadas.
-                int idDoctor = 1;
+                var usuarioDoc = User.Identity?.Name;
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+                int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, IdEstadoCita);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
@@ -133,7 +124,6 @@ namespace ClinicaWeb.Controllers
             return Json(new { data = lista });
         }
 
-        // ⚠️ NUEVO MÉTODO: Para que el admin vea las reseñas
         [HttpGet]
         public async Task<IActionResult> ListaResenas(int idDoctor)
         {
@@ -148,5 +138,4 @@ namespace ClinicaWeb.Controllers
             }
         }
     }
-
 }
