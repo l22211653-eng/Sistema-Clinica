@@ -75,19 +75,21 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // 1. Obtenemos el ID del usuario de la sesión
                 ClaimsPrincipal claimuser = HttpContext.User;
                 string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
 
-                // 2. ⚠️ IMPORTANTE: La función en Supabase espera el IdDoctor, no el IdUsuario.
-                // Si tu login guarda el IdUsuario, debes convertirlo al IdDoctor.
-                // Por ahora, como sabemos que Alexandra es la 1, lo dejamos fijo para probar, 
-                // pero deberías buscar la forma de mapear esto en tu login.
-                int idDoctor = 1; // <-- TEMPORAL PARA PRUEBA
+                // 1. Buscamos el documento del usuario logueado para identificar al doctor
+                // Como en tu login se guarda el documento en el Claim, o el Identity.Name
+                var usuarioDoc = User.Identity?.Name;
+
+                // 2. Buscamos en la lista de doctores quién tiene ese documento
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+
+                // 3. Si lo encontramos, usamos su ID. Si no, usamos 1 por defecto (para pruebas)
+                int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, IdEstadoCita);
-
-                // 3. Devolvemos la data con el formato que espera tu JS (como objeto con "data")
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
