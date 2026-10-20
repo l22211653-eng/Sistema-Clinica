@@ -61,7 +61,6 @@
                     transition: all 0.3s ease;
                 }
 
-                /* Pestaña Activa */
                 .ui-tabs-nav li.ui-tabs-active a {
                     background: #0ea5e9 !important;
                     color: white !important;
@@ -105,15 +104,14 @@
                 color: #1e293b;
             }
 
-            /* Clase para cuando se selecciona una tarjeta */
+            /* Tarjeta Seleccionada */
             .card-select.selected {
                 background-color: #0ea5e9 !important;
                 border-color: #0ea5e9 !important;
                 color: white !important;
             }
 
-                .card-select.selected h6,
-                .card-select.selected i {
+                .card-select.selected h6, .card-select.selected i {
                     color: white !important;
                 }
 
@@ -135,10 +133,12 @@
                 color: #0284c7;
             }
 
+            /* ⚠️ REGLA CLAVE: Cuando el botón tiene .active, se pinta de azul */
             .btn-hora.active {
-                background: #0ea5e9 !important;
+                background-color: #0ea5e9 !important;
                 color: white !important;
                 border-color: #0ea5e9 !important;
+                box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
             }
 
         /* Modal Resumen */
@@ -160,7 +160,6 @@
 
 <div class="card shadow-sm border-0" style="border-radius: 16px;">
     <div class="card-body p-4">
-
         <div id="tabs">
             <!-- Pestañas -->
             <ul class="tabs-opcion">
@@ -178,9 +177,7 @@
                         <input type="text" class="form-control" id="txtBuscarEspecialidad" autocomplete="off" placeholder="Ej: Psicología, Pediatría...">
                     </div>
                 </div>
-                <div id="contenedor-especialidades" class="row row-cols-1 row-cols-md-3 g-3">
-                    <!-- El JS llenará esto -->
-                </div>
+                <div id="contenedor-especialidades" class="row row-cols-1 row-cols-md-3 g-3"></div>
             </div>
 
             <!-- TAB 2: DOCTOR -->
@@ -192,9 +189,7 @@
                         <input type="text" class="form-control" id="txtBuscarDoctor" autocomplete="off" placeholder="Nombre del doctor...">
                     </div>
                 </div>
-                <div id="contenedor-doctores" class="row row-cols-1 row-cols-md-3 g-3">
-                    <!-- El JS llenará esto -->
-                </div>
+                <div id="contenedor-doctores" class="row row-cols-1 row-cols-md-3 g-3"></div>
             </div>
 
             <!-- TAB 3: HORARIO -->
@@ -207,41 +202,33 @@
 
                     <div class="col-md-7">
                         <h6 class="mb-3 text-secondary fw-bold"><i class="fas fa-clock me-2"></i>Horarios Disponibles</h6>
-
                         <div class="row">
-                            <!-- Turno Mañana -->
                             <div class="col-sm-6 mb-3">
                                 <div class="alert alert-info py-2 text-center fw-bold" style="background-color: #e0f2fe; color: #0284c7; border: none;">
                                     <i class="fas fa-sun me-1"></i> Turno Mañana
                                 </div>
-                                <div id="contenedor-am" class="row row-cols-2 g-2">
-                                    <!-- El JS llenará esto -->
-                                </div>
+                                <div id="contenedor-am" class="row row-cols-2 g-2"></div>
                             </div>
 
-                            <!-- Turno Tarde -->
                             <div class="col-sm-6 mb-3">
                                 <div class="alert alert-warning py-2 text-center fw-bold" style="background-color: #fef3c7; color: #d97706; border: none;">
                                     <i class="fas fa-moon me-1"></i> Turno Tarde
                                 </div>
-                                <div id="contenedor-pm" class="row row-cols-2 g-2">
-                                    <!-- El JS llenará esto -->
-                                </div>
+                                <div id="contenedor-pm" class="row row-cols-2 g-2"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="card-footer bg-light border-0 p-3 d-flex justify-content-between" style="border-radius: 0 0 16px 16px;">
         <button type="button" class="btn btn-outline-secondary" id="btnRegresar">
             <i class="fas fa-arrow-left me-1"></i> Regresar
         </button>
-        <!-- ⚠️ TYPE BUTTON AGREGADO AQUÍ -->
-        <button type="button" class="btn btn-primary px-4" id="btnSiguiente">
+        <!-- ⚠️ TYPE BUTTON AGREGADO PARA EVITAR RECARGAS -->
+        <button type="button" class="btn btn-primary px-4" id="btnSiguiente" disabled>
             Siguiente <i class="fas fa-arrow-right ms-1"></i>
         </button>
     </div>

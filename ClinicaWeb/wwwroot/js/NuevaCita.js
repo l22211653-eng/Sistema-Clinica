@@ -8,6 +8,7 @@ let IdHoraSeleccionado = 0;
 let EspecialidadSeleccionada = "";
 let DoctorSeleccionado = "";
 let HoraSeleccionado = "";
+let FechaSeleccionadaTexto = ""; // ⚠️ Nueva variable para guardar la fecha del calendario
 
 const IndexTabs = [0, 1, 2];
 
@@ -31,11 +32,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }).catch((error) => {
         $("#tab-especialidad").LoadingOverlay("hide");
         console.log(error);
-        Swal.fire({
-            title: "Error!",
-            text: "No se encontraron coincidencias.",
-            icon: "warning"
-        });
+        Swal.fire("Error!", "No se encontraron coincidencias.", "warning");
     });
 
     $("#tabs").tabs("option", "disabled", [1, 2]);
@@ -46,18 +43,18 @@ $("#txtBuscarEspecialidad").on("input", function () {
     IdEspecialidadSeleccionada = 0;
     BuscarEspecialidad($(this).val());
     $("#btnSiguiente").prop("disabled", true);
-    $(".card-select").removeClass("selected");
+    $(".card-especialidad").removeClass("selected");
 });
 
 $("#txtBuscarDoctor").on("input", function () {
     IdDoctorSeleccionado = 0;
     BuscarDoctor($(this).val());
     $("#btnSiguiente").prop("disabled", true);
-    $(".card-select").removeClass("selected");
+    $(".card-doctor").removeClass("selected");
 });
 
 // Selección de Especialidad
-$(document).on("click", "div.card-especialidad", function () {
+$(document).on("click", ".card-especialidad", function () {
     $(".card-especialidad").removeClass("selected");
     $(this).addClass("selected");
     IdEspecialidadSeleccionada = $(this).data("id");
@@ -66,7 +63,7 @@ $(document).on("click", "div.card-especialidad", function () {
 });
 
 // Selección de Doctor
-$(document).on("click", "div.card-doctor", function () {
+$(document).on("click", ".card-doctor", function () {
     $(".card-doctor").removeClass("selected");
     $(this).addClass("selected");
     IdDoctorSeleccionado = $(this).data("id");
@@ -74,23 +71,30 @@ $(document).on("click", "div.card-doctor", function () {
     $("#btnSiguiente").prop("disabled", false);
 });
 
-// Selección de Hora (⚠️ CORREGIDO con e.preventDefault())
-$(document).on("click", "div.card-hora", function (e) {
-    e.preventDefault(); // Evita que el botón recargue la página o envíe el formulario
+// ⚠️ Selección de Hora (Corregido para funcionar con los botones)
+$(document).on("click", ".card-hora", function (e) {
+    e.preventDefault(); // Evita que se envíe el formulario
 
-    $(".card-hora").removeClass("active");
+    // Quitamos la clase 'active' a TODOS los botones de hora (tanto AM como PM)
+    $("#contenedor-am .card-hora").removeClass("active");
+    $("#contenedor-pm .card-hora").removeClass("active");
+
+    // Le ponemos la clase 'active' solo al botón clickeado
     $(this).addClass("active");
+
     IdHoraSeleccionado = $(this).data("id");
     HoraSeleccionado = $(this).data("text");
 
-    if ($("#txtFechaCita").val() != "" && IdHoraSeleccionado != 0)
+    // Si ya hay una fecha seleccionada, habilitamos el botón Siguiente
+    if (FechaSeleccionadaTexto !== "" && IdHoraSeleccionado != 0) {
         $("#btnSiguiente").prop("disabled", false);
+    }
 });
 
 function BuscarEspecialidad(valor) {
     $("#contenedor-especialidades").html("");
     const resultadosFiltrados = Especialidades.filter(element => element.nombre.toLowerCase().includes(valor.toLowerCase()));
-    const resumenFiltro = resultadosFiltrados.slice(0, 6); 
+    const resumenFiltro = resultadosFiltrados.slice(0, 6);
 
     resumenFiltro.forEach(function (item) {
         $("#contenedor-especialidades").append(
@@ -120,11 +124,9 @@ function BuscarDoctor(valor) {
     });
 }
 
-// ⚠️ LÓGICA CORREGIDA DEL BOTÓN SIGUIENTE
 $("#btnSiguiente").on("click", function (e) {
-    e.preventDefault(); // Evita recargas
-    
-    // Obtenemos el índice de la pestaña activa usando la clase de jQuery UI
+    e.preventDefault();
+
     const indexTab = $("#tabs ul li.ui-tabs-active").index();
     let habilitarIndex = indexTab;
 
@@ -140,18 +142,16 @@ $("#btnSiguiente").on("click", function (e) {
             $("#txtBuscarDoctor").trigger("focus");
             ObtenerDoctores();
         } else if (habilitarIndex == 2) {
-            $("#txtFechaCita").val("");
             $("#contenedor-am").html("");
             $("#contenedor-pm").html("");
             ObtenerDoctoreHorarioDetalle();
         }
     }
 
-    // Si estamos en la última pestaña (Horario), abrimos el modal
     if (indexTab == 2) {
         $("#txtEspecialidad").val(EspecialidadSeleccionada);
         $("#txtDoctor").val(DoctorSeleccionado);
-        $("#txtFechadeCita").val($("#txtFechaCita").val());
+        $("#txtFechadeCita").val(FechaSeleccionadaTexto); // Usamos la variable global
         $("#txtHoraCita").val(HoraSeleccionado);
         $("#mdData").modal("show");
     }
@@ -170,18 +170,10 @@ $("#btnRegresar").on("click", function () {
     $("#tabs").tabs("option", "disabled", bloquearIndex);
     $("#tabs").tabs({ active: habilitarIndex });
 
-    $("#btnSiguiente").prop("disabled", false);
-
     if (habilitarIndex == 0) {
-        $("#txtBuscarEspecialidad").val("");
-        $("#txtBuscarEspecialidad").trigger("focus");
-        $(".card-especialidad").removeClass("selected");
-        BuscarEspecialidad("");
+        $("#btnSiguiente").prop("disabled", false);
     } else if (habilitarIndex == 1) {
-        $("#txtBuscarDoctor").val("");
-        $("#txtBuscarDoctor").trigger("focus");
-        $(".card-doctor").removeClass("selected");
-        BuscarDoctor("");
+        $("#btnSiguiente").prop("disabled", false);
     }
 });
 
@@ -200,12 +192,7 @@ function ObtenerDoctores() {
         $("#tab-doctor").LoadingOverlay("hide");
     }).catch((error) => {
         $("#tab-doctor").LoadingOverlay("hide");
-        console.log(error);
-        Swal.fire({
-            title: "Error!",
-            text: "No se encontraron coincidencias.",
-            icon: "warning"
-        });
+        Swal.fire("Error!", "No se encontraron coincidencias.", "warning");
     });
 }
 
@@ -234,17 +221,20 @@ function ObtenerDoctoreHorarioDetalle() {
                     return [esFechaPermitida, ""];
                 },
                 onSelect: function (dateText, inst) {
+                    // ⚠️ Guardamos la fecha seleccionada en la variable global
+                    FechaSeleccionadaTexto = dateText;
+
                     $("#btnSiguiente").prop("disabled", true);
                     $("#contenedor-am").html("");
                     $("#contenedor-pm").html("");
 
-                    const selectedDate = $(this).val();
-                    const Fecha = DoctorHorario.find(element => element.fecha == selectedDate);
+                    const Fecha = DoctorHorario.find(element => element.fecha == dateText);
 
                     if (Fecha) {
                         const HorarioAM = Fecha.horarioDTO.filter(element => element.turno == "AM");
                         const HorarioPM = Fecha.horarioDTO.filter(element => element.turno == "PM");
 
+                        // Generamos los botones con la clase correcta
                         HorarioAM.forEach(function (item) {
                             $("#contenedor-am").append(
                                 `<div class="col">
@@ -268,40 +258,25 @@ function ObtenerDoctoreHorarioDetalle() {
                 }
             });
         } else {
-            Swal.fire({
-                text: "No hay horarios disponibles.",
-                icon: "warning"
-            });
+            Swal.fire("Aviso", "No hay horarios disponibles para este doctor.", "warning");
         }
         $("#tab-horario").LoadingOverlay("hide");
     }).catch((error) => {
         $("#tab-horario").LoadingOverlay("hide");
-        Swal.fire({
-            title: "Error!",
-            text: "No se encontraron coincidencias.",
-            icon: "warning"
-        });
+        Swal.fire("Error!", "No se encontraron coincidencias.", "warning");
     });
 }
 
 $("#btnAgendar").on("click", function () {
-    if ($("#txtFechaCita").val() == "" || IdHoraSeleccionado == 0) {
-        Swal.fire({
-            title: "Error!",
-            text: "Falta seleccionar la fecha o la hora.",
-            icon: "warning"
-        });
+    if (FechaSeleccionadaTexto == "" || IdHoraSeleccionado == 0) {
+        Swal.fire("Error!", "Falta seleccionar la fecha o la hora.", "warning");
         return;
     }
 
     let objeto = {
-        DoctorHorarioDetalle: {
-            IdDoctorHorarioDetalle: IdHoraSeleccionado
-        },
-        EstadoCita: {
-            IdEstadoCita: 1
-        },
-        FechaCita: moment($("#txtFechaCita").val(), "DD/MM/YYYY").format('DD/MM/YYYY')
+        DoctorHorarioDetalle: { IdDoctorHorarioDetalle: IdHoraSeleccionado },
+        EstadoCita: { IdEstadoCita: 1 },
+        FechaCita: moment(FechaSeleccionadaTexto, "DD/MM/YYYY").format('DD/MM/YYYY')
     };
 
     fetch(`/Citas/Guardar`, {
@@ -312,26 +287,14 @@ $("#btnAgendar").on("click", function () {
         return response.ok ? response.json() : Promise.reject(response);
     }).then(responseJson => {
         if (responseJson.data == "") {
-            Swal.fire({
-                title: "¡Felicidades!",
-                text: "Su cita fue registrada!",
-                icon: "success"
-            }).then(function () {
+            Swal.fire("¡Felicidades!", "Su cita fue registrada!", "success").then(function () {
                 window.location.href = '/Citas/Index';
             });
             $(`#${modal}`).modal('hide');
         } else {
-            Swal.fire({
-                title: "Error!",
-                text: responseJson.data,
-                icon: "warning"
-            });
+            Swal.fire("Error!", responseJson.data, "warning");
         }
     }).catch((error) => {
-        Swal.fire({
-            title: "Error!",
-            text: "No se pudo registrar.",
-            icon: "warning"
-        });
+        Swal.fire("Error!", "No se pudo registrar.", "warning");
     });
 });
