@@ -1,0 +1,56 @@
+﻿@* For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860 *@
+@section Estilos {
+    <link href="~/lib/datatables2/css/dataTables.dataTables.css" rel="stylesheet" />
+
+    <style>
+        .page-header {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 5px solid #10b981; /* Verde para historial */
+        }
+
+            .page-header h2 {
+                margin: 0;
+                font-weight: 700;
+                color: #1e293b;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .page-header i {
+                color: #10b981;
+            }
+    </style>
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-history"></i> Mis Citas Atendidas</h2>
+    <span class="badge bg-success fs-6 p-2"><i class="fas fa-check-circle me-1"></i> Historial Médico</span>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card shadow-sm border-0" style="border-radius: 16px;">
+            <div class="card-body p-4">
+                <div class="table-responsive">
+                    <table class="display" id="tbData" cellspacing="0" style="width:100%">
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/datatables2/js/moment.min.js"></script>
+    <script src="~/lib/datatables2/js/dataTables.js"></script>
+    <script src="~/js/HistorialDoctor.js"></script>
+}

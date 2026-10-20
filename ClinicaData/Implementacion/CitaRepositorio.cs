@@ -113,6 +113,7 @@ namespace ClinicaData.Implementacion
                                 IdCita = Convert.ToInt32(dr["IdCita"]),
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
+                                YaCalificado = Convert.ToBoolean(dr["YaCalificado"]),
                                 Especialidad = new Especialidad()
                                 {
                                     Nombre = dr["NombreEspecialidad"].ToString()!,

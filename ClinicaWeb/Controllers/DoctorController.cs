@@ -96,6 +96,26 @@ namespace ClinicaWeb.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ListaCitasAtendidas(int IdEstadoCita)
+        {
+            try
+            {
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
+
+                // ⚠️ IMPORTANTE: Por ahora usamos el ID 1 fijo para que pruebes con Alexandra, 
+                // igual que hicimos en CitasAsignadas.
+                int idDoctor = 1;
+
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, IdEstadoCita);
+                return StatusCode(StatusCodes.Status200OK, new { data = lista });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> CambiarEstado([FromBody] Cita objeto)

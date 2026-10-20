@@ -15,7 +15,7 @@ namespace ClinicaEntidades
         public string FechaCita { get; set; } = null!;
         public string FechaCreacion { get; set; } = null!;
         public string Indicaciones { get; set; } = null!;
-
+        public bool YaCalificado { get; set; }
         public Especialidad Especialidad { get; set; } = null!;
         public Doctor Doctor { get; set; } = null!;
         public string HoraCita { get; set; } = null!;

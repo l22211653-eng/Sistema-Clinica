@@ -8,8 +8,6 @@
 
     <style>
         /* --- ESTILOS PERSONALIZADOS DOCTOR HORARIO --- */
-
-        /* 1. Header de la página */
         .page-header {
             background: #ffffff;
             border-radius: 16px;
@@ -19,7 +17,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-left: 5px solid #8b5cf6; /* Color violeta para horarios */
+            border-left: 5px solid #8b5cf6;
         }
 
             .page-header h2 {
@@ -35,7 +33,6 @@
                 color: #8b5cf6;
             }
 
-        /* 2. Días seleccionados del calendario */
         .dia-seleccionado a {
             background-color: #8b5cf6 !important;
             color: white !important;
@@ -43,7 +40,6 @@
             text-align: center;
         }
 
-        /* 3. Modal Header */
         .modal-header {
             background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
             color: white;
@@ -54,7 +50,6 @@
                 filter: invert(1);
             }
 
-        /* 4. Tarjetas de alertas y bajo rendimiento */
         .alert-warning-custom {
             background-color: #fffbeb;
             border: 1px solid #fde68a;
@@ -69,7 +64,6 @@
             color: #991b1b;
         }
 
-        /* 5. Estilos para tablas dentro de alertas */
         .table-clean {
             background-color: transparent;
             margin-bottom: 0;
@@ -88,17 +82,14 @@
     </style>
 }
 
-<!-- Encabezado de la Página -->
 <div class="page-header">
     <h2><i class="fas fa-calendar-alt"></i> Gestión de Horarios</h2>
     <span class="badge bg-primary fs-6 p-2"><i class="fas fa-clock me-1"></i> Disponibilidad Médica</span>
 </div>
 
-<!-- Tarjeta Principal (Tabla de Horarios) -->
 <div class="row">
     <div class="col-sm-12">
         <div class="card shadow-sm border-0" style="border-radius: 16px;">
-
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="mb-0 text-secondary fw-bold"><i class="fas fa-list me-2 text-purple"></i>Horarios Registrados</h5>
@@ -106,14 +97,12 @@
                         <i class="fas fa-plus me-1"></i> Nuevo Horario
                     </button>
                 </div>
-
                 <div class="table-responsive">
                     <table class="display" id="tbData" cellspacing="0" style="width:100%">
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -122,12 +111,10 @@
 <div class="modal fade" id="mdData" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
-
             <div class="modal-header">
                 <h5 class="modal-title" id="staticBackdropLabel"><i class="fas fa-clock me-2"></i>Registrar Horario</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
             <div class="modal-body p-4">
                 <div class="row mb-3">
                     <div class="col-sm-12">
@@ -144,8 +131,9 @@
                     </div>
                 </div>
 
+                <!-- ⚠️ TURNO MAÑANA -->
                 <div class="bg-light p-3 rounded mb-3">
-                    <h6 class="fw-bold text-muted mb-3"><i class="fas fa-sun text-warning me-2"></i>Turno Mañana</h6>
+                    <h6 class="fw-bold text-muted mb-3"><i class="fas fa-sun text-warning me-2"></i>Turno Mañana (Opcional)</h6>
                     <div class="row">
                         <div class="col-sm-6 mb-2">
                             <label class="form-label">Hora Inicio AM</label>
@@ -158,8 +146,9 @@
                     </div>
                 </div>
 
+                <!-- ⚠️ TURNO TARDE -->
                 <div class="bg-light p-3 rounded">
-                    <h6 class="fw-bold text-muted mb-3"><i class="fas fa-moon text-primary me-2"></i>Turno Tarde</h6>
+                    <h6 class="fw-bold text-muted mb-3"><i class="fas fa-moon text-primary me-2"></i>Turno Tarde (Opcional)</h6>
                     <div class="row">
                         <div class="col-sm-6 mb-2">
                             <label class="form-label">Hora Inicio PM</label>
@@ -171,22 +160,17 @@
                         </div>
                     </div>
                 </div>
-
             </div>
-
             <div class="modal-footer bg-light border-0">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="btnGuardar" style="background-color: #8b5cf6; border-color: #8b5cf6;">Guardar Horario</button>
             </div>
-
         </div>
     </div>
 </div>
 
 <!-- SECCIÓN DE ALERTAS Y RENDIMIENTO -->
 <div class="row mt-4">
-
-    <!-- Alerta: Doctores sin horario -->
     <div class="col-md-6 mb-4">
         <div class="alert alert-warning-custom h-100 p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-exclamation-triangle me-2"></i>Doctores sin horarios (Próx. 30 días)</h5>
@@ -204,7 +188,6 @@
         </div>
     </div>
 
-    <!-- Alerta: Doctores con bajo rendimiento -->
     <div class="col-md-6 mb-4">
         <div class="alert alert-danger-custom h-100 p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-chart-line me-2"></i>Bajo rendimiento (Últimos 30 días)</h5>
@@ -222,16 +205,13 @@
             </div>
         </div>
     </div>
-
 </div>
 
 <!-- SECCIÓN DE GRÁFICAS -->
 <h4 class="mt-4 mb-3 fw-bold text-secondary">
     <i class="fas fa-chart-bar me-2 text-primary"></i>Rendimiento de Doctores - Últimos 30 días
 </h4>
-
 <div class="row" id="contenedorGraficas"></div>
-
 
 @section Scripts {
     <script src="~/lib/datatables2/js/moment.min.js"></script>

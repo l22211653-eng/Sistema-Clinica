@@ -225,7 +225,6 @@ $("#btnGuardar").on("click", function () {
         }
     }
 
-    // ⚠️ AQUÍ ESTÁ EL CAMBIO: Ahora llama a /RegistrarHorario en lugar de /Guardar
     fetch(`/${controlador}/RegistrarHorario`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json;charset=utf-8' },
@@ -246,7 +245,6 @@ $("#btnGuardar").on("click", function () {
             Swal.fire({ title: "Error!", text: responseJson.data, icon: "warning" });
         }
     }).catch((error) => {
-        // Muestra el error real si algo falla
         Swal.fire({ title: "Error al guardar", text: error.message, icon: "error" });
     })
 });
@@ -285,51 +283,48 @@ $.ajax({
 
         Object.keys(agrupado).forEach((especialidad, index) => {
             const canvasId = "grafica_" + index;
+
+            // ⚠️ CAMBIO AQUÍ: Contenedor con altura fija de 250px
             $("#contenedorGraficas").append(`
                 <div class="col-md-6 mb-4">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0">${especialidad}</h5>
                         </div>
-
-                        <div class="card-body">
-                            <canvas id="${canvasId}" height="180"></canvas>
+                        <div class="card-body" style="height: 250px; position: relative;">
+                            <canvas id="${canvasId}"></canvas>
                         </div>
-
                     </div>
-
                 </div>
-
             `);
+
             const labels = agrupado[especialidad].map(x => x.doctor);
             const valores = agrupado[especialidad].map(x => x.totalAtendidas);
             const ctx = document.getElementById(canvasId);
 
-            new Chart(ctx,
-                {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Citas Atendidas',
-                            data: valores,
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
-                        }]
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Citas Atendidas',
+                        data: valores,
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // ⚠️ IMPORTANTE
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Pacientes atendidos últimos 30 días', font: { size: 16 } }
                     },
-
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            title: { display: true, text: 'Pacientes atendidos últimos 30 días', font: { size: 16 } }
-                        },
-                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-                    }
-                });
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
         });
-
     }
 });
 
@@ -345,12 +340,7 @@ $.ajax({
                     <td>${item.especialidad}</td>
                     <td><span class="badge bg-danger">${item.totalAtendidas}</span></td>
                 </tr>
-
-
             `);
-
         });
-
     }
-
 });
