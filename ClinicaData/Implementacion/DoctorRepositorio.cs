@@ -228,7 +228,6 @@ namespace ClinicaData.Implementacion
             return lista;
         }
 
-        // ⚠️ ESTE MÉTODO CAMBIÓ COMPLETAMENTE: Antes usaba XML, ahora usa JSON
         public async Task<List<FechaAtencionDTO>> ListaDoctorHorarioDetalle(int Id)
         {
             List<FechaAtencionDTO> lista = new List<FechaAtencionDTO>();
@@ -244,7 +243,6 @@ namespace ClinicaData.Implementacion
                     {
                         while (await dr.ReadAsync())
                         {
-                            // La función devuelve (Fecha TEXT, Horarios JSON)
                             var fecha = dr["Fecha"].ToString()!;
                             var jsonHorarios = dr["Horarios"].ToString()!;
 
@@ -256,7 +254,6 @@ namespace ClinicaData.Implementacion
 
                             if (!string.IsNullOrEmpty(jsonHorarios))
                             {
-                                // Parseamos el JSON que devuelve PostgreSQL
                                 using (var doc = JsonDocument.Parse(jsonHorarios))
                                 {
                                     foreach (var item in doc.RootElement.EnumerateArray())
