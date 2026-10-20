@@ -190,41 +190,54 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
     });
 })
 
+// ⚠️ LÓGICA CORREGIDA PARA PERMITIR TURNOS OPCIONALES
 $("#btnGuardar").on("click", function () {
 
-    if ($("#cboDoctor").val() == "" ||
-        $("#txtFechasSeleccionadas").val() == "" ||
-        $("#txtHoraInicioAM").val() == "" ||
-        $("#txtHoraFinAM").val() == "" ||
-        $("#txtHoraInicioPM").val() == "" ||
-        $("#txtHoraFinPM").val() == ""
-    ) {
-        Swal.fire({ title: "Error!", text: "Falta completar datos o seleccionar fechas.", icon: "warning" });
+    // 1. Validar Doctor y Fechas
+    if ($("#cboDoctor").val() == "" || $("#txtFechasSeleccionadas").val() == "") {
+        Swal.fire({ title: "Error!", text: "Falta seleccionar el doctor o las fechas.", icon: "warning" });
         return;
     }
 
-    const HoraInicioAM = moment($("#txtHoraInicioAM").val(), "HH:mm")
-    const HoraFinAM = moment($("#txtHoraFinAM").val(), "HH:mm")
-    const HoraInicioPM = moment($("#txtHoraInicioPM").val(), ['h:mm A'])
-    const HoraFinPM = moment($("#txtHoraFinPM").val(), ['h:mm A'])
+    // 2. Validar que AL MENOS UN TURNO esté completo
+    let amLleno = $("#txtHoraInicioAM").val().trim() !== "" && $("#txtHoraFinAM").val().trim() !== "";
+    let pmLleno = $("#txtHoraInicioPM").val().trim() !== "" && $("#txtHoraFinPM").val().trim() !== "";
 
+    if (!amLleno && !pmLleno) {
+        Swal.fire({
+            title: "Error!",
+            text: "Debe registrar al menos un turno (Mañana o Tarde) con su hora de inicio y fin.",
+            icon: "warning"
+        });
+        return;
+    }
+
+    // 3. Preparar las horas (si el turno está vacío, enviamos "")
+    const HoraInicioAM = amLleno ? moment($("#txtHoraInicioAM").val(), "HH:mm").format('HH:mm') : "";
+    const HoraFinAM = amLleno ? moment($("#txtHoraFinAM").val(), "HH:mm").format('HH:mm') : "";
+    const HoraInicioPM = pmLleno ? moment($("#txtHoraInicioPM").val(), ['h:mm A']).format('HH:mm') : "";
+    const HoraFinPM = pmLleno ? moment($("#txtHoraFinPM").val(), ['h:mm A']).format('HH:mm') : "";
+
+    // 4. Extraer el mes
     let primerFecha = $("#txtFechasSeleccionadas").val().split(",")[0];
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
 
+    // 5. Crear el objeto
     const objeto = {
         IdDoctorHorario: idEditar,
         Doctor: { IdDoctor: $("#cboDoctor").val() },
         NumeroMes: mes,
-        HoraInicioAM: HoraInicioAM.format('HH:mm'),
-        HoraFinAM: HoraFinAM.format('HH:mm'),
-        HoraInicioPM: HoraInicioPM.format('HH:mm'),
-        HoraFinPM: HoraFinPM.format('HH:mm'),
+        HoraInicioAM: HoraInicioAM,
+        HoraFinAM: HoraFinAM,
+        HoraInicioPM: HoraInicioPM,
+        HoraFinPM: HoraFinPM,
         DoctorHorarioDetalle: {
             Fecha: $("#txtFechasSeleccionadas").val()
         }
     }
 
+    // 6. Enviar al servidor
     fetch(`/${controlador}/RegistrarHorario`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json;charset=utf-8' },
@@ -284,7 +297,6 @@ $.ajax({
         Object.keys(agrupado).forEach((especialidad, index) => {
             const canvasId = "grafica_" + index;
 
-            // ⚠️ CAMBIO AQUÍ: Contenedor con altura fija de 250px
             $("#contenedorGraficas").append(`
                 <div class="col-md-6 mb-4">
                     <div class="card shadow-sm h-100">
@@ -316,7 +328,7 @@ $.ajax({
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // ⚠️ IMPORTANTE
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
                         title: { display: true, text: 'Pacientes atendidos últimos 30 días', font: { size: 16 } }
