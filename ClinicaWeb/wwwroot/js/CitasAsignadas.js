@@ -1,19 +1,13 @@
 ﻿let tablaData;
 const controlador = "Doctor";
 const modal = "mdData";
-let recetasTemporales = []; // Array para guardar los medicamentos antes de enviarlos
+let recetasTemporales = [];
 
 document.addEventListener("DOMContentLoaded", function (event) {
-    cargarTabla(1); // Cargar Pendientes por defecto
-
-    $("#cboEstadoCita").change(function ()
-    {
-        cargarTabla($(this).val());
-    });
+    cargarTabla();
 });
 
-function cargarTabla(idEstadoCita) {
-
+function cargarTabla() {
     if ($.fn.DataTable.isDataTable('#tbData')) {
         $('#tbData').DataTable().destroy();
     }
@@ -22,11 +16,10 @@ function cargarTabla(idEstadoCita) {
         responsive: true,
         scrollX: true,
         "ajax": {
-            "url": `/${controlador}/ListaCitasAsignadas?IdEstadoCita=${idEstadoCita}`,
+            "url": `/${controlador}/ListaCitasAsignadas`, // ⚠️ Sin parámetros, solo pendientes
             "type": "GET",
             "datatype": "json",
-            "dataSrc": function (json)
-            {
+            "dataSrc": function (json) {
                 return json.data || [];
             }
         },
@@ -36,13 +29,8 @@ function cargarTabla(idEstadoCita) {
             { title: "Paciente", "data": "usuario", render: function (data) { return data ? `${data.nombre} ${data.apellido}` : ''; } },
             { title: "Estado", "data": "estadoCita", render: function (data) { return data ? data.nombre : ''; } },
             {
-
                 title: "Acciones", "data": null, width: "150px", render: function (data, type, row) {
-                    if (row.estadoCita && row.estadoCita.nombre === "Pendiente") {
-                        // En lugar de: btn btn-outline-warning btn-indicaciones
-                        return `<button type="button" class="btn btn-primary btn-sm btn-indicaciones" data-id="${row.idCita}"> <i class="fas fa-notes-medical"> </i> Atender </button>`;
-                    }
-                    return '';
+                    return `<button type="button" class="btn btn-sm btn-primary btn-indicaciones" data-id="${row.idCita}"><i class="fas fa-notes-medical"></i> Atender</button>`;
                 }
             }
         ],

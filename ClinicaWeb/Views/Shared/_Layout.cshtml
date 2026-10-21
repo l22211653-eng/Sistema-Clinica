@@ -270,12 +270,11 @@
 
                         @if (User.IsInRole("Doctor"))
                         {
-                            <a class="nav-link" asp-controller="Citas" asp-action="CitasAsignadas">
+                            <a class="nav-link" asp-controller="Doctor" asp-action="CitasAsignadas">
                                 <div class="sb-nav-link-icon"><i class="fas fa-clipboard-list"></i></div>
                                 Citas Pendientes
                             </a>
-                            <!-- ⚠️ NUEVO ENLACE PARA EL HISTORIAL -->
-                            <a class="nav-link" asp-controller="Citas" asp-action="HistorialDoctor">
+                            <a class="nav-link" asp-controller="Doctor" asp-action="HistorialDoctor">
                                 <div class="sb-nav-link-icon"><i class="fas fa-history"></i></div>
                                 Mis Citas Atendidas
                             </a>

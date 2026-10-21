@@ -42,14 +42,12 @@ namespace ClinicaWeb.Controllers
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> CitasAsignadas()
         {
-            // Obtenemos el nombre del doctor logueado (que guardaste como documento)
             var usuarioDoc = User.Identity?.Name;
             var listaDoctores = await _doctorRepositorio.Lista();
             var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
 
             if (doctor != null)
             {
-                // Enviamos la especialidad a la vista
                 ViewBag.Especialidad = doctor.Especialidad.Nombre;
             }
             else
@@ -57,6 +55,13 @@ namespace ClinicaWeb.Controllers
                 ViewBag.Especialidad = "Sin especialidad";
             }
 
+            return View();
+        }
+
+        // ⚠️ NUEVO MÉTODO: Para cargar la vista del Historial de Citas Atendidas
+        [Authorize(Roles = "Doctor")]
+        public IActionResult HistorialDoctor()
+        {
             return View();
         }
 
@@ -88,22 +93,19 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
 
+        // ⚠️ MODIFICADO: Solo lista las citas pendientes (Estado 1) y ya no recibe parámetro
         [HttpGet]
-        public async Task<IActionResult> ListaCitasAsignadas(int IdEstadoCita)
+        public async Task<IActionResult> ListaCitasAsignadas()
         {
             try
             {
-                // 1. Obtenemos el documento del doctor desde la sesión
                 var usuarioDoc = User.Identity?.Name;
-
-                // 2. Buscamos al doctor por su documento
                 var listaDoctores = await _doctorRepositorio.Lista();
                 var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-
-                // 3. Asignamos su ID (si no lo encuentra, usa 1 por defecto para no romper)
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, IdEstadoCita);
+                // Forzamos el estado 1 (Pendiente)
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -112,8 +114,9 @@ namespace ClinicaWeb.Controllers
             }
         }
 
+        // ⚠️ MODIFICADO: Lista las atendidas (Estado 2) y recibe el parámetro de orden
         [HttpGet]
-        public async Task<IActionResult> ListaCitasAtendidas(int IdEstadoCita)
+        public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
             try
             {
@@ -122,7 +125,15 @@ namespace ClinicaWeb.Controllers
                 var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, IdEstadoCita);
+                // Forzamos el estado 2 (Atendido)
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
+
+                // Ordenamos por fecha
+                if (orden == "antiguos")
+                    lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
+                else
+                    lista = lista.OrderByDescending(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
+
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
