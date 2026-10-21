@@ -1,6 +1,8 @@
 ﻿@* For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860 *@
 @section Estilos {
     <link href="~/lib/datatables2/css/dataTables.dataTables.css" rel="stylesheet" />
+    <link href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
+    <link href="~/lib/select2/css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
     <style>
         .page-header {
@@ -27,6 +29,24 @@
             .page-header i {
                 color: #10b981;
             }
+
+        /* Estilos para el filtro */
+        .filter-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+            .filter-card label {
+                font-weight: 600;
+                color: #475569;
+                margin-bottom: 0;
+            }
     </style>
 }
 
@@ -39,6 +59,17 @@
     <div class="col-sm-12">
         <div class="card shadow-sm border-0" style="border-radius: 16px;">
             <div class="card-body p-4">
+
+                <!-- ⚠️ NUEVO: Filtro de Orden por Fecha -->
+                <div class="filter-card">
+                    <i class="fas fa-filter text-primary fs-5"></i>
+                    <label for="cboOrdenFecha">Ordenar por Fecha:</label>
+                    <select id="cboOrdenFecha" class="form-select w-auto">
+                        <option value="recientes">Más Recientes</option>
+                        <option value="antiguos">Más Antiguos</option>
+                    </select>
+                </div>
+
                 <div class="table-responsive">
                     <table class="display" id="tbData" cellspacing="0" style="width:100%">
                         <tbody></tbody>
@@ -52,5 +83,6 @@
 @section Scripts {
     <script src="~/lib/datatables2/js/moment.min.js"></script>
     <script src="~/lib/datatables2/js/dataTables.js"></script>
+    <script src="~/lib/select2/js/select2.min.js"></script>
     <script src="~/js/HistorialDoctor.js"></script>
 }

@@ -39,6 +39,27 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
 
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> CitasAsignadas()
+        {
+            // Obtenemos el nombre del doctor logueado (que guardaste como documento)
+            var usuarioDoc = User.Identity?.Name;
+            var listaDoctores = await _doctorRepositorio.Lista();
+            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+
+            if (doctor != null)
+            {
+                // Enviamos la especialidad a la vista
+                ViewBag.Especialidad = doctor.Especialidad.Nombre;
+            }
+            else
+            {
+                ViewBag.Especialidad = "Sin especialidad";
+            }
+
+            return View();
+        }
+
         [HttpPost]
         public async Task<IActionResult> GuardarReceta([FromBody] Receta objeto)
         {

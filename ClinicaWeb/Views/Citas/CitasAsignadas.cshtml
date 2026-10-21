@@ -81,7 +81,10 @@
 <!-- Encabezado de la Página -->
 <div class="page-header">
     <h2><i class="fas fa-clipboard-list"></i> Citas Asignadas</h2>
-    <span class="badge bg-primary fs-6 p-2"><i class="fas fa-user-md me-1"></i> Panel del Doctor</span>
+    <!-- ⚠️ AQUÍ MOSTRAMOS LA ESPECIALIDAD -->
+    <span class="badge bg-info fs-6 p-2">
+        <i class="fas fa-stethoscope me-1"></i> Especialidad: @ViewBag.Especialidad
+    </span>
 </div>
 
 <div class="row">

@@ -1,6 +1,5 @@
 ﻿let tablaData;
 const controlador = "Doctor";
-const modal = "mdData";
 
 document.addEventListener("DOMContentLoaded", function (event) {
 
@@ -8,7 +7,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
         responsive: true,
         scrollX: true,
         "ajax": {
-            "url": `/${controlador}/ListaCitasAtendidas?IdEstadoCita=2`, // 2 = Atendido
+            // ⚠️ CAMBIO: Ahora llamamos al endpoint enviando el orden por defecto
+            "url": `/${controlador}/ListaCitasAtendidas?orden=recientes`,
             "type": "GET",
             "datatype": "json",
             "dataSrc": function (json) {
@@ -37,4 +37,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
             url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
         },
     });
+
+    // ⚠️ EVENTO NUEVO: Recargar la tabla cuando se cambia el combo de orden
+    $("#cboOrdenFecha").change(function () {
+        let orden = $(this).val();
+        tablaData.ajax.url(`/${controlador}/ListaCitasAtendidas?orden=${orden}`).load();
+    });
+
 });
