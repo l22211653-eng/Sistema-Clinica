@@ -86,7 +86,8 @@ namespace ClinicaWeb.Controllers
         [Authorize(Roles = "Doctor")]
         public IActionResult HistorialDoctor()
         {
-            return View();
+            // ⚠️ Le decimos explícitamente que busque en la carpeta "Citas"
+            return View("~/Views/Citas/HistorialDoctor.cshtml");
         }
 
         [HttpPost]
