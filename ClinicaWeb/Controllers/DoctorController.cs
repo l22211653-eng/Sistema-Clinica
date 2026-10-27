@@ -42,20 +42,44 @@ namespace ClinicaWeb.Controllers
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> CitasAsignadas()
         {
-            var usuarioDoc = User.Identity?.Name;
-            var listaDoctores = await _doctorRepositorio.Lista();
-            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-
-            if (doctor != null)
+            try
             {
-                ViewBag.Especialidad = doctor.Especialidad.Nombre;
-            }
-            else
-            {
-                ViewBag.Especialidad = "Sin especialidad";
-            }
+                // 1. Obtenemos el ID de Usuario de la sesión (que sí es seguro)
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuarioStr = claimuser.Claims
+                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Select(c => c.Value)
+                    .SingleOrDefault()!;
 
-            return View();
+                if (string.IsNullOrEmpty(idUsuarioStr))
+                    return RedirectToAction("Login", "Acceso");
+
+                int idUsuario = int.Parse(idUsuarioStr);
+
+                // 2. Buscamos al doctor por su IdUsuario (asumiendo que se relacionan)
+                // OJO: Si tu login guarda el documento en el Name, ajusta esto.
+                var listaDoctores = await _doctorRepositorio.Lista();
+
+                // Aquí buscamos al doctor. Si tu Login guarda el IdUsuario en el Claim, 
+                // necesitamos una forma de relacionarlo. Por ahora, usamos el Nombre de Usuario.
+                var usuarioDoc = User.Identity?.Name;
+
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+
+                if (doctor != null)
+
+                    ViewBag.Especialidad = doctor.Especialidad.Nombre;
+
+                else
+
+                    ViewBag.Especialidad = "Sin especialidad";
+
+                return View();
+            }
+            catch (Exception)
+            {
+                return View();
+            }
         }
 
         // ⚠️ NUEVO MÉTODO: Para cargar la vista del Historial de Citas Atendidas
