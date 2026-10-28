@@ -48,14 +48,8 @@ namespace ClinicaData.Implementacion
                 using (var cmd = new NpgsqlCommand("SELECT sp_eliminarEspecialidad(@p_Id)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_Id", Id);
-                    try
-                    {
-                        await cmd.ExecuteNonQueryAsync();
-                    }
-                    catch
-                    {
-                        respuesta = 0;
-                    }
+                    try { await cmd.ExecuteNonQueryAsync(); }
+                    catch { respuesta = 0; }
                 }
             }
             return respuesta;
