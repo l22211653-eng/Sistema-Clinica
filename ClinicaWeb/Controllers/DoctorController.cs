@@ -73,8 +73,7 @@ namespace ClinicaWeb.Controllers
                 else
 
                     ViewBag.Especialidad = "Sin especialidad";
-
-                return View();
+                return View("~/Views/Citas/CitasAsignadas.cshtml");
             }
             catch (Exception)
             {
