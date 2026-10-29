@@ -11,17 +11,18 @@ namespace ClinicaWeb.Controllers
     {
         private readonly IDoctorRepositorio _doctorRepositorio;
         private readonly ICitaRepositorio _citaRepositorio;
+        private readonly IEspecialidadRepositorio _especialidadRepositorio; // ⚠️ NUEVO
 
-        public DoctorController(IDoctorRepositorio doctorRepositorio, ICitaRepositorio citaRepositorio)
+        public DoctorController(IDoctorRepositorio doctorRepositorio, ICitaRepositorio citaRepositorio, IEspecialidadRepositorio especialidadRepositorio)
         {
             _doctorRepositorio = doctorRepositorio;
             _citaRepositorio = citaRepositorio;
+            _especialidadRepositorio = especialidadRepositorio; // ⚠️ NUEVO
         }
 
-        // ⚠️ CORREGIDO: Usamos el documento directamente del Claim
         private async Task CargarEspecialidad()
         {
-            // El ClaimTypes.Name suele guardar el documento en tu Login
+            // 1. Obtenemos el documento del usuario logueado
             string documentoLogueado = User.Identity?.Name ?? "";
 
             if (string.IsNullOrEmpty(documentoLogueado))
@@ -30,14 +31,21 @@ namespace ClinicaWeb.Controllers
                 return;
             }
 
-            // Buscamos al doctor directamente por su documento
+            // 2. Buscamos al doctor por su documento
             var listaDoctores = await _doctorRepositorio.Lista();
             var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoLogueado);
 
-            if (doctor != null && doctor.Especialidad != null)
-                ViewBag.Especialidad = doctor.Especialidad.Nombre;
-            else
-                ViewBag.Especialidad = "Sin especialidad";
+            if (doctor == null)
+            {
+                ViewBag.Especialidad = "Doctor no encontrado";
+                return;
+            }
+
+            // 3. ⚠️ Buscamos el nombre de la especialidad directamente en el repositorio
+            var listaEspecialidades = await _especialidadRepositorio.Lista();
+            var especialidad = listaEspecialidades.FirstOrDefault(e => e.IdEspecialidad == doctor.Especialidad.IdEspecialidad);
+
+            ViewBag.Especialidad = especialidad?.Nombre ?? "Sin especialidad";
         }
 
         [Authorize(Roles = "Administrador")]
