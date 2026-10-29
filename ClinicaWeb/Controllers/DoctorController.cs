@@ -18,6 +18,19 @@ namespace ClinicaWeb.Controllers
             _citaRepositorio = citaRepositorio;
         }
 
+        // ⚠️ NUEVO: Función auxiliar para cargar la especialidad en el ViewBag
+        private async Task CargarEspecialidad()
+        {
+            var usuarioDoc = User.Identity?.Name;
+            var listaDoctores = await _doctorRepositorio.Lista();
+            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+
+            if (doctor != null)
+                ViewBag.Especialidad = doctor.Especialidad.Nombre;
+            else
+                ViewBag.Especialidad = "Sin especialidad";
+        }
+
         [Authorize(Roles = "Administrador")]
         public IActionResult Index()
         {
@@ -42,50 +55,18 @@ namespace ClinicaWeb.Controllers
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> CitasAsignadas()
         {
-            try
-            {
-                // 1. Obtenemos el ID de Usuario de la sesión (que sí es seguro)
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims
-                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                    .Select(c => c.Value)
-                    .SingleOrDefault()!;
+            // ⚠️ Llamamos a la función auxiliar para cargar la especialidad
+            await CargarEspecialidad();
 
-                if (string.IsNullOrEmpty(idUsuarioStr))
-                    return RedirectToAction("Login", "Acceso");
-
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                // 2. Buscamos al doctor por su IdUsuario (asumiendo que se relacionan)
-                // OJO: Si tu login guarda el documento en el Name, ajusta esto.
-                var listaDoctores = await _doctorRepositorio.Lista();
-
-                // Aquí buscamos al doctor. Si tu Login guarda el IdUsuario en el Claim, 
-                // necesitamos una forma de relacionarlo. Por ahora, usamos el Nombre de Usuario.
-                var usuarioDoc = User.Identity?.Name;
-
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-
-                if (doctor != null)
-
-                    ViewBag.Especialidad = doctor.Especialidad.Nombre;
-
-                else
-
-                    ViewBag.Especialidad = "Sin especialidad";
-                return View("~/Views/Citas/CitasAsignadas.cshtml");
-            }
-            catch (Exception)
-            {
-                return View();
-            }
+            return View("~/Views/Citas/CitasAsignadas.cshtml");
         }
 
-        // ⚠️ NUEVO MÉTODO: Para cargar la vista del Historial de Citas Atendidas
         [Authorize(Roles = "Doctor")]
-        public IActionResult HistorialDoctor()
+        public async Task<IActionResult> HistorialDoctor()
         {
-            // ⚠️ Le decimos explícitamente que busque en la carpeta "Citas"
+            // ⚠️ También cargamos la especialidad aquí para que no se pierda
+            await CargarEspecialidad();
+
             return View("~/Views/Citas/HistorialDoctor.cshtml");
         }
 
@@ -117,7 +98,6 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
 
-        // ⚠️ MODIFICADO: Solo lista las citas pendientes (Estado 1) y ya no recibe parámetro
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
@@ -128,7 +108,6 @@ namespace ClinicaWeb.Controllers
                 var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
-                // Forzamos el estado 1 (Pendiente)
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
@@ -138,7 +117,6 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // ⚠️ MODIFICADO: Lista las atendidas (Estado 2) y recibe el parámetro de orden
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
@@ -149,10 +127,8 @@ namespace ClinicaWeb.Controllers
                 var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
-                // Forzamos el estado 2 (Atendido)
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
 
-                // Ordenamos por fecha
                 if (orden == "antiguos")
                     lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
                 else
