@@ -18,7 +18,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
         },
         "columns": [
             { title: "Nro Documento", "data": "numeroDocumentoIdentidad", width: "150px" },
-            { title: "Nombres", "data": "nombres" },
+            {
+                title: "Nombres", "data": "nombres",
+                render: function (data, type, row) {
+                    // ⚠️ NUEVO: Mostramos la foto en miniatura
+                    let foto = row.fotoUrl ? row.fotoUrl : 'https://cdn-icons-png.flaticon.com/512/3774/3774299.png'; // URL de ícono por defecto
+                    return `<div class="d-flex align-items-center">
+                                <img src="${foto}" alt="Foto" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid #e2e8f0;">
+                                <span>${data}</span>
+                            </div>`;
+                }
+            },
             { title: "Apellidos", "data": "apellidos" },
             { title: "Genero", "data": "genero" },
             {
@@ -29,7 +39,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
             { title: "Fecha Creacion", "data": "fechaCreacion" },
             {
                 title: "Acciones", "data": "idDoctor", width: "150px", render: function (data, type, row) {
-                    // ⚠️ Agregamos el botón de reseñas al dropdown
                     return `<div class="btn-group dropstart">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             Acción
@@ -94,6 +103,8 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
     $("#txtNroDocumento").val(data.numeroDocumentoIdentidad);
     $("#txtNombres").val(data.nombres);
     $("#txtApellidos").val(data.apellidos);
+    // ⚠️ NUEVO: Cargamos la foto en el input
+    $("#txtFotoUrl").val(data.fotoUrl);
     $("#cboGenero").select2("val", data.genero);
     $("#cboEspecialidad").select2("val", data.especialidad.idEspecialidad.toString());
     $(`#${modal}`).modal('show');
@@ -105,6 +116,8 @@ $("#btnNuevo").on("click", function () {
     $("#txtNroDocumento").val("");
     $("#txtNombres").val("");
     $("#txtApellidos").val("");
+    // ⚠️ NUEVO: Limpiamos el input de la foto
+    $("#txtFotoUrl").val("");
     $("#cboEspecialidad").val("").trigger('change');
     $(`#${modal}`).modal('show');
 })
@@ -179,6 +192,8 @@ $("#btnGuardar").on("click", function () {
         Nombres: $("#txtNombres").val().trim(),
         Apellidos: $("#txtApellidos").val().trim(),
         Genero: $("#cboGenero").val(),
+        // ⚠️ NUEVO: Enviamos la foto
+        FotoUrl: $("#txtFotoUrl").val().trim(),
         Especialidad: {
             IdEspecialidad: $("#cboEspecialidad").val()
         }
@@ -253,7 +268,6 @@ $("#btnGuardar").on("click", function () {
 $("#tbData tbody").on("click", ".btn-ver-resenas", function () {
     let idDoctor = $(this).data("iddoctor");
 
-    // Mostrar carga
     Swal.fire({ title: 'Buscando reseñas...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
     fetch(`/${controlador}/ListaResenas?idDoctor=${idDoctor}`, {
@@ -261,7 +275,7 @@ $("#tbData tbody").on("click", ".btn-ver-resenas", function () {
     })
         .then(response => response.json())
         .then(data => {
-            Swal.close(); // Cerrar alerta de carga
+            Swal.close();
             let tbody = $("#tbResenas tbody");
             tbody.empty();
 
@@ -270,7 +284,6 @@ $("#tbData tbody").on("click", ".btn-ver-resenas", function () {
                 $("#tbResenas").removeClass("d-none");
 
                 data.forEach(resena => {
-                    // Generar estrellitas visuales (llenas o vacías)
                     let estrellas = '';
                     for (let i = 0; i < 5; i++) {
                         estrellas += i < resena.puntuacion ? '<i class="fas fa-star text-warning"></i>' : '<i class="far fa-star text-warning"></i>';
@@ -286,7 +299,6 @@ $("#tbData tbody").on("click", ".btn-ver-resenas", function () {
                 `);
                 });
             } else {
-                // No hay reseñas
                 $("#tbResenas").addClass("d-none");
                 $("#mensajeSinResenas").removeClass("d-none");
             }

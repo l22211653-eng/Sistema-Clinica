@@ -15,5 +15,6 @@ namespace ClinicaEntidades
         public string Genero { get; set; } = null!;
         public Especialidad Especialidad { get; set; } = null!;
         public string FechaCreacion { get; set; } = null!;
+        public string? FotoUrl { get; set; }
     }
 }

@@ -145,6 +145,12 @@
                         <select id="cboEspecialidad" class="form-select" data-width="100%"></select>
                     </div>
                 </div>
+                <div class="row mb-3">
+                    <div class="col-sm-12">
+                        <label class="form-label">URL de la Foto (Opcional)</label>
+                        <input type="text" class="form-control" id="txtFotoUrl" autocomplete="off" placeholder="https://ejemplo.com/foto.jpg">
+                    </div>
+                </div>
             </div>
 
             <div class="modal-footer bg-light border-0">
@@ -174,6 +180,14 @@
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="tbResenas">
                         <thead>
+                            <style>
+                                /* ⚠️ Ajuste para que las estrellas no se rompan */
+                                #tbResenas th:nth-child(2),
+                                #tbResenas td:nth-child(2) {
+                                    width: 120px; /* Ancho fijo para la columna de puntuación */
+                                    min-width: 120px;
+                                }
+                            </style>
                             <tr>
                                 <th>Paciente</th>
                                 <th>Puntuación</th>

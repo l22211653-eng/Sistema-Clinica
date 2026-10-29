@@ -112,10 +112,12 @@ function BuscarDoctor(valor) {
     const resultadosFiltrados = Doctores.filter(element => (element.nombres + " " + element.apellidos).toLowerCase().includes(valor.toLowerCase()));
     resultadosFiltrados.forEach(function (item) {
         const acronimo = item.genero == "F" ? "Dra." : "Dr.";
+        let foto = item.fotoUrl ? item.fotoUrl : '/img/default-doctor.png';
+
         $("#contenedor-doctores").append(
             `<div class="col mb-3">
                 <div class="card-select card-doctor" data-id="${item.idDoctor}" data-text="${acronimo} ${item.nombres} ${item.apellidos}">
-                    <i class="fa-solid fa-user-doctor"></i>
+                    <img src="${foto}" alt="Foto" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid #e2e8f0;">
                     <h6>${acronimo} ${item.nombres} ${item.apellidos}</h6>
                 </div>
             </div>`

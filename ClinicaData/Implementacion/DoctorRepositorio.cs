@@ -22,7 +22,7 @@ namespace ClinicaData.Implementacion
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
-                using (var cmd = new NpgsqlCommand("SELECT sp_editarDoctor(@p_Id, @p_Doc, @p_Nom, @p_Ape, @p_Gen, @p_IdEsp)", conexion))
+                using (var cmd = new NpgsqlCommand("SELECT sp_editarDoctor(@p_Id, @p_Doc, @p_Nom, @p_Ape, @p_Gen, @p_IdEsp, @p_FotoUrl)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_Id", objeto.IdDoctor);
                     cmd.Parameters.AddWithValue("p_Doc", objeto.NumeroDocumentoIdentidad);
@@ -30,6 +30,8 @@ namespace ClinicaData.Implementacion
                     cmd.Parameters.AddWithValue("p_Ape", objeto.Apellidos);
                     cmd.Parameters.AddWithValue("p_Gen", objeto.Genero);
                     cmd.Parameters.AddWithValue("p_IdEsp", objeto.Especialidad.IdEspecialidad);
+                    // ⚠️ NUEVO: Enviamos la foto (si es nula, enviamos DBNull)
+                    cmd.Parameters.AddWithValue("p_FotoUrl", (object?)objeto.FotoUrl ?? DBNull.Value);
 
                     try
                     {
@@ -97,13 +99,15 @@ namespace ClinicaData.Implementacion
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
-                using (var cmd = new NpgsqlCommand("SELECT sp_guardarDoctor(@p_Doc, @p_Nom, @p_Ape, @p_Gen, @p_IdEsp)", conexion))
+                using (var cmd = new NpgsqlCommand("SELECT sp_guardarDoctor(@p_Doc, @p_Nom, @p_Ape, @p_Gen, @p_IdEsp, @p_FotoUrl)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_Doc", objeto.NumeroDocumentoIdentidad);
                     cmd.Parameters.AddWithValue("p_Nom", objeto.Nombres);
                     cmd.Parameters.AddWithValue("p_Ape", objeto.Apellidos);
                     cmd.Parameters.AddWithValue("p_Gen", objeto.Genero);
                     cmd.Parameters.AddWithValue("p_IdEsp", objeto.Especialidad.IdEspecialidad);
+                    // ⚠️ NUEVO: Enviamos la foto
+                    cmd.Parameters.AddWithValue("p_FotoUrl", (object?)objeto.FotoUrl ?? DBNull.Value);
 
                     try
                     {
@@ -134,6 +138,8 @@ namespace ClinicaData.Implementacion
                         {
                             lista.Add(new Doctor()
                             {
+                                // ⚠️ NUEVO: Leemos la foto (puede ser null, usamos ?? para evitar errores)
+                                FotoUrl = dr["FotoUrl"] != DBNull.Value ? dr["FotoUrl"].ToString()! : null,
                                 IdDoctor = Convert.ToInt32(dr["IdDoctor"]),
                                 NumeroDocumentoIdentidad = dr["NumeroDocumentoIdentidad"].ToString()!,
                                 Nombres = dr["Nombres"].ToString()!,
@@ -286,10 +292,10 @@ namespace ClinicaData.Implementacion
                 {
                     cmd.Parameters.AddWithValue("p_Id", objeto.Doctor.IdDoctor);
                     cmd.Parameters.AddWithValue("p_Mes", objeto.NumeroMes);
-                    cmd.Parameters.AddWithValue("p_HAM", objeto.HoraInicioAM);
-                    cmd.Parameters.AddWithValue("p_HFAM", objeto.HoraFinAM);
-                    cmd.Parameters.AddWithValue("p_HPM", objeto.HoraInicioPM);
-                    cmd.Parameters.AddWithValue("p_HFPM", objeto.HoraFinPM);
+                    cmd.Parameters.AddWithValue("p_HAM", objeto.HoraInicioAM ?? "");
+                    cmd.Parameters.AddWithValue("p_HFAM", objeto.HoraFinAM ?? "");
+                    cmd.Parameters.AddWithValue("p_HPM", objeto.HoraInicioPM ?? "");
+                    cmd.Parameters.AddWithValue("p_HFPM", objeto.HoraFinPM ?? "");
                     cmd.Parameters.AddWithValue("p_Fechas", objeto.DoctorHorarioDetalle.Fecha);
 
                     try
