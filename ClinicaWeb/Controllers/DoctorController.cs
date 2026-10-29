@@ -55,6 +55,7 @@ namespace ClinicaWeb.Controllers
         }
 
         [Authorize(Roles = "Administrador,Paciente,Doctor")]
+
         [HttpGet]
         public async Task<IActionResult> Lista()
         {
@@ -67,6 +68,24 @@ namespace ClinicaWeb.Controllers
         {
             string respuesta = await _doctorRepositorio.Guardar(objeto);
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerEspecialidad()
+        {
+            string documentoLogueado = User.Identity?.Name ?? "";
+            if (string.IsNullOrEmpty(documentoLogueado)) return Json("");
+
+            var listaDoctores = await _doctorRepositorio.Lista();
+            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoLogueado);
+
+            if (doctor != null)
+            {
+                var listaEspecialidades = await _especialidadRepositorio.Lista();
+                var especialidad = listaEspecialidades.FirstOrDefault(e => e.IdEspecialidad == doctor.Especialidad.IdEspecialidad);
+                return Json(especialidad?.Nombre ?? "");
+            }
+            return Json("");
         }
 
         [Authorize(Roles = "Doctor")]
