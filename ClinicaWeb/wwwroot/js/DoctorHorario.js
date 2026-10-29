@@ -6,6 +6,7 @@ const modal = "mdData";
 const preguntaEliminar = "Desea eliminar el horario";
 const confirmaEliminar = "El horario fue eliminado.";
 const confirmaRegistro = "Horario registrado!";
+const confirmaEdicion = "Horario actualizado!";
 const meses = [{ value: 1, text: "Enero" }, { value: 2, text: "Febrero" }, { value: 3, text: "Marzo" }, { value: 4, text: "Abril" },
 { value: 5, text: "Mayo" }, { value: 6, text: "Junio" }, { value: 7, text: "Julio" }, { value: 8, text: "Agosto" }, { value: 9, text: "Septiembre" }
     , { value: 10, text: "Octubre" }, { value: 11, text: "Noviembre" }, { value: 12, text: "Diciembre" }]
@@ -44,8 +45,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
             { title: "Hora Fin PM", "data": "horaFinPM" },
             { title: "Fecha Creacion", "data": "fechaCreacion" },
             {
-                title: "", "data": "idDoctor", width: "100px", render: function (data, type, row) {
-                    return `<button type="button" class="btn btn-sm btn-outline-danger me-1 btn-eliminar"><i class="fas fa-trash"></i></button>`
+                title: "", "data": "idDoctorHorario", width: "120px", render: function (data, type, row) {
+                    return `
+                        <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-editar"><i class="fas fa-edit"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-danger me-1 btn-eliminar"><i class="fas fa-trash"></i></button>
+                    `;
                 }
             }
         ],
@@ -94,12 +98,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
         Swal.fire({ title: "Error!", text: "No se encontraron coincidencias.", icon: "warning" });
     });
 
-    // Inicializar el calendario de jQuery UI con la nueva función
+    // Inicializar el calendario de jQuery UI
     inicializarCalendario();
 
 });
 
-// ⚠️ NUEVA FUNCIÓN: Permite reiniciar el calendario con fechas bloqueadas
 function inicializarCalendario(fechasOcupadas = []) {
     if ($("#calendarioFechas").hasClass("hasDatepicker")) {
         $("#calendarioFechas").datepicker("destroy");
@@ -124,7 +127,6 @@ function inicializarCalendario(fechasOcupadas = []) {
         beforeShowDay: function (date) {
             let string = jQuery.datepicker.formatDate('dd/mm/yy', date);
 
-            // ⚠️ Si la fecha está en la lista de ocupadas, la deshabilitamos
             if (fechasOcupadas.includes(string)) {
                 return [false, "dia-ocupado", "Horario ya registrado"];
             }
@@ -155,6 +157,7 @@ function MostrarHoraFinPM() {
     $('#txtHoraFinPM').timepicker('option', 'startTime', Hora.format('HH:mm'))
 }
 
+// NUEVO HORARIO
 $("#btnNuevo").on("click", function () {
     idEditar = 0;
     $("#cboDoctor").val("").trigger('change');
@@ -166,13 +169,34 @@ $("#btnNuevo").on("click", function () {
     fechasSeleccionadas = [];
     $("#txtFechasSeleccionadas").val("");
 
-    // Reiniciamos el calendario sin fechas bloqueadas
+    // Desbloqueamos el calendario para nuevo
+    $("#calendarioFechas").datepicker("enable");
     inicializarCalendario([]);
 
     $(`#${modal}`).modal('show');
 })
 
-// ⚠️ LÓGICA DE ELIMINAR CORREGIDA PARA MOSTRAR EL ERROR REAL
+// EDITAR HORARIO
+$("#tbData tbody").on("click", ".btn-editar", function () {
+    var filaSeleccionada = $(this).closest('tr');
+    var data = tablaData.row(filaSeleccionada).data();
+
+    idEditar = data.idDoctorHorario;
+
+    $("#cboDoctor").val(data.doctor.idDoctor).trigger('change');
+    $("#txtHoraInicioAM").val(data.horaInicioAM);
+    $("#txtHoraFinAM").val(data.horaFinAM);
+    $("#txtHoraInicioPM").val(data.horaInicioPM);
+    $("#txtHoraFinPM").val(data.horaFinPM);
+
+    // Bloqueamos el calendario en edición (no se cambian días)
+    $("#calendarioFechas").datepicker("disable");
+    $("#txtFechasSeleccionadas").val("EDITANDO"); // Dummy para pasar validación
+
+    $(`#${modal}`).modal('show');
+});
+
+// ELIMINAR HORARIO
 $("#tbData tbody").on("click", ".btn-eliminar", function () {
     var filaSeleccionada = $(this).closest('tr');
     var data = tablaData.row(filaSeleccionada).data();
@@ -209,40 +233,32 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
     });
 });
 
-// ⚠️ LÓGICA PARA PERMITIR TURNOS OPCIONALES
+// GUARDAR O EDITAR
 $("#btnGuardar").on("click", function () {
 
-    // 1. Validar Doctor y Fechas
+    // Validaciones
     if ($("#cboDoctor").val() == "" || $("#txtFechasSeleccionadas").val() == "") {
         Swal.fire({ title: "Error!", text: "Falta seleccionar el doctor o las fechas.", icon: "warning" });
         return;
     }
 
-    // 2. Validar que AL MENOS UN TURNO esté completo
     let amLleno = $("#txtHoraInicioAM").val().trim() !== "" && $("#txtHoraFinAM").val().trim() !== "";
     let pmLleno = $("#txtHoraInicioPM").val().trim() !== "" && $("#txtHoraFinPM").val().trim() !== "";
 
     if (!amLleno && !pmLleno) {
-        Swal.fire({
-            title: "Error!",
-            text: "Debe registrar al menos un turno (Mañana o Tarde) con su hora de inicio y fin.",
-            icon: "warning"
-        });
+        Swal.fire({ title: "Error!", text: "Debe registrar al menos un turno.", icon: "warning" });
         return;
     }
 
-    // 3. Preparar las horas (si el turno está vacío, enviamos "")
     const HoraInicioAM = amLleno ? moment($("#txtHoraInicioAM").val(), "HH:mm").format('HH:mm') : "";
     const HoraFinAM = amLleno ? moment($("#txtHoraFinAM").val(), "HH:mm").format('HH:mm') : "";
     const HoraInicioPM = pmLleno ? moment($("#txtHoraInicioPM").val(), ['h:mm A']).format('HH:mm') : "";
     const HoraFinPM = pmLleno ? moment($("#txtHoraFinPM").val(), ['h:mm A']).format('HH:mm') : "";
 
-    // 4. Extraer el mes
     let primerFecha = $("#txtFechasSeleccionadas").val().split(",")[0];
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
 
-    // 5. Crear el objeto
     const objeto = {
         IdDoctorHorario: idEditar,
         Doctor: { IdDoctor: $("#cboDoctor").val() },
@@ -256,8 +272,10 @@ $("#btnGuardar").on("click", function () {
         }
     }
 
-    // 6. Enviar al servidor
-    fetch(`/${controlador}/RegistrarHorario`, {
+    // ⚠️ DECIDIMOS LA RUTA
+    let url = idEditar === 0 ? `/${controlador}/RegistrarHorario` : `/${controlador}/EditarHorario`;
+
+    fetch(url, {
         method: "POST",
         headers: { 'Content-Type': 'application/json;charset=utf-8' },
         body: JSON.stringify(objeto)
@@ -270,7 +288,7 @@ $("#btnGuardar").on("click", function () {
         }
     }).then(responseJson => {
         if (responseJson.data == "") {
-            Swal.fire({ text: confirmaRegistro, icon: "success" });
+            Swal.fire({ text: idEditar === 0 ? confirmaRegistro : confirmaEdicion, icon: "success" });
             $(`#${modal}`).modal('hide');
             tablaData.ajax.reload();
         } else {

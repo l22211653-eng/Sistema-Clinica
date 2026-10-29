@@ -367,6 +367,34 @@ namespace ClinicaData.Implementacion
             }
             return lista;
         }
+        public async Task<string> EditarHorario(DoctorHorario objeto)
+        {
+            string respuesta = "";
+            using (var conexion = new NpgsqlConnection(con.CadenaSQL))
+            {
+                await conexion.OpenAsync();
+                using (var cmd = new NpgsqlCommand("SELECT sp_editarDoctorHorario(@p_Id, @p_IdDoctor, @p_HAM, @p_HFAM, @p_HPM, @p_HFPM)", conexion))
+                {
+                    cmd.Parameters.AddWithValue("p_Id", objeto.IdDoctorHorario);
+                    cmd.Parameters.AddWithValue("p_IdDoctor", objeto.Doctor.IdDoctor);
+                    cmd.Parameters.AddWithValue("p_HAM", objeto.HoraInicioAM ?? "");
+                    cmd.Parameters.AddWithValue("p_HFAM", objeto.HoraFinAM ?? "");
+                    cmd.Parameters.AddWithValue("p_HPM", objeto.HoraInicioPM ?? "");
+                    cmd.Parameters.AddWithValue("p_HFPM", objeto.HoraFinPM ?? "");
+
+                    try
+                    {
+                        var result = await cmd.ExecuteScalarAsync();
+                        respuesta = result?.ToString() ?? "";
+                    }
+                    catch (Exception ex)
+                    {
+                        respuesta = "Error al editar: " + ex.Message;
+                    }
+                }
+            }
+            return respuesta;
+        }
 
         public async Task<List<DoctorBajoRendimiento>> ListaDoctoresBajoRendimiento()
         {

@@ -22,5 +22,6 @@ namespace ClinicaData.Contrato
         Task<List<Doctor>> ListaDoctoresSinHorario();
         Task<List<RendimientoDoctor>> ListaRendimiento30Dias();
         Task<List<DoctorBajoRendimiento>> ListaDoctoresBajoRendimiento();
+        Task<string> EditarHorario(DoctorHorario objeto);
     }
 }
