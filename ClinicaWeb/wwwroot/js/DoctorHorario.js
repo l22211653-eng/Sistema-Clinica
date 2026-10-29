@@ -94,7 +94,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
         Swal.fire({ title: "Error!", text: "No se encontraron coincidencias.", icon: "warning" });
     });
 
-    // Inicializar el calendario de jQuery UI
+    // Inicializar el calendario de jQuery UI con la nueva función
+    inicializarCalendario();
+
+});
+
+// ⚠️ NUEVA FUNCIÓN: Permite reiniciar el calendario con fechas bloqueadas
+function inicializarCalendario(fechasOcupadas = []) {
+    if ($("#calendarioFechas").hasClass("hasDatepicker")) {
+        $("#calendarioFechas").datepicker("destroy");
+    }
+
     $("#calendarioFechas").datepicker({
         dateFormat: 'dd/mm/yy',
         firstDay: 1,
@@ -113,8 +123,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
         },
         beforeShowDay: function (date) {
             let string = jQuery.datepicker.formatDate('dd/mm/yy', date);
-            let seleccionado = fechasSeleccionadas.indexOf(string) !== -1;
 
+            // ⚠️ Si la fecha está en la lista de ocupadas, la deshabilitamos
+            if (fechasOcupadas.includes(string)) {
+                return [false, "dia-ocupado", "Horario ya registrado"];
+            }
+
+            let seleccionado = fechasSeleccionadas.indexOf(string) !== -1;
             if (seleccionado) {
                 return [true, "dia-seleccionado", "Seleccionado"];
             } else {
@@ -122,8 +137,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
             }
         }
     });
-
-});
+}
 
 function MostrarHoraFinAM() {
     const Hora = moment($("#txtHoraInicioAM").val(), "HH:mm");
@@ -151,8 +165,9 @@ $("#btnNuevo").on("click", function () {
 
     fechasSeleccionadas = [];
     $("#txtFechasSeleccionadas").val("");
-    $("#calendarioFechas").datepicker("setDate", null);
-    $("#calendarioFechas").datepicker('refresh');
+
+    // Reiniciamos el calendario sin fechas bloqueadas
+    inicializarCalendario([]);
 
     $(`#${modal}`).modal('show');
 })
@@ -185,7 +200,6 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
                     Swal.fire({ title: "Eliminado!", text: confirmaEliminar, icon: "success" });
                     tablaData.ajax.reload();
                 } else {
-                    // Muestra el mensaje real de la base de datos
                     Swal.fire({ title: "Atención", text: responseJson.data, icon: "warning" });
                 }
             }).catch((error) => {
