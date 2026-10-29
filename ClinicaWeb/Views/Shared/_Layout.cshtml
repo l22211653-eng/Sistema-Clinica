@@ -1,4 +1,22 @@
-﻿
+﻿@using Microsoft.AspNetCore.Identity
+@using ClinicaData.Contrato
+@using ClinicaEntidades
+@inject IDoctorRepositorio _doctorRepositorioLayout
+
+@{
+    // Si el usuario es Doctor, buscamos su especialidad para mostrarla en el Layout
+    if (User.IsInRole("Doctor"))
+    {
+        var usuarioDoc = User.Identity?.Name;
+        var listaDoctores = await _doctorRepositorioLayout.Lista();
+        var doctorLogueado = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+
+        if (doctorLogueado != null)
+        {
+            ViewBag.EspecialidadGlobal = doctorLogueado.Especialidad.Nombre;
+        }
+    }
+}
 <!DOCTYPE html>
 <html lang="es">
 <head>
