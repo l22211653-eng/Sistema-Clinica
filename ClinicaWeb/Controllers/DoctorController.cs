@@ -11,7 +11,7 @@ namespace ClinicaWeb.Controllers
     {
         private readonly IDoctorRepositorio _doctorRepositorio;
         private readonly ICitaRepositorio _citaRepositorio;
-        private readonly IUsuarioRepositorio _usuarioRepositorio; // ⚠️ NUEVO: Para buscar al usuario
+        private readonly IUsuarioRepositorio _usuarioRepositorio; // ⚠️ NUEVO
 
         public DoctorController(IDoctorRepositorio doctorRepositorio, ICitaRepositorio citaRepositorio, IUsuarioRepositorio usuarioRepositorio)
         {
@@ -20,8 +20,8 @@ namespace ClinicaWeb.Controllers
             _usuarioRepositorio = usuarioRepositorio;
         }
 
-        
-        private async Task CargarEspecialidad()
+        // ⚠️ Función auxiliar que busca al doctor por el IdUsuario de la sesión
+        private async Task<Doctor> ObtenerDoctorLogueado()
         {
             // 1. Obtenemos el ID de Usuario de los Claims
             ClaimsPrincipal claimuser = HttpContext.User;
@@ -31,10 +31,7 @@ namespace ClinicaWeb.Controllers
                 .SingleOrDefault()!;
 
             if (string.IsNullOrEmpty(idUsuarioStr))
-            {
-                ViewBag.Especialidad = "Sin sesión";
-                return;
-            }
+                return null!;
 
             int idUsuario = int.Parse(idUsuarioStr);
 
@@ -43,15 +40,17 @@ namespace ClinicaWeb.Controllers
             var usuario = listaUsuarios.FirstOrDefault(u => u.IdUsuario == idUsuario);
 
             if (usuario == null)
-            {
-                ViewBag.Especialidad = "Usuario no encontrado";
-                return;
-            }
+                return null!;
 
             // 3. Con el documento, buscamos al doctor
             var listaDoctores = await _doctorRepositorio.Lista();
-            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuario.NumeroDocumentoIdentidad);
+            return listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuario.NumeroDocumentoIdentidad)!;
+        }
 
+        // ⚠️ Función auxiliar para cargar la especialidad
+        private async Task CargarEspecialidad()
+        {
+            var doctor = await ObtenerDoctorLogueado();
             if (doctor != null && doctor.Especialidad != null)
                 ViewBag.Especialidad = doctor.Especialidad.Nombre;
             else
@@ -126,21 +125,8 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // Para las citas también usamos la misma lógica de búsqueda
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                var listaUsuarios = await _usuarioRepositorio.Lista(0);
-                var usuario = listaUsuarios.FirstOrDefault(u => u.IdUsuario == idUsuario);
-
-                int idDoctor = 1; // Fallback
-                if (usuario != null)
-                {
-                    var listaDoctores = await _doctorRepositorio.Lista();
-                    var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuario.NumeroDocumentoIdentidad);
-                    if (doctor != null) idDoctor = doctor.IdDoctor;
-                }
+                var doctor = await ObtenerDoctorLogueado();
+                int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
@@ -156,20 +142,8 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                var listaUsuarios = await _usuarioRepositorio.Lista(0);
-                var usuario = listaUsuarios.FirstOrDefault(u => u.IdUsuario == idUsuario);
-
-                int idDoctor = 1; // Fallback
-                if (usuario != null)
-                {
-                    var listaDoctores = await _doctorRepositorio.Lista();
-                    var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuario.NumeroDocumentoIdentidad);
-                    if (doctor != null) idDoctor = doctor.IdDoctor;
-                }
+                var doctor = await ObtenerDoctorLogueado();
+                int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
 
