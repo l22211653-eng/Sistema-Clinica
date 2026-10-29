@@ -74,7 +74,7 @@ namespace ClinicaWeb.Controllers
         public async Task<IActionResult> ObtenerEspecialidad()
         {
             string documentoLogueado = User.Identity?.Name ?? "";
-            if (string.IsNullOrEmpty(documentoLogueado)) return Json("");
+            if (string.IsNullOrEmpty(documentoLogueado)) return Content("");
 
             var listaDoctores = await _doctorRepositorio.Lista();
             var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoLogueado);
@@ -83,9 +83,10 @@ namespace ClinicaWeb.Controllers
             {
                 var listaEspecialidades = await _especialidadRepositorio.Lista();
                 var especialidad = listaEspecialidades.FirstOrDefault(e => e.IdEspecialidad == doctor.Especialidad.IdEspecialidad);
-                return Json(especialidad?.Nombre ?? "");
+                // ⚠️ Usamos Content() en lugar de Json() para devolver texto plano
+                return Content(especialidad?.Nombre ?? "");
             }
-            return Json("");
+            return Content("");
         }
 
         [Authorize(Roles = "Doctor")]

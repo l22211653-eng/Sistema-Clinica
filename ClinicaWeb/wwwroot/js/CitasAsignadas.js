@@ -6,11 +6,16 @@ let recetasTemporales = [];
 document.addEventListener("DOMContentLoaded", function (event) {
     cargarTabla();
 });
-// ⚠️ Cargar la especialidad por AJAX
+
 fetch('/Doctor/ObtenerEspecialidad')
     .then(response => response.text())
     .then(data => {
-        $("#txtEspecialidadBadge").text(data || "Sin especialidad");
+        // Limpiamos las comillas dobles que puedan venir en la respuesta
+        let especialidadLimpia = data.replace(/['"]+/g, '');
+        $("#txtEspecialidadBadge").text(especialidadLimpia || "Sin especialidad");
+    })
+    .catch(() => {
+        $("#txtEspecialidadBadge").text("Sin especialidad");
     });
 
 function cargarTabla() {
