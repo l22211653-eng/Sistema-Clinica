@@ -398,6 +398,26 @@ namespace ClinicaData.Implementacion
             }
             return respuesta;
         }
+        public async Task<List<string>> ObtenerDiasOcupados(int idDoctor)
+        {
+            List<string> fechas = new List<string>();
+            using (var conexion = new NpgsqlConnection(con.CadenaSQL))
+            {
+                await conexion.OpenAsync();
+                using (var cmd = new NpgsqlCommand("SELECT * FROM sp_obtenerDiasOcupados(@p_IdDoctor)", conexion))
+                {
+                    cmd.Parameters.AddWithValue("p_IdDoctor", idDoctor);
+                    using (var dr = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await dr.ReadAsync())
+                        {
+                            fechas.Add(dr["Fecha"].ToString()!);
+                        }
+                    }
+                }
+            }
+            return fechas;
+        }
 
         public async Task<List<DoctorBajoRendimiento>> ListaDoctoresBajoRendimiento()
         {

@@ -3,6 +3,7 @@ using ClinicaData.Implementacion;
 using ClinicaEntidades;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Npgsql;
 
 namespace ClinicaWeb.Controllers
 {
@@ -69,6 +70,20 @@ namespace ClinicaWeb.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { data = "Error en el servidor: " + ex.Message });
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> ObtenerDiasOcupados(int idDoctor)
+        {
+            try
+            {
+                // ⚠️ Ahora llamamos al repositorio en lugar de usar _configuracion
+                var fechas = await _repositorio.ObtenerDiasOcupados(idDoctor);
+                return Json(new { data = fechas });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { data = new List<string>(), error = ex.Message });
             }
         }
 

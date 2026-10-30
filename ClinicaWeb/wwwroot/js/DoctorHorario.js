@@ -1,6 +1,6 @@
 ﻿let tablaData;
 let idEditar = 0;
-let mesEdicion = 0; // ⚠️ NUEVA VARIABLE GLOBAL para guardar el mes al editar
+let mesEdicion = 0;
 let fechasSeleccionadas = [];
 const controlador = "DoctorHorario";
 const modal = "mdData";
@@ -11,7 +11,6 @@ const confirmaEdicion = "Horario actualizado!";
 const meses = [{ value: 1, text: "Enero" }, { value: 2, text: "Febrero" }, { value: 3, text: "Marzo" }, { value: 4, text: "Abril" },
 { value: 5, text: "Mayo" }, { value: 6, text: "Junio" }, { value: 7, text: "Julio" }, { value: 8, text: "Agosto" }, { value: 9, text: "Septiembre" }
     , { value: 10, text: "Octubre" }, { value: 11, text: "Noviembre" }, { value: 12, text: "Diciembre" }]
-const mesActual = new Date().getMonth() + 1;
 
 document.addEventListener("DOMContentLoaded", function (event) {
 
@@ -25,17 +24,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
         },
         "columns": [
             {
-                title: "Nro Documento", "data": "doctor", width: "150px", render: function (data, type, row) {
+                title: "Nro Documento", "data": "doctor", width: "150px", render: function (data) {
                     return data.numeroDocumentoIdentidad
                 }
             },
             {
-                title: "Doctor", "data": "doctor", render: function (data, type, row) {
+                title: "Doctor", "data": "doctor", render: function (data) {
                     return `${data.nombres} ${data.apellidos}`
                 }
             },
             {
-                title: "Mes", "data": "numeroMes", render: function (data, type, row) {
+                title: "Mes", "data": "numeroMes", render: function (data) {
                     const mes = meses.find((m) => m.value == data);
                     return mes ? mes.text : '';
                 }
@@ -46,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
             { title: "Hora Fin PM", "data": "horaFinPM" },
             { title: "Fecha Creacion", "data": "fechaCreacion" },
             {
-                title: "", "data": "idDoctorHorario", width: "120px", render: function (data, type, row) {
+                title: "", "data": "idDoctorHorario", width: "120px", render: function () {
                     return `
                         <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-editar"><i class="fas fa-edit"></i></button>
                         <button type="button" class="btn btn-sm btn-outline-danger me-1 btn-eliminar"><i class="fas fa-trash"></i></button>
@@ -95,12 +94,26 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 placeholder: "Seleccionar"
             });
         }
-    }).catch((error) => {
+    }).catch(() => {
         Swal.fire({ title: "Error!", text: "No se encontraron coincidencias.", icon: "warning" });
     });
 
     // Inicializar el calendario de jQuery UI
     inicializarCalendario();
+
+    // ⚠️ AL CAMBIAR EL DOCTOR, BLOQUEAMOS SUS DÍAS OCUPADOS
+    $("#cboDoctor").on("change", function () {
+        let idDoctor = $(this).val();
+        if (idDoctor == "") return;
+
+        $.ajax({
+            url: `/${controlador}/ObtenerDiasOcupados?idDoctor=${idDoctor}`,
+            type: "GET",
+            success: function (response) {
+                inicializarCalendario(response.data || []);
+            }
+        });
+    });
 
 });
 
@@ -115,7 +128,7 @@ function inicializarCalendario(fechasOcupadas = []) {
         changeMonth: true,
         changeYear: true,
         minDate: 0,
-        onSelect: function (dateText, inst) {
+        onSelect: function (dateText) {
             let index = fechasSeleccionadas.indexOf(dateText);
             if (index > -1) {
                 fechasSeleccionadas.splice(index, 1);
@@ -158,10 +171,9 @@ function MostrarHoraFinPM() {
     $('#txtHoraFinPM').timepicker('option', 'startTime', Hora.format('HH:mm'))
 }
 
-// NUEVO HORARIO
 $("#btnNuevo").on("click", function () {
     idEditar = 0;
-    mesEdicion = 0; // Resetear mes
+    mesEdicion = 0;
     $("#cboDoctor").prop("disabled", false);
     $("#cboDoctor").val("").trigger('change');
     $("#txtHoraInicioAM").val("")
@@ -176,15 +188,14 @@ $("#btnNuevo").on("click", function () {
     inicializarCalendario([]);
 
     $(`#${modal}`).modal('show');
-})
+});
 
-// EDITAR HORARIO
 $("#tbData tbody").on("click", ".btn-editar", function () {
     var filaSeleccionada = $(this).closest('tr');
     var data = tablaData.row(filaSeleccionada).data();
 
     idEditar = data.idDoctorHorario;
-    mesEdicion = data.numeroMes; // ⚠️ Guardamos el mes actual
+    mesEdicion = data.numeroMes;
 
     let documentoDoctor = data.doctor.numeroDocumentoIdentidad;
     $("#cboDoctor option").each(function () {
@@ -195,7 +206,6 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
 
     $("#cboDoctor").prop("disabled", true);
 
-    // Limpiamos los valores antes de asignar
     $("#txtHoraInicioAM").val("");
     $("#txtHoraFinAM").val("");
     $("#txtHoraInicioPM").val("");
@@ -212,7 +222,6 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
     $(`#${modal}`).modal('show');
 });
 
-// ELIMINAR HORARIO
 $("#tbData tbody").on("click", ".btn-eliminar", function () {
     var filaSeleccionada = $(this).closest('tr');
     var data = tablaData.row(filaSeleccionada).data();
@@ -249,7 +258,6 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
     });
 });
 
-// GUARDAR O EDITAR
 $("#btnGuardar").on("click", function () {
 
     if ($("#cboDoctor").val() == "" || ($("#txtFechasSeleccionadas").val() == "" && idEditar === 0)) {
@@ -270,7 +278,6 @@ $("#btnGuardar").on("click", function () {
     const HoraInicioPM = pmLleno ? moment($("#txtHoraInicioPM").val(), ['h:mm A']).format('HH:mm') : "";
     const HoraFinPM = pmLleno ? moment($("#txtHoraFinPM").val(), ['h:mm A']).format('HH:mm') : "";
 
-    // ⚠️ Lógica para el mes: si es edición, usamos mesEdicion. Si es nuevo, lo sacamos de la fecha.
     let mes = mesEdicion;
     if (idEditar === 0) {
         let fechasStr = $("#txtFechasSeleccionadas").val() || "";
@@ -281,7 +288,6 @@ $("#btnGuardar").on("click", function () {
 
     const objeto = {
         IdDoctorHorario: idEditar,
-        IdDoctor: $("#cboDoctor").val(),
         Doctor: { IdDoctor: $("#cboDoctor").val() },
         NumeroMes: mes,
         HoraInicioAM: HoraInicioAM,
