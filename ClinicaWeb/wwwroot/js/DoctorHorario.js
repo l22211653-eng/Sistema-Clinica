@@ -269,7 +269,7 @@ $("#btnGuardar").on("click", function () {
     // ⚠️ ENVIAMOS EL IDDOCTOR DIRECTO EN LA RAÍZ
     const objeto = {
         IdDoctorHorario: idEditar,
-        IdDoctor: $("#cboDoctor").val(),
+        IdDoctor: $("#cboDoctor").val(), // ⚠️ ID en la raíz
         NumeroMes: mes,
         HoraInicioAM: HoraInicioAM,
         HoraFinAM: HoraFinAM,

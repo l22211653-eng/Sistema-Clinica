@@ -377,7 +377,7 @@ namespace ClinicaData.Implementacion
                 {
                     cmd.Parameters.AddWithValue("p_Id", objeto.IdDoctorHorario);
 
-                    // ⚠️ Usamos objeto.IdDoctor (que viene directo del JS)
+                    // ⚠️ Usamos objeto.IdDoctor directamente (ya no Doctor.IdDoctor)
                     cmd.Parameters.AddWithValue("p_IdDoctor", objeto.IdDoctor);
 
                     cmd.Parameters.AddWithValue("p_HAM", objeto.HoraInicioAM ?? "");
