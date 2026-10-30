@@ -116,6 +116,24 @@ namespace ClinicaWeb.Controllers
                 return StatusCode(500, new { data = "Error: " + ex.Message });
             }
         }
+        [HttpGet]
+        public async Task<IActionResult> ListaEmergencias()
+        {
+            try
+            {
+                var usuarioDoc = User.Identity?.Name;
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+                int idDoctor = doctor?.IdDoctor ?? 1;
+
+                List<Cita> lista = await _citaRepositorio.ListaEmergenciasDoctor(idDoctor);
+                return StatusCode(StatusCodes.Status200OK, new { data = lista });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
+            }
+        }
 
         [HttpPut]
         public async Task<IActionResult> Editar([FromBody] Doctor objeto)

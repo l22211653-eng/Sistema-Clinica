@@ -194,3 +194,50 @@ $("#btnTerminarCita").click(function () {
             Swal.fire("Error", "Ocurrió un error al guardar.", "error");
         });
 });
+// ==========================================
+// REVISAR EMERGENCIAS CADA 30 SEGUNDOS
+// ==========================================
+function revisarEmergencias() {
+    fetch('/Doctor/ListaEmergencias')
+        .then(res => res.json())
+        .then(data => {
+            if (data.data && data.data.length > 0) {
+                $("#panelEmergencias").removeClass("d-none");
+                $("#listaEmergencias").html("");
+
+                data.data.forEach(em => {
+                    $("#listaEmergencias").append(`
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                            <div>
+                                <i class="fas fa-user-injured me-2"></i>
+                                <strong>${em.usuario.nombre}</strong> - Hoy a las ${em.horaCita}
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger btn-atender-emergencia" data-id="${em.idCita}">
+                                <i class="fas fa-notes-medical me-1"></i> Atender Emergencia
+                            </button>
+                        </div>
+                    `);
+                });
+            } else {
+                $("#panelEmergencias").addClass("d-none");
+            }
+        })
+        .catch(error => console.log("Error al revisar emergencias", error));
+}
+
+// Iniciar la revisión al cargar la página y luego cada 30 segundos
+$(document).ready(function () {
+    revisarEmergencias();
+    setInterval(revisarEmergencias, 30000);
+});
+
+// Evento para atender la emergencia desde el panel
+$(document).on("click", ".btn-atender-emergencia", function () {
+    let idCita = $(this).data("id");
+    // Abrimos el modal de indicaciones y receta que ya tienes, pasándole el ID
+    $("#txtIdCita").val(idCita);
+    $("#txtIndicaciones").val("");
+    recetasTemporales = [];
+    $("#tbRecetaTemporal tbody").empty();
+    $("#mdData").modal('show');
+});
