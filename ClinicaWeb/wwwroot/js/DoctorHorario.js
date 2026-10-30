@@ -265,19 +265,25 @@ $("#btnGuardar").on("click", function () {
     let primerFecha = $("#txtFechasSeleccionadas").val().split(",")[0];
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
+    // ⚠️ VALIDACIÓN PARA EVITAR EL ERROR DE NULL AL EDITAR
+    let fechas = $("#txtFechasSeleccionadas").val();
 
-    // ⚠️ ENVIAMOS EL IDDOCTOR EN LA RAÍZ Y DENTRO DE DOCTOR
+    // Si estamos editando y las fechas no se cambiaron, enviamos un texto dummy
+    if (idEditar !== 0 && (fechas === "" || fechas === "EDITANDO")) {
+        fechas = "EDITANDO";
+    }
+
     const objeto = {
         IdDoctorHorario: idEditar,
         IdDoctor: $("#cboDoctor").val(),
-        Doctor: { IdDoctor: $("#cboDoctor").val() }, // Por si el C# lo busca aquí
+        Doctor: { IdDoctor: $("#cboDoctor").val() },
         NumeroMes: mes,
         HoraInicioAM: HoraInicioAM,
         HoraFinAM: HoraFinAM,
         HoraInicioPM: HoraInicioPM,
         HoraFinPM: HoraFinPM,
         DoctorHorarioDetalle: {
-            Fecha: $("#txtFechasSeleccionadas").val()
+            Fecha: fechas // ⚠️ Usamos la variable validada
         }
     }
 
@@ -304,8 +310,9 @@ $("#btnGuardar").on("click", function () {
         }
     }).catch((error) => {
         Swal.fire({ title: "Error al guardar", text: error.message, icon: "error" });
+
     });
-});
+
 
 // ==========================================
 // GRÁFICAS Y TABLAS DE RENDIMIENTO
