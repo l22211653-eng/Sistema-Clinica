@@ -380,7 +380,7 @@ namespace ClinicaData.Implementacion
                 {
                     cmd.Parameters.AddWithValue("p_Id", objeto.IdDoctorHorario);
 
-                    // ⚠️ Validación: Si objeto.Doctor es nulo, usamos objeto.IdDoctor
+                    // ⚠️ VALIDACIÓN CLAVE: Si Doctor es nulo, usamos objeto.IdDoctor
                     int idDoctor = objeto.Doctor != null ? objeto.Doctor.IdDoctor : objeto.IdDoctor;
                     cmd.Parameters.AddWithValue("p_IdDoctor", idDoctor);
 

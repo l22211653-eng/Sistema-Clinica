@@ -266,7 +266,7 @@ $("#btnGuardar").on("click", function () {
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
 
-    // ⚠️ ENVIAMOS EL IDDOCTOR EN LA RAÍZ Y TAMBIÉN DENTRO DEL OBJETO DOCTOR
+    // ⚠️ ENVIAMOS EL IDDOCTOR EN LA RAÍZ Y DENTRO DE DOCTOR
     const objeto = {
         IdDoctorHorario: idEditar,
         IdDoctor: $("#cboDoctor").val(),

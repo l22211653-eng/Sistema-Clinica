@@ -9,7 +9,7 @@ namespace ClinicaEntidades
     public class DoctorHorario
     {
         public int IdDoctorHorario { get; set; }
-        public int IdDoctor { get; set; } // ⚠️ ESTA PROPIEDAD ES CLAVE
+        public int IdDoctor { get; set; }
         public Doctor Doctor { get; set; } = null!;
         public int NumeroMes { get; set; }
         public string? HoraInicioAM { get; set; }
