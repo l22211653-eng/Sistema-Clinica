@@ -213,17 +213,18 @@ namespace ClinicaData.Implementacion
                                 IdDoctorHorario = Convert.ToInt32(dr["IdDoctorHorario"]),
                                 Doctor = new Doctor()
                                 {
-                                    // ⚠️ AQUÍ AGREGAMOS EL ID DEL DOCTOR
-                                    IdDoctor = Convert.ToInt32(dr["IdDoctor"]),
+                                    // ⚠️ Validamos si IdDoctor viene nulo o no existe
+                                    IdDoctor = dr["IdDoctor"] != DBNull.Value ? Convert.ToInt32(dr["IdDoctor"]) : 0,
                                     NumeroDocumentoIdentidad = dr["NumeroDocumentoIdentidad"].ToString()!,
                                     Nombres = dr["Nombres"].ToString()!,
                                     Apellidos = dr["Apellidos"].ToString()!,
                                 },
                                 NumeroMes = Convert.ToInt32(dr["NumeroMes"]),
-                                HoraInicioAM = dr["HoraInicioAM"].ToString()!,
-                                HoraFinAM = dr["HoraFinAM"].ToString()!,
-                                HoraInicioPM = dr["HoraInicioPM"].ToString()!,
-                                HoraFinPM = dr["HoraFinPM"].ToString()!,
+                                // ⚠️ Validamos si las horas vienen nulas (ahora son opcionales)
+                                HoraInicioAM = dr["HoraInicioAM"] != DBNull.Value ? dr["HoraInicioAM"].ToString()! : "",
+                                HoraFinAM = dr["HoraFinAM"] != DBNull.Value ? dr["HoraFinAM"].ToString()! : "",
+                                HoraInicioPM = dr["HoraInicioPM"] != DBNull.Value ? dr["HoraInicioPM"].ToString()! : "",
+                                HoraFinPM = dr["HoraFinPM"] != DBNull.Value ? dr["HoraFinPM"].ToString()! : "",
                                 FechaCreacion = dr["FechaCreacion"].ToString()!
                             });
                         }
