@@ -160,7 +160,7 @@ function MostrarHoraFinPM() {
 // NUEVO HORARIO
 $("#btnNuevo").on("click", function () {
     idEditar = 0;
-    $("#cboDoctor").prop("disabled", false); // Desbloqueamos
+    $("#cboDoctor").prop("disabled", false);
     $("#cboDoctor").val("").trigger('change');
     $("#txtHoraInicioAM").val("")
     $("#txtHoraFinAM").val("")
@@ -190,12 +190,18 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
         }
     });
 
-    $("#cboDoctor").prop("disabled", true); // Bloqueamos
+    $("#cboDoctor").prop("disabled", true);
 
-    $("#txtHoraInicioAM").val(data.horaInicioAM);
-    $("#txtHoraFinAM").val(data.horaFinAM);
-    $("#txtHoraInicioPM").val(data.horaInicioPM);
-    $("#txtHoraFinPM").val(data.horaFinPM);
+    // ⚠️ Limpiamos los valores antes de asignar para evitar el error de getHours
+    $("#txtHoraInicioAM").val("");
+    $("#txtHoraFinAM").val("");
+    $("#txtHoraInicioPM").val("");
+    $("#txtHoraFinPM").val("");
+
+    if (data.horaInicioAM) $("#txtHoraInicioAM").val(data.horaInicioAM);
+    if (data.horaFinAM) $("#txtHoraFinAM").val(data.horaFinAM);
+    if (data.horaInicioPM) $("#txtHoraInicioPM").val(data.horaInicioPM);
+    if (data.horaFinPM) $("#txtHoraFinPM").val(data.horaFinPM);
 
     $("#calendarioFechas").datepicker("disable");
     $("#txtFechasSeleccionadas").val("EDITANDO");
@@ -265,9 +271,9 @@ $("#btnGuardar").on("click", function () {
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
 
-    let fechas = $("#txtFechasSeleccionadas").val();
-    if (idEditar !== 0 && (fechas === "" || fechas === "EDITANDO")) {
-        fechas = "EDITANDO";
+    // Si es edición, forzamos el mes a 0 (o al que ya tenía) para que no falle
+    if (idEditar !== 0) {
+        mes = parseInt(data.numeroMes) || mes; // Usamos el mes actual si falla
     }
 
     const objeto = {
@@ -280,7 +286,7 @@ $("#btnGuardar").on("click", function () {
         HoraInicioPM: HoraInicioPM,
         HoraFinPM: HoraFinPM,
         DoctorHorarioDetalle: {
-            Fecha: fechas
+            Fecha: $("#txtFechasSeleccionadas").val()
         }
     }
 
@@ -308,7 +314,7 @@ $("#btnGuardar").on("click", function () {
     }).catch((error) => {
         Swal.fire({ title: "Error al guardar", text: error.message, icon: "error" });
     });
-}); // ⚠️ ESTA LLAVE FALTABA Y ROMPÍA TODO EL SCRIPT
+});
 
 // ==========================================
 // GRÁFICAS Y TABLAS DE RENDIMIENTO

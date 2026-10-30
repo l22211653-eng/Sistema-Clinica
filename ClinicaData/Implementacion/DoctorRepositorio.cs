@@ -213,14 +213,12 @@ namespace ClinicaData.Implementacion
                                 IdDoctorHorario = Convert.ToInt32(dr["IdDoctorHorario"]),
                                 Doctor = new Doctor()
                                 {
-                                    // ⚠️ Validamos si IdDoctor viene nulo o no existe
                                     IdDoctor = dr["IdDoctor"] != DBNull.Value ? Convert.ToInt32(dr["IdDoctor"]) : 0,
                                     NumeroDocumentoIdentidad = dr["NumeroDocumentoIdentidad"].ToString()!,
                                     Nombres = dr["Nombres"].ToString()!,
                                     Apellidos = dr["Apellidos"].ToString()!,
                                 },
                                 NumeroMes = Convert.ToInt32(dr["NumeroMes"]),
-                                // ⚠️ Validamos si las horas vienen nulas (ahora son opcionales)
                                 HoraInicioAM = dr["HoraInicioAM"] != DBNull.Value ? dr["HoraInicioAM"].ToString()! : "",
                                 HoraFinAM = dr["HoraFinAM"] != DBNull.Value ? dr["HoraFinAM"].ToString()! : "",
                                 HoraInicioPM = dr["HoraInicioPM"] != DBNull.Value ? dr["HoraInicioPM"].ToString()! : "",
@@ -290,16 +288,14 @@ namespace ClinicaData.Implementacion
                 await conexion.OpenAsync();
                 using (var cmd = new NpgsqlCommand("SELECT sp_registrarDoctorHorario(@p_Id, @p_Mes, @p_HAM, @p_HFAM, @p_HPM, @p_HFPM, @p_Fechas)", conexion))
                 {
-                    // ⚠️ Validación: Si objeto.Doctor es nulo, usamos objeto.IdDoctor
                     int idDoctor = objeto.Doctor != null ? objeto.Doctor.IdDoctor : objeto.IdDoctor;
                     cmd.Parameters.AddWithValue("p_Id", idDoctor);
-
                     cmd.Parameters.AddWithValue("p_Mes", objeto.NumeroMes);
                     cmd.Parameters.AddWithValue("p_HAM", objeto.HoraInicioAM ?? "");
                     cmd.Parameters.AddWithValue("p_HFAM", objeto.HoraFinAM ?? "");
                     cmd.Parameters.AddWithValue("p_HPM", objeto.HoraInicioPM ?? "");
                     cmd.Parameters.AddWithValue("p_HFPM", objeto.HoraFinPM ?? "");
-                    cmd.Parameters.AddWithValue("p_Fechas", objeto.DoctorHorarioDetalle.Fecha);
+                    cmd.Parameters.AddWithValue("p_Fechas", objeto.DoctorHorarioDetalle?.Fecha ?? "");
 
                     try
                     {
@@ -370,6 +366,7 @@ namespace ClinicaData.Implementacion
             }
             return lista;
         }
+
         public async Task<string> EditarHorario(DoctorHorario objeto)
         {
             string respuesta = "";
@@ -380,7 +377,6 @@ namespace ClinicaData.Implementacion
                 {
                     cmd.Parameters.AddWithValue("p_Id", objeto.IdDoctorHorario);
 
-                    // ⚠️ VALIDACIÓN CLAVE: Si Doctor es nulo, usamos objeto.IdDoctor
                     int idDoctor = objeto.Doctor != null ? objeto.Doctor.IdDoctor : objeto.IdDoctor;
                     cmd.Parameters.AddWithValue("p_IdDoctor", idDoctor);
 
