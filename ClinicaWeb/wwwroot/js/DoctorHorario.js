@@ -157,9 +157,10 @@ function MostrarHoraFinPM() {
     $('#txtHoraFinPM').timepicker('option', 'startTime', Hora.format('HH:mm'))
 }
 
-// NUEVO HORARIO
+// NUEVO HORARIO (Asegúrate de que esta función tenga la línea para desbloquear el combo)
 $("#btnNuevo").on("click", function () {
     idEditar = 0;
+    $("#cboDoctor").prop("disabled", false); // ⚠️ Desbloqueamos para nuevos
     $("#cboDoctor").val("").trigger('change');
     $("#txtHoraInicioAM").val("")
     $("#txtHoraFinAM").val("")
@@ -169,7 +170,6 @@ $("#btnNuevo").on("click", function () {
     fechasSeleccionadas = [];
     $("#txtFechasSeleccionadas").val("");
 
-    // Desbloqueamos el calendario para nuevo
     $("#calendarioFechas").datepicker("enable");
     inicializarCalendario([]);
 
@@ -183,15 +183,18 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
 
     idEditar = data.idDoctorHorario;
 
+    // ⚠️ Llenamos el combo y LO BLOQUEAMOS
     $("#cboDoctor").val(data.doctor.idDoctor).trigger('change');
+    $("#cboDoctor").prop("disabled", true); // Bloqueado para que no cambien de doctor
+
     $("#txtHoraInicioAM").val(data.horaInicioAM);
     $("#txtHoraFinAM").val(data.horaFinAM);
     $("#txtHoraInicioPM").val(data.horaInicioPM);
     $("#txtHoraFinPM").val(data.horaFinPM);
 
-    // Bloqueamos el calendario en edición (no se cambian días)
+    // Bloqueamos el calendario en edición
     $("#calendarioFechas").datepicker("disable");
-    $("#txtFechasSeleccionadas").val("EDITANDO"); // Dummy para pasar validación
+    $("#txtFechasSeleccionadas").val("EDITANDO");
 
     $(`#${modal}`).modal('show');
 });
@@ -259,9 +262,10 @@ $("#btnGuardar").on("click", function () {
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
 
+    // ⚠️ AQUÍ ESTÁ EL CAMBIO: Enviamos IdDoctor directo en la raíz
     const objeto = {
         IdDoctorHorario: idEditar,
-        Doctor: { IdDoctor: $("#cboDoctor").val() },
+        IdDoctor: $("#cboDoctor").val(), // Enviamos el ID directo
         NumeroMes: mes,
         HoraInicioAM: HoraInicioAM,
         HoraFinAM: HoraFinAM,
@@ -272,7 +276,6 @@ $("#btnGuardar").on("click", function () {
         }
     }
 
-    // ⚠️ DECIDIMOS LA RUTA
     let url = idEditar === 0 ? `/${controlador}/RegistrarHorario` : `/${controlador}/EditarHorario`;
 
     fetch(url, {
@@ -283,9 +286,8 @@ $("#btnGuardar").on("click", function () {
         if (response.ok) {
             return response.json();
         } else {
-            // ⚠️ AQUÍ ATRAPAMOS EL ERROR REAL DEL SERVIDOR
             const errorData = await response.json().catch(() => ({ data: "Error desconocido" }));
-            throw new Error(errorData.data || "Error desconocido en el servidor");
+            throw new Error(errorData.data || "Error en el servidor");
         }
     }).then(responseJson => {
         if (responseJson.data == "") {
@@ -296,7 +298,6 @@ $("#btnGuardar").on("click", function () {
             Swal.fire({ title: "Error!", text: responseJson.data, icon: "warning" });
         }
     }).catch((error) => {
-        // ⚠️ AQUÍ MOSTRAMOS EL ERROR REAL
         Swal.fire({ title: "Error al guardar", text: error.message, icon: "error" });
     });
 });

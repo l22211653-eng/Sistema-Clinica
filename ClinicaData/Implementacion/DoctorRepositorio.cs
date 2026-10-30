@@ -376,7 +376,10 @@ namespace ClinicaData.Implementacion
                 using (var cmd = new NpgsqlCommand("SELECT sp_editarDoctorHorario(@p_Id, @p_IdDoctor, @p_HAM, @p_HFAM, @p_HPM, @p_HFPM)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_Id", objeto.IdDoctorHorario);
-                    cmd.Parameters.AddWithValue("p_IdDoctor", objeto.Doctor.IdDoctor);
+
+                    // ⚠️ CAMBIO AQUÍ: Usamos objeto.IdDoctor en lugar de objeto.Doctor.IdDoctor
+                    cmd.Parameters.AddWithValue("p_IdDoctor", objeto.IdDoctor);
+
                     cmd.Parameters.AddWithValue("p_HAM", objeto.HoraInicioAM ?? "");
                     cmd.Parameters.AddWithValue("p_HFAM", objeto.HoraFinAM ?? "");
                     cmd.Parameters.AddWithValue("p_HPM", objeto.HoraInicioPM ?? "");
