@@ -176,6 +176,22 @@ namespace ClinicaWeb.Controllers
                 return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> EditarHorario([FromBody] DoctorHorario objeto)
+        {
+            try
+            {
+                // ⚠️ IMPORTANTE: Asegúrate de que el método en el repositorio se llame EditarHorario
+                string respuesta = await _doctorRepositorio.EditarHorario(objeto);
+                return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+            }
+            catch (Exception ex)
+            {
+                // Esto imprimirá el error real en los logs de Railway
+                Console.WriteLine("ERROR AL EDITAR HORARIO: " + ex.Message);
+                return StatusCode(500, new { data = "Error en el servidor: " + ex.Message });
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> CambiarEstado([FromBody] Cita objeto)

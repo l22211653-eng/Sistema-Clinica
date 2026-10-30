@@ -283,8 +283,9 @@ $("#btnGuardar").on("click", function () {
         if (response.ok) {
             return response.json();
         } else {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.data || "Error en el servidor");
+            // ⚠️ AQUÍ ATRAPAMOS EL ERROR REAL DEL SERVIDOR
+            const errorData = await response.json().catch(() => ({ data: "Error desconocido" }));
+            throw new Error(errorData.data || "Error desconocido en el servidor");
         }
     }).then(responseJson => {
         if (responseJson.data == "") {
@@ -295,8 +296,9 @@ $("#btnGuardar").on("click", function () {
             Swal.fire({ title: "Error!", text: responseJson.data, icon: "warning" });
         }
     }).catch((error) => {
+        // ⚠️ AQUÍ MOSTRAMOS EL ERROR REAL
         Swal.fire({ title: "Error al guardar", text: error.message, icon: "error" });
-    })
+    });
 });
 
 // ==========================================
