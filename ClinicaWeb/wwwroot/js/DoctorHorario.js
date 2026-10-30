@@ -266,10 +266,11 @@ $("#btnGuardar").on("click", function () {
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
 
-    // ⚠️ ENVIAMOS EL IDDOCTOR DIRECTO EN LA RAÍZ
+    // ⚠️ ENVIAMOS EL IDDOCTOR EN LA RAÍZ Y TAMBIÉN DENTRO DEL OBJETO DOCTOR
     const objeto = {
         IdDoctorHorario: idEditar,
-        IdDoctor: $("#cboDoctor").val(), // ⚠️ ID en la raíz
+        IdDoctor: $("#cboDoctor").val(),
+        Doctor: { IdDoctor: $("#cboDoctor").val() }, // Por si el C# lo busca aquí
         NumeroMes: mes,
         HoraInicioAM: HoraInicioAM,
         HoraFinAM: HoraFinAM,

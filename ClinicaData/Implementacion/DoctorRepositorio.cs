@@ -290,7 +290,10 @@ namespace ClinicaData.Implementacion
                 await conexion.OpenAsync();
                 using (var cmd = new NpgsqlCommand("SELECT sp_registrarDoctorHorario(@p_Id, @p_Mes, @p_HAM, @p_HFAM, @p_HPM, @p_HFPM, @p_Fechas)", conexion))
                 {
-                    cmd.Parameters.AddWithValue("p_Id", objeto.Doctor.IdDoctor);
+                    // ⚠️ Validación: Si objeto.Doctor es nulo, usamos objeto.IdDoctor
+                    int idDoctor = objeto.Doctor != null ? objeto.Doctor.IdDoctor : objeto.IdDoctor;
+                    cmd.Parameters.AddWithValue("p_Id", idDoctor);
+
                     cmd.Parameters.AddWithValue("p_Mes", objeto.NumeroMes);
                     cmd.Parameters.AddWithValue("p_HAM", objeto.HoraInicioAM ?? "");
                     cmd.Parameters.AddWithValue("p_HFAM", objeto.HoraFinAM ?? "");
@@ -377,8 +380,9 @@ namespace ClinicaData.Implementacion
                 {
                     cmd.Parameters.AddWithValue("p_Id", objeto.IdDoctorHorario);
 
-                    // ⚠️ Usamos objeto.IdDoctor directamente (ya no Doctor.IdDoctor)
-                    cmd.Parameters.AddWithValue("p_IdDoctor", objeto.IdDoctor);
+                    // ⚠️ Validación: Si objeto.Doctor es nulo, usamos objeto.IdDoctor
+                    int idDoctor = objeto.Doctor != null ? objeto.Doctor.IdDoctor : objeto.IdDoctor;
+                    cmd.Parameters.AddWithValue("p_IdDoctor", idDoctor);
 
                     cmd.Parameters.AddWithValue("p_HAM", objeto.HoraInicioAM ?? "");
                     cmd.Parameters.AddWithValue("p_HFAM", objeto.HoraFinAM ?? "");

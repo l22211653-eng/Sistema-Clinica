@@ -39,6 +39,8 @@ namespace ClinicaWeb.Controllers
             }
             catch (Exception ex)
             {
+                // Esto imprimirá el error real en los logs de Railway
+                Console.WriteLine("ERROR AL REGISTRAR: " + ex.Message);
                 return StatusCode(500, new { data = "Error en el servidor: " + ex.Message });
             }
         }
@@ -52,22 +54,11 @@ namespace ClinicaWeb.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine("ERROR AL EDITAR: " + ex.Message);
                 return StatusCode(500, new { data = "Error en el servidor: " + ex.Message });
             }
         }
-        [HttpPost]
-        public async Task<IActionResult> Editar([FromBody] DoctorHorario objeto)
-        {
-            try
-            {
-                string respuesta = await _repositorio.EditarHorario(objeto);
-                return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { data = "Error: " + ex.Message });
-            }
-        }
+        
         [HttpDelete]
         public async Task<IActionResult> Eliminar(int Id)
         {
