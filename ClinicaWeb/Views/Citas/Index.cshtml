@@ -54,9 +54,14 @@
 <!-- Encabezado de la Página -->
 <div class="page-header">
     <h2><i class="fas fa-calendar-check"></i> Mis Próximas Citas</h2>
-    <a asp-controller="Citas" asp-action="NuevaCita" class="btn btn-new-cita">
-        <i class="fas fa-plus-circle me-2"></i> Agendar Nueva Cita
-    </a>
+    <div>
+        <button class="btn btn-danger me-2" id="btnEmergencia">
+            <i class="fas fa-ambulance me-2"></i> ¡Emergencia!
+        </button>
+        <a asp-controller="Citas" asp-action="NuevaCita" class="btn btn-new-cita">
+            <i class="fas fa-plus-circle me-2"></i> Agendar Nueva Cita
+        </a>
+    </div>
 </div>
 
 <div class="row">

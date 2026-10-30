@@ -48,6 +48,27 @@ function cargarTabla() {
         language: { url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json" }
     });
 }
+function revisarEmergencias() {
+    fetch('/Doctor/ListaEmergencias')
+        .then(res => res.json())
+        .then(data => {
+            if (data.data && data.data.length > 0) {
+                $("#panelEmergencias").removeClass("d-none");
+                $("#listaEmergencias").html("");
+                data.data.forEach(em => {
+                    $("#listaEmergencias").append(`<p><strong>${em.usuario.nombre}</strong> - ${em.horaCita} (Hoy)</p>`);
+                });
+            } else {
+                $("#panelEmergencias").addClass("d-none");
+            }
+        });
+}
+
+// Llamar a la función al cargar y luego cada 30 segundos
+$(document).ready(function () {
+    revisarEmergencias();
+    setInterval(revisarEmergencias, 30000);
+});
 
 // ==========================================
 // 1. ABRIR MODAL Y PREPARAR RECETA

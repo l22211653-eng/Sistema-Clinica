@@ -129,6 +129,50 @@ namespace ClinicaData.Implementacion
             return lista;
         }
 
+        public async Task<string> CrearEmergencia(int idUsuario, int idEspecialidad)
+        {
+            string respuesta = "";
+            using (var conexion = new NpgsqlConnection(con.CadenaSQL))
+            {
+                await conexion.OpenAsync();
+                using (var cmd = new NpgsqlCommand("SELECT sp_crearEmergencia(@p_User, @p_Esp)", conexion))
+                {
+                    cmd.Parameters.AddWithValue("p_User", idUsuario);
+                    cmd.Parameters.AddWithValue("p_Esp", idEspecialidad);
+                    var result = await cmd.ExecuteScalarAsync();
+                    respuesta = result?.ToString() ?? "";
+                }
+            }
+            return respuesta;
+        }
+
+        public async Task<List<Cita>> ListaEmergenciasDoctor(int idDoctor)
+        {
+            List<Cita> lista = new List<Cita>();
+            using (var conexion = new NpgsqlConnection(con.CadenaSQL))
+            {
+                await conexion.OpenAsync();
+                using (var cmd = new NpgsqlCommand("SELECT * FROM sp_listaEmergenciasDoctor(@p_IdDoctor)", conexion))
+                {
+                    cmd.Parameters.AddWithValue("p_IdDoctor", idDoctor);
+                    using (var dr = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await dr.ReadAsync())
+                        {
+                            lista.Add(new Cita()
+                            {
+                                IdCita = Convert.ToInt32(dr["IdCita"]),
+                                FechaCita = dr["FechaCita"].ToString()!,
+                                HoraCita = dr["HoraCita"].ToString()!,
+                                Usuario = new Usuario { Nombre = dr["Paciente"].ToString()! },
+                                EstadoCita = new EstadoCita { Nombre = dr["Estado"].ToString()! }
+                            });
+                        }
+                    }
+                }
+            }
+            return lista;
+        }
         public async Task<List<Cita>> ListaHistorialCitas(int IdUsuario)
         {
             List<Cita> lista = new List<Cita>();

@@ -55,6 +55,22 @@ namespace ClinicaWeb.Controllers
             string respuesta = await _repositorioCita.Guardar(objeto);
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
+        [HttpPost]
+        public async Task<IActionResult> SolicitarEmergencia(int idEspecialidad)
+        {
+            try
+            {
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
+
+                string respuesta = await _repositorioCita.CrearEmergencia(int.Parse(idUsuario), idEspecialidad);
+                return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = "Error: " + ex.Message });
+            }
+        }
 
         [HttpGet]
         public async Task<IActionResult> ListaCitasPendiente()

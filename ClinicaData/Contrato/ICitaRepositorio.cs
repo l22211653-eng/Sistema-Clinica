@@ -16,6 +16,9 @@ namespace ClinicaData.Contrato
         Task<List<Resena>> ListaResenasDoctor(int IdDoctor);
         Task<string> GuardarResena(Resena objeto);
 
+        Task<string> CrearEmergencia(int idUsuario, int idEspecialidad);
+        Task<List<Cita>> ListaEmergenciasDoctor(int idDoctor);
+
         // Métodos de Recetas
         Task<List<Receta>> ListaRecetasCita(int IdCita);
         Task<string> GuardarReceta(Receta objeto);

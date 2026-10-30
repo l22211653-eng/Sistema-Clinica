@@ -47,6 +47,37 @@ document.addEventListener("DOMContentLoaded", function (event) {
     });
 });
 
+$("#btnEmergencia").click(async function () {
+    // Pedimos la especialidad con un select de SweetAlert
+    const { value: idEspecialidad } = await Swal.fire({
+        title: '¡Emergencia Médica!',
+        text: 'Selecciona la especialidad que necesitas. Buscaremos al primer doctor disponible hoy.',
+        input: 'select',
+        inputOptions: {
+            // Aquí deberías cargar tus especialidades dinámicamente, 
+            // por simplicidad las ponemos fijas o hacemos un fetch rápido
+        },
+        inputPlaceholder: 'Selecciona una especialidad',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Solicitar Emergencia'
+    });
+
+    if (idEspecialidad) {
+        Swal.fire({ title: 'Buscando doctor...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+        fetch('/Citas/SolicitarEmergencia?idEspecialidad=' + idEspecialidad, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.data === "") {
+                    Swal.fire('¡Atendido!', 'Un doctor te atenderá en breve. Revisa tu historial.', 'success');
+                } else {
+                    Swal.fire('Lo sentimos', data.data, 'error');
+                }
+            }).catch(() => Swal.fire('Error', 'No se pudo procesar la emergencia.', 'error'));
+    }
+});
+
 $("#tbData tbody").on("click", ".btn-cancelar", function () {
     let filaSeleccionada = $(this).closest('tr');
     let data = tablaData.row(filaSeleccionada).data();
