@@ -183,7 +183,6 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
 
     idEditar = data.idDoctorHorario;
 
-    // ⚠️ SOLUCIÓN: Buscamos el ID del doctor comparando el documento
     let documentoDoctor = data.doctor.numeroDocumentoIdentidad;
     $("#cboDoctor option").each(function () {
         if ($(this).text().includes(documentoDoctor)) {
@@ -265,10 +264,8 @@ $("#btnGuardar").on("click", function () {
     let primerFecha = $("#txtFechasSeleccionadas").val().split(",")[0];
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
-    // ⚠️ VALIDACIÓN PARA EVITAR EL ERROR DE NULL AL EDITAR
-    let fechas = $("#txtFechasSeleccionadas").val();
 
-    // Si estamos editando y las fechas no se cambiaron, enviamos un texto dummy
+    let fechas = $("#txtFechasSeleccionadas").val();
     if (idEditar !== 0 && (fechas === "" || fechas === "EDITANDO")) {
         fechas = "EDITANDO";
     }
@@ -283,7 +280,7 @@ $("#btnGuardar").on("click", function () {
         HoraInicioPM: HoraInicioPM,
         HoraFinPM: HoraFinPM,
         DoctorHorarioDetalle: {
-            Fecha: fechas // ⚠️ Usamos la variable validada
+            Fecha: fechas
         }
     }
 
@@ -310,9 +307,8 @@ $("#btnGuardar").on("click", function () {
         }
     }).catch((error) => {
         Swal.fire({ title: "Error al guardar", text: error.message, icon: "error" });
-
     });
-
+}); // ⚠️ ESTA LLAVE FALTABA Y ROMPÍA TODO EL SCRIPT
 
 // ==========================================
 // GRÁFICAS Y TABLAS DE RENDIMIENTO
