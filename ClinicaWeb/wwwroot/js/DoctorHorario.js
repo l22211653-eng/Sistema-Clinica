@@ -1,5 +1,6 @@
 ﻿let tablaData;
 let idEditar = 0;
+let mesEdicion = 0; // ⚠️ NUEVA VARIABLE GLOBAL para guardar el mes al editar
 let fechasSeleccionadas = [];
 const controlador = "DoctorHorario";
 const modal = "mdData";
@@ -160,6 +161,7 @@ function MostrarHoraFinPM() {
 // NUEVO HORARIO
 $("#btnNuevo").on("click", function () {
     idEditar = 0;
+    mesEdicion = 0; // Resetear mes
     $("#cboDoctor").prop("disabled", false);
     $("#cboDoctor").val("").trigger('change');
     $("#txtHoraInicioAM").val("")
@@ -182,6 +184,7 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
     var data = tablaData.row(filaSeleccionada).data();
 
     idEditar = data.idDoctorHorario;
+    mesEdicion = data.numeroMes; // ⚠️ Guardamos el mes actual
 
     let documentoDoctor = data.doctor.numeroDocumentoIdentidad;
     $("#cboDoctor option").each(function () {
@@ -192,7 +195,7 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
 
     $("#cboDoctor").prop("disabled", true);
 
-    // ⚠️ Limpiamos los valores antes de asignar para evitar el error de getHours
+    // Limpiamos los valores antes de asignar
     $("#txtHoraInicioAM").val("");
     $("#txtHoraFinAM").val("");
     $("#txtHoraInicioPM").val("");
@@ -249,7 +252,7 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
 // GUARDAR O EDITAR
 $("#btnGuardar").on("click", function () {
 
-    if ($("#cboDoctor").val() == "" || $("#txtFechasSeleccionadas").val() == "") {
+    if ($("#cboDoctor").val() == "" || ($("#txtFechasSeleccionadas").val() == "" && idEditar === 0)) {
         Swal.fire({ title: "Error!", text: "Falta seleccionar el doctor o las fechas.", icon: "warning" });
         return;
     }
@@ -267,13 +270,13 @@ $("#btnGuardar").on("click", function () {
     const HoraInicioPM = pmLleno ? moment($("#txtHoraInicioPM").val(), ['h:mm A']).format('HH:mm') : "";
     const HoraFinPM = pmLleno ? moment($("#txtHoraFinPM").val(), ['h:mm A']).format('HH:mm') : "";
 
-    let primerFecha = $("#txtFechasSeleccionadas").val().split(",")[0];
-    let partes = primerFecha.split("/");
-    let mes = parseInt(partes[1]);
-
-    // Si es edición, forzamos el mes a 0 (o al que ya tenía) para que no falle
-    if (idEditar !== 0) {
-        mes = parseInt(data.numeroMes) || mes; // Usamos el mes actual si falla
+    // ⚠️ Lógica para el mes: si es edición, usamos mesEdicion. Si es nuevo, lo sacamos de la fecha.
+    let mes = mesEdicion;
+    if (idEditar === 0) {
+        let fechasStr = $("#txtFechasSeleccionadas").val() || "";
+        let primerFecha = fechasStr.split(",")[0];
+        let partes = primerFecha.split("/");
+        mes = partes.length > 1 ? parseInt(partes[1]) : new Date().getMonth() + 1;
     }
 
     const objeto = {
@@ -286,7 +289,7 @@ $("#btnGuardar").on("click", function () {
         HoraInicioPM: HoraInicioPM,
         HoraFinPM: HoraFinPM,
         DoctorHorarioDetalle: {
-            Fecha: $("#txtFechasSeleccionadas").val()
+            Fecha: $("#txtFechasSeleccionadas").val() || ""
         }
     }
 
