@@ -116,6 +116,20 @@ namespace ClinicaWeb.Controllers
                 return StatusCode(500, new { data = "Error: " + ex.Message });
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> DescartarEmergencia(int idCita)
+        {
+            try
+            {
+                // Cambiamos el estado de la cita a "Anulado" (3) para que desaparezca
+                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 3, "Emergencia atendida en consultorio por el doctor.");
+                return Json(new { success = true, message = "Descartada" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
         [HttpGet]
         public async Task<IActionResult> ListaEmergencias()
         {

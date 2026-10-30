@@ -212,9 +212,15 @@ function revisarEmergencias() {
                                 <i class="fas fa-user-injured me-2"></i>
                                 <strong>${em.usuario.nombre}</strong> - Hoy a las ${em.horaCita}
                             </div>
-                            <button class="btn btn-sm btn-outline-danger btn-atender-emergencia" data-id="${em.idCita}">
-                                <i class="fas fa-notes-medical me-1"></i> Atender Emergencia
-                            </button>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary btn-atender-emergencia me-2" data-id="${em.idCita}">
+                                    <i class="fas fa-notes-medical me-1"></i> Atender
+                                </button>
+                                <!-- ⚠️ NUEVO BOTÓN PARA DESCARTAR -->
+                                <button class="btn btn-sm btn-outline-danger btn-descartar-emergencia" data-id="${em.idCita}">
+                                    <i class="fas fa-times me-1"></i> Descartar
+                                </button>
+                            </div>
                         </div>
                     `);
                 });
@@ -240,4 +246,38 @@ $(document).on("click", ".btn-atender-emergencia", function () {
     recetasTemporales = [];
     $("#tbRecetaTemporal tbody").empty();
     $("#mdData").modal('show');
+});
+// ⚠️ EVENTO PARA DESCARTAR EMERGENCIA
+$(document).on("click", ".btn-descartar-emergencia", function () {
+    let idCita = $(this).data("id");
+    let boton = $(this);
+
+    Swal.fire({
+        title: "¿Descartar emergencia?",
+        text: "Esto eliminará la alerta de emergencia del panel. Úsalo si ya atendiste al paciente en consultorio.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Sí, descartar",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Llamamos al endpoint para eliminar o cambiar estado
+            fetch(`/Doctor/DescartarEmergencia?idCita=${idCita}`, { method: "POST" })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire("Descartada", "La emergencia ha sido removida del panel.", "success");
+                        boton.closest('.d-flex').remove(); // Removemos visualmente
+                        // Si ya no hay emergencias, ocultamos el panel
+                        if ($("#listaEmergencias").children().length === 0) {
+                            $("#panelEmergencias").addClass("d-none");
+                        }
+                    } else {
+                        Swal.fire("Error", "No se pudo descartar la emergencia.", "error");
+                    }
+                });
+        }
+    });
 });
