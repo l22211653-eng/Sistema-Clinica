@@ -30,7 +30,6 @@ namespace ClinicaData.Implementacion
                     cmd.Parameters.AddWithValue("p_Ape", objeto.Apellidos);
                     cmd.Parameters.AddWithValue("p_Gen", objeto.Genero);
                     cmd.Parameters.AddWithValue("p_IdEsp", objeto.Especialidad.IdEspecialidad);
-                    // ⚠️ NUEVO: Enviamos la foto (si es nula, enviamos DBNull)
                     cmd.Parameters.AddWithValue("p_FotoUrl", (object?)objeto.FotoUrl ?? DBNull.Value);
 
                     try
@@ -106,7 +105,6 @@ namespace ClinicaData.Implementacion
                     cmd.Parameters.AddWithValue("p_Ape", objeto.Apellidos);
                     cmd.Parameters.AddWithValue("p_Gen", objeto.Genero);
                     cmd.Parameters.AddWithValue("p_IdEsp", objeto.Especialidad.IdEspecialidad);
-                    // ⚠️ NUEVO: Enviamos la foto
                     cmd.Parameters.AddWithValue("p_FotoUrl", (object?)objeto.FotoUrl ?? DBNull.Value);
 
                     try
@@ -138,7 +136,6 @@ namespace ClinicaData.Implementacion
                         {
                             lista.Add(new Doctor()
                             {
-                                // ⚠️ NUEVO: Leemos la foto (puede ser null, usamos ?? para evitar errores)
                                 FotoUrl = dr["FotoUrl"] != DBNull.Value ? dr["FotoUrl"].ToString()! : null,
                                 IdDoctor = Convert.ToInt32(dr["IdDoctor"]),
                                 NumeroDocumentoIdentidad = dr["NumeroDocumentoIdentidad"].ToString()!,
@@ -216,6 +213,8 @@ namespace ClinicaData.Implementacion
                                 IdDoctorHorario = Convert.ToInt32(dr["IdDoctorHorario"]),
                                 Doctor = new Doctor()
                                 {
+                                    // ⚠️ AQUÍ AGREGAMOS EL ID DEL DOCTOR
+                                    IdDoctor = Convert.ToInt32(dr["IdDoctor"]),
                                     NumeroDocumentoIdentidad = dr["NumeroDocumentoIdentidad"].ToString()!,
                                     Nombres = dr["Nombres"].ToString()!,
                                     Apellidos = dr["Apellidos"].ToString()!,
@@ -377,7 +376,7 @@ namespace ClinicaData.Implementacion
                 {
                     cmd.Parameters.AddWithValue("p_Id", objeto.IdDoctorHorario);
 
-                    // ⚠️ CAMBIO AQUÍ: Usamos objeto.IdDoctor en lugar de objeto.Doctor.IdDoctor
+                    // ⚠️ Usamos objeto.IdDoctor (que viene directo del JS)
                     cmd.Parameters.AddWithValue("p_IdDoctor", objeto.IdDoctor);
 
                     cmd.Parameters.AddWithValue("p_HAM", objeto.HoraInicioAM ?? "");

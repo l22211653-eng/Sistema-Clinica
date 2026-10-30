@@ -157,10 +157,10 @@ function MostrarHoraFinPM() {
     $('#txtHoraFinPM').timepicker('option', 'startTime', Hora.format('HH:mm'))
 }
 
-// NUEVO HORARIO (Asegúrate de que esta función tenga la línea para desbloquear el combo)
+// NUEVO HORARIO
 $("#btnNuevo").on("click", function () {
     idEditar = 0;
-    $("#cboDoctor").prop("disabled", false); // ⚠️ Desbloqueamos para nuevos
+    $("#cboDoctor").prop("disabled", false); // Desbloqueamos
     $("#cboDoctor").val("").trigger('change');
     $("#txtHoraInicioAM").val("")
     $("#txtHoraFinAM").val("")
@@ -183,16 +183,21 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
 
     idEditar = data.idDoctorHorario;
 
-    // ⚠️ Llenamos el combo y LO BLOQUEAMOS
-    $("#cboDoctor").val(data.doctor.idDoctor).trigger('change');
-    $("#cboDoctor").prop("disabled", true); // Bloqueado para que no cambien de doctor
+    // ⚠️ SOLUCIÓN: Buscamos el ID del doctor comparando el documento
+    let documentoDoctor = data.doctor.numeroDocumentoIdentidad;
+    $("#cboDoctor option").each(function () {
+        if ($(this).text().includes(documentoDoctor)) {
+            $("#cboDoctor").val($(this).val()).trigger('change');
+        }
+    });
+
+    $("#cboDoctor").prop("disabled", true); // Bloqueamos
 
     $("#txtHoraInicioAM").val(data.horaInicioAM);
     $("#txtHoraFinAM").val(data.horaFinAM);
     $("#txtHoraInicioPM").val(data.horaInicioPM);
     $("#txtHoraFinPM").val(data.horaFinPM);
 
-    // Bloqueamos el calendario en edición
     $("#calendarioFechas").datepicker("disable");
     $("#txtFechasSeleccionadas").val("EDITANDO");
 
@@ -239,7 +244,6 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
 // GUARDAR O EDITAR
 $("#btnGuardar").on("click", function () {
 
-    // Validaciones
     if ($("#cboDoctor").val() == "" || $("#txtFechasSeleccionadas").val() == "") {
         Swal.fire({ title: "Error!", text: "Falta seleccionar el doctor o las fechas.", icon: "warning" });
         return;
@@ -262,10 +266,10 @@ $("#btnGuardar").on("click", function () {
     let partes = primerFecha.split("/");
     let mes = parseInt(partes[1]);
 
-    // ⚠️ AQUÍ ESTÁ EL CAMBIO: Enviamos IdDoctor directo en la raíz
+    // ⚠️ ENVIAMOS EL IDDOCTOR DIRECTO EN LA RAÍZ
     const objeto = {
         IdDoctorHorario: idEditar,
-        IdDoctor: $("#cboDoctor").val(), // Enviamos el ID directo
+        IdDoctor: $("#cboDoctor").val(),
         NumeroMes: mes,
         HoraInicioAM: HoraInicioAM,
         HoraFinAM: HoraFinAM,
