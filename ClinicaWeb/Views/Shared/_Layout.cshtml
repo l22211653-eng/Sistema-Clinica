@@ -292,7 +292,6 @@
                                 <div class="sb-nav-link-icon"><i class="fas fa-clipboard-list"></i></div>
                                 Citas Pendientes
                             </a>
-                            <!-- ⚠️ CORREGIDO: El controlador es "Doctor", no "Citas" -->
                             <a class="nav-link" asp-controller="Doctor" asp-action="HistorialDoctor">
                                 <div class="sb-nav-link-icon"><i class="fas fa-history"></i></div>
                                 Mis Citas Atendidas
@@ -304,7 +303,8 @@
 
                 <div class="sb-sidenav-footer">
                     <div class="small">Sesión iniciada como:</div>
-                    <strong>@User.Identity?.Name</strong> <!-- Muestra el usuario logueado -->
+                    <!-- ⚠️ Mostramos el Nombre Completo, y si no existe, el documento -->
+                    <strong>@(User.FindFirst("NombreCompleto")?.Value ?? User.Identity?.Name)</strong>
                 </div>
             </nav>
         </div>

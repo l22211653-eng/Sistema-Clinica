@@ -35,29 +35,25 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 title: "Acciones", "data": null, width: "300px", render: function (data, type, row) {
                     let idDoctor = (row.doctor && row.doctor.idDoctor) ? row.doctor.idDoctor : 0;
 
-                    // Si ya calificó, el botón se ve gris y deshabilitado
                     let botonCalificar = row.yaCalificado
-                        ? `<button type="button" class="btn btn-secondary btn-sm ms-1" disabled title="Ya has calificado esta cita">
+                        ? `<button type="button" class="btn btn-secondary btn-sm" disabled title="Ya calificado">
                                 <i class="fas fa-check"></i> Calificado
                            </button>`
-                        : `<button type="button" class="btn btn-outline-warning btn-sm ms-1 btn-calificar" data-idcita="${row.idCita}" data-iddoctor="${idDoctor}" title="Calificar Doctor">
+                        : `<button type="button" class="btn btn-outline-warning btn-sm btn-calificar" data-idcita="${row.idCita}" data-iddoctor="${idDoctor}" title="Calificar Doctor">
                                 <i class="fas fa-star"></i> Calificar
                            </button>`;
 
-                    // Botón de eliminar/cancelar del historial
-                    let botonEliminar = `<button type="button" class="btn btn-outline-danger btn-sm ms-1 btn-eliminar" data-id="${row.idCita}" title="Eliminar del historial">
-                                            <i class="fas fa-trash"></i>
-                                         </button>`;
-
+                    // ⚠️ Usamos flexbox para que los botones no salten de línea
                     return `
-                   <button type="button" class="btn btn-outline-primary btn-sm me-1 btn-indicaciones" data-id="${row.idCita}" title="Ver Indicaciones">
-                   <i class="fas fa-eye"></i> Indicaciones
-                   </button>
-                   <button type="button" class="btn btn-outline-info btn-sm me-1 btn-receta" data-id="${row.idCita}" title="Ver Receta">
-                   <i class="fas fa-prescription"></i> Receta
-                   </button>
-                   ${botonCalificar}
-                   ${botonEliminar}
+                    <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-outline-primary btn-sm btn-indicaciones" data-id="${row.idCita}" title="Ver Indicaciones">
+                            <i class="fas fa-eye"></i> Indicaciones
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm btn-receta" data-id="${row.idCita}" title="Ver Receta">
+                            <i class="fas fa-prescription"></i> Receta
+                        </button>
+                        ${botonCalificar}
+                    </div>
                     `;
                 }
             }

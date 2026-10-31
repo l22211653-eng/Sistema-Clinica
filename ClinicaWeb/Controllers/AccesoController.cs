@@ -49,8 +49,10 @@ namespace ClinicaWeb.Controllers
             //aqui guardaremos la informacion de nuestro usuario
             List<Claim> claims = new List<Claim>()
             {
-                // ⚠️ CAMBIO AQUÍ: Guardamos el Documento de Identidad en lugar del Nombre
+                // ⚠️ Se mantiene el Documento en el Name para que funcionen las validaciones del doctor
                 new Claim(ClaimTypes.Name, usuario_encontrado.NumeroDocumentoIdentidad),
+                // ⚠️ NUEVO CLAIM: Para mostrar el nombre completo en el Layout
+                new Claim("NombreCompleto", $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"),
                 new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()),
                 new Claim(ClaimTypes.Role,usuario_encontrado.RolUsuario.Nombre)
             };
