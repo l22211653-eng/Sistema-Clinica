@@ -159,18 +159,24 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
 
+        // 1. Endpoint para cargar las Pendientes (Estado 1)
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
             try
             {
-                // 1. Obtenemos el nombre completo del usuario logueado
-                var usuarioNombre = User.Identity?.Name;
+                var usuarioNombre = User.Identity?.Name; // Ej: "Abigail Azizi"
                 var listaDoctores = await _doctorRepositorio.Lista();
 
-                // 2. Buscamos al doctor comparando el nombre
+                // ⚠️ Buscamos al doctor comparando el nombre completo
                 var doctor = listaDoctores.FirstOrDefault(d =>
                     $"{d.Nombres} {d.Apellidos}".Trim().Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase));
+
+                if (doctor == null)
+                {
+                    // Si no lo encuentra por nombre, intentamos por documento (por si acaso)
+                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioNombre);
+                }
 
                 if (doctor == null)
                     return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró el doctor: " + usuarioNombre });
@@ -184,6 +190,7 @@ namespace ClinicaWeb.Controllers
             }
         }
 
+        // 2. Endpoint para cargar las Atendidas (Estado 2) con orden
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
@@ -194,6 +201,9 @@ namespace ClinicaWeb.Controllers
 
                 var doctor = listaDoctores.FirstOrDefault(d =>
                     $"{d.Nombres} {d.Apellidos}".Trim().Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase));
+
+                if (doctor == null)
+                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioNombre);
 
                 if (doctor == null)
                     return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró el doctor: " + usuarioNombre });
