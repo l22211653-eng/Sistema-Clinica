@@ -137,7 +137,7 @@ namespace ClinicaData.Implementacion
                             lista.Add(new Doctor()
                             {
                                 FotoUrl = dr["FotoUrl"] != DBNull.Value ? dr["FotoUrl"].ToString()! : null,
-                                IdDoctor = Convert.ToInt32(dr["IdDoctor"]),
+
                                 NumeroDocumentoIdentidad = dr["NumeroDocumentoIdentidad"].ToString()!,
                                 Nombres = dr["Nombres"].ToString()!,
                                 Apellidos = dr["Apellidos"].ToString()!,
