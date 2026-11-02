@@ -27,6 +27,7 @@ namespace ClinicaWeb.Controllers
             }
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Login(VMUsuarioLogin modelo)
         {
@@ -46,14 +47,14 @@ namespace ClinicaWeb.Controllers
 
             ViewData["Mensaje"] = null;
 
-            //aqui guardaremos la informacion de nuestro usuario
+            // ⚠️ CORREGIDO: Usamos 'usuario_encontrado' en lugar de 'usuario'
             var claims = new List<Claim>
-{
-    new Claim(ClaimTypes.Name, usuario_encontrado.NumeroDocumentoIdentidad), // ⚠️ ESTO ES CLAVE
-    new Claim("NombreCompleto", $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"),
-    new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()),
-    new Claim(ClaimTypes.Role, usuario_encontrado.RolUsuario.Nombre)
-};
+            {
+                new Claim(ClaimTypes.Name, $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"), // Nombre completo
+                new Claim("NombreCompleto", $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"),
+                new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()),
+                new Claim(ClaimTypes.Role, usuario_encontrado.RolUsuario.Nombre)
+            };
 
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             AuthenticationProperties properties = new AuthenticationProperties()
@@ -64,15 +65,19 @@ namespace ClinicaWeb.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), properties);
 
             string rol = usuario_encontrado.RolUsuario.Nombre;
+
+            // ⚠️ NOTA: Aquí corregí la redirección del Doctor a su controlador correcto (DoctorController)
             if (rol == "Paciente") return RedirectToAction("Index", "Citas");
-            if (rol == "Doctor") return RedirectToAction("CitasAsignadas", "Citas");
+            if (rol == "Doctor") return RedirectToAction("CitasAsignadas", "Doctor");
 
             return RedirectToAction("Index", "Home");
         }
+
         public IActionResult Registrarse()
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Registrarse(VMPaciente modelo)
         {

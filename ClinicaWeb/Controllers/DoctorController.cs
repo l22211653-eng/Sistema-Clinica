@@ -164,23 +164,18 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // 1. Obtenemos el documento del usuario logueado
-                var usuarioDoc = User.Identity?.Name;
-
-                // 2. Buscamos al doctor por su documento
+                // 1. Obtenemos el nombre completo del usuario logueado
+                var usuarioNombre = User.Identity?.Name;
                 var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
 
-                // 3. Si no lo encuentra, lanzamos un error claro
+                // 2. Buscamos al doctor comparando el nombre
+                var doctor = listaDoctores.FirstOrDefault(d =>
+                    $"{d.Nombres} {d.Apellidos}".Trim().Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase));
+
                 if (doctor == null)
-                {
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró el doctor con documento: " + usuarioDoc });
-                }
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró el doctor: " + usuarioNombre });
 
-                // 4. Usamos su ID real
-                int idDoctor = doctor.IdDoctor;
-
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1); // 1 = Pendiente
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1); // 1 = Pendiente
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -194,10 +189,16 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // ⚠️ PRUEBA: Forzamos el ID del doctor a 1 (Alexandra)
-                int idDoctor = 1;
+                var usuarioNombre = User.Identity?.Name;
+                var listaDoctores = await _doctorRepositorio.Lista();
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2); // 2 = Atendido
+                var doctor = listaDoctores.FirstOrDefault(d =>
+                    $"{d.Nombres} {d.Apellidos}".Trim().Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase));
+
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró el doctor: " + usuarioNombre });
+
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2); // 2 = Atendido
 
                 if (orden == "antiguos")
                     lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
