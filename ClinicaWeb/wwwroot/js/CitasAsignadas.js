@@ -36,6 +36,10 @@ function cargarTabla() {
             "type": "GET",
             "datatype": "json",
             "dataSrc": function (json) {
+                if (json && json.error) {
+                    Swal.fire("Error del Servidor", json.error, "error");
+                    return [];
+                }
                 return json.data || [];
             }
         },

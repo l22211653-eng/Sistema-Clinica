@@ -7,13 +7,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
         responsive: true,
         scrollX: true,
         "ajax": {
-            "url": `/${controlador}/ListaCitasAtendidas?orden=recientes`,
+            "url": `/${controlador}/ListaCitasAsignadas`,
             "type": "GET",
             "datatype": "json",
             "dataSrc": function (json) {
-                // Si hay error, mostramos alerta
                 if (json && json.error) {
-                    Swal.fire("Error", json.error, "error");
+                    Swal.fire("Error del Servidor", json.error, "error");
                     return [];
                 }
                 return json.data || [];
