@@ -11,18 +11,17 @@ namespace ClinicaWeb.Controllers
     {
         private readonly IDoctorRepositorio _doctorRepositorio;
         private readonly ICitaRepositorio _citaRepositorio;
-        private readonly IEspecialidadRepositorio _especialidadRepositorio; // ⚠️ NUEVO
+        private readonly IEspecialidadRepositorio _especialidadRepositorio;
 
         public DoctorController(IDoctorRepositorio doctorRepositorio, ICitaRepositorio citaRepositorio, IEspecialidadRepositorio especialidadRepositorio)
         {
             _doctorRepositorio = doctorRepositorio;
             _citaRepositorio = citaRepositorio;
-            _especialidadRepositorio = especialidadRepositorio; // ⚠️ NUEVO
+            _especialidadRepositorio = especialidadRepositorio;
         }
 
         private async Task CargarEspecialidad()
         {
-            // 1. Obtenemos el documento del usuario logueado
             string documentoLogueado = User.Identity?.Name ?? "";
 
             if (string.IsNullOrEmpty(documentoLogueado))
@@ -31,7 +30,6 @@ namespace ClinicaWeb.Controllers
                 return;
             }
 
-            // 2. Buscamos al doctor por su documento
             var listaDoctores = await _doctorRepositorio.Lista();
             var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoLogueado);
 
@@ -41,7 +39,6 @@ namespace ClinicaWeb.Controllers
                 return;
             }
 
-            // 3. ⚠️ Buscamos el nombre de la especialidad directamente en el repositorio
             var listaEspecialidades = await _especialidadRepositorio.Lista();
             var especialidad = listaEspecialidades.FirstOrDefault(e => e.IdEspecialidad == doctor.Especialidad.IdEspecialidad);
 
@@ -55,7 +52,6 @@ namespace ClinicaWeb.Controllers
         }
 
         [Authorize(Roles = "Administrador,Paciente,Doctor")]
-
         [HttpGet]
         public async Task<IActionResult> Lista()
         {
@@ -83,7 +79,6 @@ namespace ClinicaWeb.Controllers
             {
                 var listaEspecialidades = await _especialidadRepositorio.Lista();
                 var especialidad = listaEspecialidades.FirstOrDefault(e => e.IdEspecialidad == doctor.Especialidad.IdEspecialidad);
-                // ⚠️ Usamos Content() en lugar de Json() para devolver texto plano
                 return Content(especialidad?.Nombre ?? "");
             }
             return Content("");
@@ -116,12 +111,12 @@ namespace ClinicaWeb.Controllers
                 return StatusCode(500, new { data = "Error: " + ex.Message });
             }
         }
+
         [HttpPost]
         public async Task<IActionResult> DescartarEmergencia(int idCita)
         {
             try
             {
-                // Cambiamos el estado de la cita a "Anulado" (3) para que desaparezca
                 string respuesta = await _citaRepositorio.CambiarEstado(idCita, 3, "Emergencia atendida en consultorio por el doctor.");
                 return Json(new { success = true, message = "Descartada" });
             }
@@ -130,6 +125,7 @@ namespace ClinicaWeb.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
         [HttpGet]
         public async Task<IActionResult> ListaEmergencias()
         {
@@ -208,7 +204,6 @@ namespace ClinicaWeb.Controllers
                 return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
             }
         }
-       
 
         [HttpPost]
         public async Task<IActionResult> CambiarEstado([FromBody] Cita objeto)

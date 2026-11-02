@@ -173,39 +173,6 @@ namespace ClinicaData.Implementacion
             }
             return lista;
         }
-        public async Task<string> CrearSolicitudEmergencia(int idUsuario, int idEspecialidad)
-        {
-            string respuesta = "";
-            using (var conexion = new NpgsqlConnection(con.CadenaSQL))
-            {
-                await conexion.OpenAsync();
-                using (var cmd = new NpgsqlCommand("SELECT sp_crearSolicitudEmergencia(@p_User, @p_Esp)", conexion))
-                {
-                    cmd.Parameters.AddWithValue("p_User", idUsuario);
-                    cmd.Parameters.AddWithValue("p_Esp", idEspecialidad);
-                    var result = await cmd.ExecuteScalarAsync();
-                    respuesta = result?.ToString() ?? "";
-                }
-            }
-            return respuesta;
-        }
-
-        public async Task<string> AceptarEmergencia(int idSolicitud, int idDoctor)
-        {
-            string respuesta = "";
-            using (var conexion = new NpgsqlConnection(con.CadenaSQL))
-            {
-                await conexion.OpenAsync();
-                using (var cmd = new NpgsqlCommand("SELECT sp_aceptarEmergencia(@p_Sol, @p_Doc)", conexion))
-                {
-                    cmd.Parameters.AddWithValue("p_Sol", idSolicitud);
-                    cmd.Parameters.AddWithValue("p_Doc", idDoctor);
-                    var result = await cmd.ExecuteScalarAsync();
-                    respuesta = result?.ToString() ?? "";
-                }
-            }
-            return respuesta;
-        }
         public async Task<List<Cita>> ListaHistorialCitas(int IdUsuario)
         {
             List<Cita> lista = new List<Cita>();
