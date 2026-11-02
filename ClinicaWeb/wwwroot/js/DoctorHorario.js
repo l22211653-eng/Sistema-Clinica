@@ -43,6 +43,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
             { title: "Hora Fin AM", "data": "horaFinAM" },
             { title: "Hora Inicio PM", "data": "horaInicioPM" },
             { title: "Hora Fin PM", "data": "horaFinPM" },
+            {
+                title: "Días",
+                "data": "diasAtencion",
+                render: function (data) {
+                    return data ? data : '<span class="text-muted">Sin días</span>';
+                }
+            },
             { title: "Fecha Creacion", "data": "fechaCreacion" },
             {
                 title: "", "data": "idDoctorHorario", width: "120px", render: function () {
@@ -203,21 +210,28 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
             $("#cboDoctor").val($(this).val()).trigger('change');
         }
     });
-
     $("#cboDoctor").prop("disabled", true);
 
-    $("#txtHoraInicioAM").val("");
-    $("#txtHoraFinAM").val("");
-    $("#txtHoraInicioPM").val("");
-    $("#txtHoraFinPM").val("");
+    $("#txtHoraInicioAM").val(data.horaInicioAM || "");
+    $("#txtHoraFinAM").val(data.horaFinAM || "");
+    $("#txtHoraInicioPM").val(data.horaInicioPM || "");
+    $("#txtHoraFinPM").val(data.horaFinPM || "");
 
-    if (data.horaInicioAM) $("#txtHoraInicioAM").val(data.horaInicioAM);
-    if (data.horaFinAM) $("#txtHoraFinAM").val(data.horaFinAM);
-    if (data.horaInicioPM) $("#txtHoraInicioPM").val(data.horaInicioPM);
-    if (data.horaFinPM) $("#txtHoraFinPM").val(data.horaFinPM);
+    // ⚠️ CARGAMOS LOS DÍAS EXISTENTES
+    fechasSeleccionadas = [];
+    if (data.diasAtencion) {
+        fechasSeleccionadas = data.diasAtencion.split(',').map(f => f.trim());
+        $("#txtFechasSeleccionadas").val(fechasSeleccionadas.join(","));
+    } else {
+        $("#txtFechasSeleccionadas").val("");
+    }
 
-    $("#calendarioFechas").datepicker("disable");
-    $("#txtFechasSeleccionadas").val("EDITANDO");
+    // Habilitamos el calendario para que pueda cambiar los días
+    $("#calendarioFechas").datepicker("enable");
+    inicializarCalendario(); // Reiniciamos el calendario con las fechas cargadas
+
+    // Refrescamos el calendario para que pinte los días seleccionados
+    $("#calendarioFechas").datepicker('refresh');
 
     $(`#${modal}`).modal('show');
 });

@@ -223,6 +223,8 @@ namespace ClinicaData.Implementacion
                                 HoraFinAM = dr["HoraFinAM"] != DBNull.Value ? dr["HoraFinAM"].ToString()! : "",
                                 HoraInicioPM = dr["HoraInicioPM"] != DBNull.Value ? dr["HoraInicioPM"].ToString()! : "",
                                 HoraFinPM = dr["HoraFinPM"] != DBNull.Value ? dr["HoraFinPM"].ToString()! : "",
+                                // ⚠️ NUEVO: Leemos los días de atención
+                                DiasAtencion = dr["DiasAtencion"] != DBNull.Value ? dr["DiasAtencion"].ToString()! : "",
                                 FechaCreacion = dr["FechaCreacion"].ToString()!
                             });
                         }
@@ -373,7 +375,7 @@ namespace ClinicaData.Implementacion
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
-                using (var cmd = new NpgsqlCommand("SELECT sp_editarDoctorHorario(@p_Id, @p_IdDoctor, @p_HAM, @p_HFAM, @p_HPM, @p_HFPM)", conexion))
+                using (var cmd = new NpgsqlCommand("SELECT sp_editarDoctorHorario(@p_Id, @p_IdDoctor, @p_HAM, @p_HFAM, @p_HPM, @p_HFPM, @p_Fechas)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_Id", objeto.IdDoctorHorario);
 
@@ -384,6 +386,9 @@ namespace ClinicaData.Implementacion
                     cmd.Parameters.AddWithValue("p_HFAM", objeto.HoraFinAM ?? "");
                     cmd.Parameters.AddWithValue("p_HPM", objeto.HoraInicioPM ?? "");
                     cmd.Parameters.AddWithValue("p_HFPM", objeto.HoraFinPM ?? "");
+
+                    // ⚠️ NUEVO: Enviamos las fechas al editar
+                    cmd.Parameters.AddWithValue("p_Fechas", objeto.DoctorHorarioDetalle?.Fecha ?? "");
 
                     try
                     {
@@ -398,6 +403,7 @@ namespace ClinicaData.Implementacion
             }
             return respuesta;
         }
+
         public async Task<List<string>> ObtenerDiasOcupados(int idDoctor)
         {
             List<string> fechas = new List<string>();

@@ -17,6 +17,7 @@ namespace ClinicaEntidades
         public string? HoraInicioPM { get; set; }
         public string? HoraFinPM { get; set; }
         public string? FechaCreacion { get; set; }
+        public string? DiasAtencion { get; set; }
         public DoctorHorarioDetalle DoctorHorarioDetalle { get; set; } = null!;
 
     }
