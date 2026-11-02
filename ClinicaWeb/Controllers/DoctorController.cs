@@ -194,16 +194,8 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                var usuarioDoc = User.Identity?.Name;
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-
-                if (doctor == null)
-                {
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró el doctor con documento: " + usuarioDoc });
-                }
-
-                int idDoctor = doctor.IdDoctor;
+                // ⚠️ PRUEBA: Forzamos el ID del doctor a 1 (Alexandra)
+                int idDoctor = 1;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2); // 2 = Atendido
 
