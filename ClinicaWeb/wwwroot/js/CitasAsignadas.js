@@ -5,18 +5,23 @@ let recetasTemporales = [];
 
 document.addEventListener("DOMContentLoaded", function (event) {
     cargarTabla();
+    cargarEspecialidad();
+    revisarEmergencias();
+    setInterval(revisarEmergencias, 30000); // Revisar cada 30 seg
 });
 
-fetch('/Doctor/ObtenerEspecialidad')
-    .then(response => response.text())
-    .then(data => {
-        // Limpiamos las comillas dobles que puedan venir en la respuesta
-        let especialidadLimpia = data.replace(/['"]+/g, '');
-        $("#txtEspecialidadBadge").text(especialidadLimpia || "Sin especialidad");
-    })
-    .catch(() => {
-        $("#txtEspecialidadBadge").text("Sin especialidad");
-    });
+// ⚠️ CARGAR LA ESPECIALIDAD EN EL BADGE
+function cargarEspecialidad() {
+    fetch('/Doctor/ObtenerEspecialidad')
+        .then(response => response.text())
+        .then(data => {
+            let especialidadLimpia = data.replace(/['"]+/g, '');
+            $("#txtEspecialidadBadge").text(especialidadLimpia || "Sin especialidad");
+        })
+        .catch(() => {
+            $("#txtEspecialidadBadge").text("Sin especialidad");
+        });
+}
 
 function cargarTabla() {
     if ($.fn.DataTable.isDataTable('#tbData')) {
@@ -27,7 +32,7 @@ function cargarTabla() {
         responsive: true,
         scrollX: true,
         "ajax": {
-            "url": `/${controlador}/ListaCitasAsignadas`, // ⚠️ Sin parámetros, solo pendientes
+            "url": `/${controlador}/ListaCitasAsignadas`,
             "type": "GET",
             "datatype": "json",
             "dataSrc": function (json) {
@@ -48,154 +53,9 @@ function cargarTabla() {
         language: { url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json" }
     });
 }
-function revisarEmergencias() {
-    fetch('/Doctor/ListaEmergencias')
-        .then(res => res.json())
-        .then(data => {
-            if (data.data && data.data.length > 0) {
-                $("#panelEmergencias").removeClass("d-none");
-                $("#listaEmergencias").html("");
-                data.data.forEach(em => {
-                    $("#listaEmergencias").append(`<p><strong>${em.usuario.nombre}</strong> - ${em.horaCita} (Hoy)</p>`);
-                });
-            } else {
-                $("#panelEmergencias").addClass("d-none");
-            }
-        });
-}
-
-// Llamar a la función al cargar y luego cada 30 segundos
-$(document).ready(function () {
-    revisarEmergencias();
-    setInterval(revisarEmergencias, 30000);
-});
 
 // ==========================================
-// 1. ABRIR MODAL Y PREPARAR RECETA
-// ==========================================
-$("#tbData tbody").on("click", ".btn-indicaciones", function () {
-    const filaSeleccionada = $(this).closest('tr');
-    const data = tablaData.row(filaSeleccionada).data();
-
-
-    $("#txtIdCita").val(data.idCita);
-
-    $("#txtIndicaciones").val("");
-
-    // Limpiamos la receta temporal
-    recetasTemporales = [];
-    $("#tbRecetaTemporal tbody").empty();
-    $("#txtMedicamento").val("");
-    $("#txtDosis").val("");
-
-    $(`#${modal}`).modal('show');
-});
-
-// ==========================================
-// 2. AGREGAR MEDICAMENTO A LA TABLA TEMPORAL
-// ==========================================
-$("#btnAgregarMedicamento").click(function () {
-    let medicamento = $("#txtMedicamento").val().trim();
-    let dosis = $("#txtDosis").val().trim();
-    let indicacionesExtra = $("#txtIndicaciones").val().trim(); // Usamos las indicaciones generales para la receta
-
-    if (medicamento === "" || dosis === "") {
-        Swal.fire("Atención", "Ingrese el medicamento y la dosis.", "warning");
-        return;
-    }
-
-    // Agregar al array
-    recetasTemporales.push({
-        Medicamento: medicamento,
-        Dosis: dosis,
-        Indicaciones: indicacionesExtra
-    });
-
-    // Agregar a la tabla visual
-    let fila = `
-        <tr>
-            <td>${medicamento}</td>
-            <td>${dosis}</td>
-            <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-medicamento" data-med="${medicamento}"><i class="fas fa-trash"></i></button></td>
-        </tr>
-    `;
-    $("#tbRecetaTemporal tbody").append(fila);
-
-    // Limpiar inputs
-    $("#txtMedicamento").val("");
-    $("#txtDosis").val("");
-});
-
-// Eliminar medicamento de la tabla temporal
-$("#tbRecetaTemporal").on("click", ".btn-eliminar-medicamento", function () {
-    let med = $(this).data("med");
-    recetasTemporales = recetasTemporales.filter(r => r.Medicamento !== med);
-    $(this).closest("tr").remove();
-});
-
-// ==========================================
-// 3. TERMINAR CITA (Guardar todo)
-// ==========================================
-$("#btnTerminarCita").click(function () {
-    let idCita = parseInt($("#txtIdCita").val());
-    let indicaciones = $("#txtIndicaciones").val().trim();
-
-    if (indicaciones === "") {
-        Swal.fire("Atención", "Por favor, ingrese las indicaciones médicas.", "warning");
-        return;
-    }
-
-    Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-
-    // 1. Primero guardamos la Receta (si hay medicamentos)
-    let promesasRecetas = recetasTemporales.map(receta => {
-        let objetoReceta = {
-            IdCita: idCita,
-            Medicamento: receta.Medicamento,
-            Dosis: receta.Dosis,
-            Indicaciones: receta.Indicaciones
-        };
-        return fetch(`/${controlador}/GuardarReceta`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(objetoReceta)
-        });
-    });
-
-    // Esperamos a que todas las recetas se guarden
-    Promise.all(promesasRecetas).then(() => {
-
-        // 2. Luego cambiamos el estado de la cita a Atendido
-        let objetoCita = {
-            IdCita: idCita,
-            EstadoCita: { IdEstadoCita: 2 }, // 2 = Atendido
-            Indicaciones: indicaciones
-        };
-
-        return fetch(`/${controlador}/CambiarEstado`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(objetoCita)
-        });
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.data === "") {
-                Swal.fire("¡Listo!", "La cita ha sido atendida y la receta guardada.", "success");
-                $("#mdData").modal('hide');
-
-                tablaData.ajax.reload();
-
-            } else {
-                Swal.fire("Error", data.data, "error");
-            }
-        })
-        .catch(error => {
-            Swal.fire("Error", "Ocurrió un error al guardar.", "error");
-        });
-});
-// ==========================================
-// REVISAR EMERGENCIAS CADA 30 SEGUNDOS
+// 1. REVISAR EMERGENCIAS
 // ==========================================
 function revisarEmergencias() {
     fetch('/Doctor/ListaEmergencias')
@@ -214,9 +74,8 @@ function revisarEmergencias() {
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-outline-primary btn-aceptar-emergencia me-2" data-id="${em.idCita}">
-                                    <i class="fas fa-notes-medical me-1"></i> Aceptar
+                                    <i class="fas fa-check me-1"></i> Aceptar
                                 </button>
-                                <!-- ⚠️ NUEVO BOTÓN PARA DESCARTAR -->
                                 <button class="btn btn-sm btn-outline-danger btn-descartar-emergencia" data-id="${em.idCita}">
                                     <i class="fas fa-times me-1"></i> Descartar
                                 </button>
@@ -231,15 +90,12 @@ function revisarEmergencias() {
         .catch(error => console.log("Error al revisar emergencias", error));
 }
 
-// Iniciar la revisión al cargar la página y luego cada 30 segundos
-$(document).ready(function () {
-    revisarEmergencias();
-    setInterval(revisarEmergencias, 30000);
-});
-
-// Evento para aceptar la emergencia desde el panel
+// ==========================================
+// 2. ACEPTAR EMERGENCIA (Doctor)
+// ==========================================
 $(document).on("click", ".btn-aceptar-emergencia", function () {
     let idSolicitud = $(this).data("id");
+
     Swal.fire({
         title: "¿Aceptar emergencia?",
         text: "Se asignará el turno más próximo disponible hoy.",
@@ -249,19 +105,27 @@ $(document).on("click", ".btn-aceptar-emergencia", function () {
         cancelButtonText: "Cancelar"
     }).then((result) => {
         if (result.isConfirmed) {
+            Swal.fire({ title: 'Aceptando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
             fetch(`/Doctor/AceptarEmergencia?idSolicitud=${idSolicitud}`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
                     if (data.data === "") {
                         Swal.fire("Aceptada", "El paciente ha sido notificado.", "success");
                         revisarEmergencias(); // Recargar panel
+                        cargarTabla(); // Recargar tabla de pendientes
                     } else {
                         Swal.fire("Error", data.data, "error");
                     }
-                });
+                })
+                .catch(() => Swal.fire("Error", "No se pudo aceptar.", "error"));
         }
     });
-});// ⚠️ EVENTO PARA DESCARTAR EMERGENCIA
+});
+
+// ==========================================
+// 3. DESCARTAR EMERGENCIA
+// ==========================================
 $(document).on("click", ".btn-descartar-emergencia", function () {
     let idCita = $(this).data("id");
     let boton = $(this);
@@ -277,14 +141,12 @@ $(document).on("click", ".btn-descartar-emergencia", function () {
         cancelButtonText: "Cancelar"
     }).then((result) => {
         if (result.isConfirmed) {
-            // Llamamos al endpoint para eliminar o cambiar estado
             fetch(`/Doctor/DescartarEmergencia?idCita=${idCita}`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire("Descartada", "La emergencia ha sido removida del panel.", "success");
-                        boton.closest('.d-flex').remove(); // Removemos visualmente
-                        // Si ya no hay emergencias, ocultamos el panel
+                        Swal.fire("Descartada", "La emergencia ha sido removida.", "success");
+                        boton.closest('.d-flex').remove();
                         if ($("#listaEmergencias").children().length === 0) {
                             $("#panelEmergencias").addClass("d-none");
                         }
@@ -294,4 +156,101 @@ $(document).on("click", ".btn-descartar-emergencia", function () {
                 });
         }
     });
+});
+
+// ==========================================
+// 4. ATENDER CITA NORMAL
+// ==========================================
+$("#tbData tbody").on("click", ".btn-indicaciones", function () {
+    const filaSeleccionada = $(this).closest('tr');
+    const data = tablaData.row(filaSeleccionada).data();
+
+    $("#txtIdCita").val(data.idCita);
+    $("#txtIndicaciones").val("");
+
+    recetasTemporales = [];
+    $("#tbRecetaTemporal tbody").empty();
+    $("#txtMedicamento").val("");
+    $("#txtDosis").val("");
+
+    $(`#${modal}`).modal('show');
+});
+
+// ==========================================
+// 5. AGREGAR MEDICAMENTO A LA RECETA
+// ==========================================
+$("#btnAgregarMedicamento").click(function () {
+    let medicamento = $("#txtMedicamento").val().trim();
+    let dosis = $("#txtDosis").val().trim();
+    let indicacionesExtra = $("#txtIndicaciones").val().trim();
+
+    if (medicamento === "" || dosis === "") {
+        Swal.fire("Atención", "Ingrese el medicamento y la dosis.", "warning");
+        return;
+    }
+
+    recetasTemporales.push({ Medicamento: medicamento, Dosis: dosis, Indicaciones: indicacionesExtra });
+
+    let fila = `
+        <tr>
+            <td>${medicamento}</td>
+            <td>${dosis}</td>
+            <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-medicamento" data-med="${medicamento}"><i class="fas fa-trash"></i></button></td>
+        </tr>
+    `;
+    $("#tbRecetaTemporal tbody").append(fila);
+    $("#txtMedicamento").val("");
+    $("#txtDosis").val("");
+});
+
+$("#tbRecetaTemporal").on("click", ".btn-eliminar-medicamento", function () {
+    let med = $(this).data("med");
+    recetasTemporales = recetasTemporales.filter(r => r.Medicamento !== med);
+    $(this).closest("tr").remove();
+});
+
+// ==========================================
+// 6. TERMINAR CITA (Guardar todo)
+// ==========================================
+$("#btnTerminarCita").click(function () {
+    let idCita = parseInt($("#txtIdCita").val());
+    let indicaciones = $("#txtIndicaciones").val().trim();
+
+    if (indicaciones === "") {
+        Swal.fire("Atención", "Por favor, ingrese las indicaciones médicas.", "warning");
+        return;
+    }
+
+    Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+    let promesasRecetas = recetasTemporales.map(receta => {
+        let objetoReceta = { IdCita: idCita, Medicamento: receta.Medicamento, Dosis: receta.Dosis, Indicaciones: receta.Indicaciones };
+        return fetch(`/${controlador}/GuardarReceta`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(objetoReceta)
+        });
+    });
+
+    Promise.all(promesasRecetas).then(() => {
+        let objetoCita = { IdCita: idCita, EstadoCita: { IdEstadoCita: 2 }, Indicaciones: indicaciones };
+        return fetch(`/${controlador}/CambiarEstado`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(objetoCita)
+        });
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.data === "") {
+                Swal.fire("¡Listo!", "La cita ha sido atendida.", "success");
+                $("#mdData").modal('hide');
+                tablaData.ajax.reload();
+            } else {
+                Swal.fire("Error", data.data, "error");
+            }
+        })
+        .catch(() => {
+            Swal.fire("Error", "Ocurrió un error al guardar.", "error");
+        });
 });
