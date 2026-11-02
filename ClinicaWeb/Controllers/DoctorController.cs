@@ -159,17 +159,34 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
 
+        // 1. Endpoint para cargar las Pendientes (Fijo en estado 1)
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
             try
             {
-                string documentoLogueado = User.Identity?.Name ?? "";
+                // ⚠️ OBTENEMOS EL ID DEL DOCTOR DESDE EL CLAIM
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuarioStr = claimuser.Claims
+                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Select(c => c.Value)
+                    .SingleOrDefault()!;
+
+                if (string.IsNullOrEmpty(idUsuarioStr))
+                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa" });
+
+                int idUsuario = int.Parse(idUsuarioStr);
+
+                // Buscamos al doctor por su IdUsuario (asumiendo que se relacionan)
                 var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoLogueado);
+                // Si tu login guarda el documento en el Name, lo usamos para buscar:
+                var usuarioDoc = User.Identity?.Name;
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
 
-                int idDoctor = doctor?.IdDoctor ?? 1;
+                // Si no lo encontramos, usamos el ID de usuario como fallback (esto debería coincidir si el doctor tiene su propio usuario)
+                int idDoctor = doctor?.IdDoctor ?? idUsuario;
 
+                // ⚠️ Traemos las Pendientes (Estado 1)
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
@@ -179,24 +196,36 @@ namespace ClinicaWeb.Controllers
             }
         }
 
+        // 2. Endpoint para cargar las atendidas (Estado 2) con orden
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
             try
             {
-                var usuarioDoc = User.Identity?.Name;
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-                int idDoctor = doctor?.IdDoctor ?? 1;
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuarioStr = claimuser.Claims
+                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Select(c => c.Value)
+                    .SingleOrDefault()!;
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
+                if (string.IsNullOrEmpty(idUsuarioStr))
+                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa" });
+
+                int idUsuario = int.Parse(idUsuarioStr);
+
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var usuarioDoc = User.Identity?.Name;
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+
+                int idDoctor = doctor?.IdDoctor ?? idUsuario;
+
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2); // 2 = Atendido
 
                 if (orden == "antiguos")
                     lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
                 else
                     lista = lista.OrderByDescending(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
 
-                // ⚠️ Devolvemos { data: lista } porque el JS lo espera así
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
