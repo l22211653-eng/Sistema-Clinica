@@ -165,26 +165,15 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                var usuarioNombre = User.Identity?.Name?.Trim();
-                if (string.IsNullOrEmpty(usuarioNombre))
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
+                // ⚠️ PRUEBA: Forzamos el ID a 1 (Alexandra)
+                int idDoctor = 1;
 
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d =>
-                    $"{d.Nombres} {d.Apellidos}".Trim().Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase));
-
-                if (doctor == null)
-                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioNombre);
-
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor: '{usuarioNombre}'" });
-
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { data = new List<Cita>(), error = "Error C#: " + ex.Message });
+                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
             }
         }
 
