@@ -108,10 +108,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
     // Inicializar el calendario de jQuery UI
     inicializarCalendario();
 
-    // ⚠️ AL CAMBIAR EL DOCTOR, BLOQUEAMOS SUS DÍAS OCUPADOS
+    // ⚠️ AL CAMBIAR EL DOCTOR, BLOQUEAMOS SUS DÍAS OCUPADOS (solo si es nuevo horario)
     $("#cboDoctor").on("change", function () {
         let idDoctor = $(this).val();
-        if (idDoctor == "") return;
+        if (idDoctor == "" || idEditar !== 0) return;
 
         $.ajax({
             url: `/${controlador}/ObtenerDiasOcupados?idDoctor=${idDoctor}`,
@@ -178,6 +178,7 @@ function MostrarHoraFinPM() {
     $('#txtHoraFinPM').timepicker('option', 'startTime', Hora.format('HH:mm'))
 }
 
+// NUEVO HORARIO
 $("#btnNuevo").on("click", function () {
     idEditar = 0;
     mesEdicion = 0;
@@ -197,6 +198,7 @@ $("#btnNuevo").on("click", function () {
     $(`#${modal}`).modal('show');
 });
 
+// EDITAR HORARIO
 $("#tbData tbody").on("click", ".btn-editar", function () {
     var filaSeleccionada = $(this).closest('tr');
     var data = tablaData.row(filaSeleccionada).data();
@@ -219,7 +221,7 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
 
     // ⚠️ CARGAMOS LOS DÍAS EXISTENTES
     fechasSeleccionadas = [];
-    if (data.diasAtencion) {
+    if (data.diasAtencion && data.diasAtencion !== "Sin días") {
         fechasSeleccionadas = data.diasAtencion.split(',').map(f => f.trim());
         $("#txtFechasSeleccionadas").val(fechasSeleccionadas.join(","));
     } else {
@@ -228,14 +230,17 @@ $("#tbData tbody").on("click", ".btn-editar", function () {
 
     // Habilitamos el calendario para que pueda cambiar los días
     $("#calendarioFechas").datepicker("enable");
-    inicializarCalendario(); // Reiniciamos el calendario con las fechas cargadas
 
-    // Refrescamos el calendario para que pinte los días seleccionados
+    // Reiniciamos el calendario (sin fechas ocupadas para que deje editar)
+    inicializarCalendario([]);
+
+    // Refrescamos para pintar los días seleccionados
     $("#calendarioFechas").datepicker('refresh');
 
     $(`#${modal}`).modal('show');
 });
 
+// ELIMINAR HORARIO
 $("#tbData tbody").on("click", ".btn-eliminar", function () {
     var filaSeleccionada = $(this).closest('tr');
     var data = tablaData.row(filaSeleccionada).data();
@@ -272,6 +277,7 @@ $("#tbData tbody").on("click", ".btn-eliminar", function () {
     });
 });
 
+// GUARDAR O EDITAR
 $("#btnGuardar").on("click", function () {
 
     if ($("#cboDoctor").val() == "" || ($("#txtFechasSeleccionadas").val() == "" && idEditar === 0)) {
