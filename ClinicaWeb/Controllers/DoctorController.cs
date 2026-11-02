@@ -22,6 +22,7 @@ namespace ClinicaWeb.Controllers
 
         private async Task CargarEspecialidad()
         {
+            // ⚠️ Volvemos a usar el documento
             string documentoLogueado = User.Identity?.Name ?? "";
 
             if (string.IsNullOrEmpty(documentoLogueado))
@@ -165,21 +166,13 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                var usuarioNombre = User.Identity?.Name; // Ej: "Abigail Azizi"
+                // ⚠️ Buscamos usando el documento
+                var usuarioDoc = User.Identity?.Name;
                 var listaDoctores = await _doctorRepositorio.Lista();
-
-                // ⚠️ Buscamos al doctor comparando el nombre completo
-                var doctor = listaDoctores.FirstOrDefault(d =>
-                    $"{d.Nombres} {d.Apellidos}".Trim().Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase));
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
 
                 if (doctor == null)
-                {
-                    // Si no lo encuentra por nombre, intentamos por documento (por si acaso)
-                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioNombre);
-                }
-
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró el doctor: " + usuarioNombre });
+                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor con documento: '{usuarioDoc}'" });
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1); // 1 = Pendiente
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
@@ -196,17 +189,13 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                var usuarioNombre = User.Identity?.Name;
+                // ⚠️ Buscamos usando el documento
+                var usuarioDoc = User.Identity?.Name;
                 var listaDoctores = await _doctorRepositorio.Lista();
-
-                var doctor = listaDoctores.FirstOrDefault(d =>
-                    $"{d.Nombres} {d.Apellidos}".Trim().Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase));
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
 
                 if (doctor == null)
-                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioNombre);
-
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró el doctor: " + usuarioNombre });
+                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor con documento: '{usuarioDoc}'" });
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2); // 2 = Atendido
 
