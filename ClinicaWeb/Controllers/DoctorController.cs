@@ -159,35 +159,28 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
 
-        // 1. Endpoint para cargar las Pendientes (Fijo en estado 1)
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
             try
             {
-                // ⚠️ OBTENEMOS EL ID DEL DOCTOR DESDE EL CLAIM
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims
-                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                    .Select(c => c.Value)
-                    .SingleOrDefault()!;
-
-                if (string.IsNullOrEmpty(idUsuarioStr))
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa" });
-
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                // Buscamos al doctor por su IdUsuario (asumiendo que se relacionan)
-                var listaDoctores = await _doctorRepositorio.Lista();
-                // Si tu login guarda el documento en el Name, lo usamos para buscar:
+                // 1. Obtenemos el documento del usuario logueado
                 var usuarioDoc = User.Identity?.Name;
+
+                // 2. Buscamos al doctor por su documento
+                var listaDoctores = await _doctorRepositorio.Lista();
                 var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
 
-                // Si no lo encontramos, usamos el ID de usuario como fallback (esto debería coincidir si el doctor tiene su propio usuario)
-                int idDoctor = doctor?.IdDoctor ?? idUsuario;
+                // 3. Si no lo encuentra, lanzamos un error claro
+                if (doctor == null)
+                {
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró el doctor con documento: " + usuarioDoc });
+                }
 
-                // ⚠️ Traemos las Pendientes (Estado 1)
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
+                // 4. Usamos su ID real
+                int idDoctor = doctor.IdDoctor;
+
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1); // 1 = Pendiente
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -196,28 +189,21 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 2. Endpoint para cargar las atendidas (Estado 2) con orden
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
             try
             {
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims
-                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                    .Select(c => c.Value)
-                    .SingleOrDefault()!;
-
-                if (string.IsNullOrEmpty(idUsuarioStr))
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa" });
-
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                var listaDoctores = await _doctorRepositorio.Lista();
                 var usuarioDoc = User.Identity?.Name;
+                var listaDoctores = await _doctorRepositorio.Lista();
                 var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
 
-                int idDoctor = doctor?.IdDoctor ?? idUsuario;
+                if (doctor == null)
+                {
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró el doctor con documento: " + usuarioDoc });
+                }
+
+                int idDoctor = doctor.IdDoctor;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2); // 2 = Atendido
 

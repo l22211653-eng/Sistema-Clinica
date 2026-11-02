@@ -47,15 +47,13 @@ namespace ClinicaWeb.Controllers
             ViewData["Mensaje"] = null;
 
             //aqui guardaremos la informacion de nuestro usuario
-            List<Claim> claims = new List<Claim>()
-            {
-                // ⚠️ Se mantiene el Documento en el Name para que funcionen las validaciones del doctor
-                new Claim(ClaimTypes.Name, usuario_encontrado.NumeroDocumentoIdentidad),
-                // ⚠️ NUEVO CLAIM: Para mostrar el nombre completo en el Layout
-                new Claim("NombreCompleto", $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"),
-                new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()),
-                new Claim(ClaimTypes.Role,usuario_encontrado.RolUsuario.Nombre)
-            };
+            var claims = new List<Claim>
+{
+    new Claim(ClaimTypes.Name, usuario_encontrado.NumeroDocumentoIdentidad), // ⚠️ ESTO ES CLAVE
+    new Claim("NombreCompleto", $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"),
+    new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()),
+    new Claim(ClaimTypes.Role, usuario_encontrado.RolUsuario.Nombre)
+};
 
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             AuthenticationProperties properties = new AuthenticationProperties()
