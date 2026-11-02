@@ -213,8 +213,8 @@ function revisarEmergencias() {
                                 <strong>${em.usuario.nombre}</strong> - Hoy a las ${em.horaCita}
                             </div>
                             <div>
-                                <button class="btn btn-sm btn-outline-primary btn-atender-emergencia me-2" data-id="${em.idCita}">
-                                    <i class="fas fa-notes-medical me-1"></i> Atender
+                                <button class="btn btn-sm btn-outline-primary btn-aceptar-emergencia me-2" data-id="${em.idCita}">
+                                    <i class="fas fa-notes-medical me-1"></i> Aceptar
                                 </button>
                                 <!-- ⚠️ NUEVO BOTÓN PARA DESCARTAR -->
                                 <button class="btn btn-sm btn-outline-danger btn-descartar-emergencia" data-id="${em.idCita}">
@@ -237,17 +237,31 @@ $(document).ready(function () {
     setInterval(revisarEmergencias, 30000);
 });
 
-// Evento para atender la emergencia desde el panel
-$(document).on("click", ".btn-atender-emergencia", function () {
-    let idCita = $(this).data("id");
-    // Abrimos el modal de indicaciones y receta que ya tienes, pasándole el ID
-    $("#txtIdCita").val(idCita);
-    $("#txtIndicaciones").val("");
-    recetasTemporales = [];
-    $("#tbRecetaTemporal tbody").empty();
-    $("#mdData").modal('show');
-});
-// ⚠️ EVENTO PARA DESCARTAR EMERGENCIA
+// Evento para aceptar la emergencia desde el panel
+$(document).on("click", ".btn-aceptar-emergencia", function () {
+    let idSolicitud = $(this).data("id");
+    Swal.fire({
+        title: "¿Aceptar emergencia?",
+        text: "Se asignará el turno más próximo disponible hoy.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, aceptar",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/Doctor/AceptarEmergencia?idSolicitud=${idSolicitud}`, { method: "POST" })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.data === "") {
+                        Swal.fire("Aceptada", "El paciente ha sido notificado.", "success");
+                        revisarEmergencias(); // Recargar panel
+                    } else {
+                        Swal.fire("Error", data.data, "error");
+                    }
+                });
+        }
+    });
+});// ⚠️ EVENTO PARA DESCARTAR EMERGENCIA
 $(document).on("click", ".btn-descartar-emergencia", function () {
     let idCita = $(this).data("id");
     let boton = $(this);
