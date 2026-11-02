@@ -46,9 +46,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
             {
                 title: "Días",
                 "data": "diasAtencion",
+                width: "200px", // ⚠️ Ancho fijo para evitar que se estire
                 render: function (data) {
-                    return data ? data : '<span class="text-muted">Sin días</span>';
-                }
+                    if (!data) return '<span class="text-muted">Sin días</span>';
+                    // Limitamos a 3 líneas de texto con scroll
+                    return `<div style="max-height: 60px; overflow-y: auto; font-size: 0.85rem;">${data}</div>`;
             },
             { title: "Fecha Creacion", "data": "fechaCreacion" },
             {
