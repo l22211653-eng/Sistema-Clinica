@@ -184,10 +184,9 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                string documentoLogueado = User.Identity?.Name ?? "";
+                var usuarioDoc = User.Identity?.Name;
                 var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoLogueado);
-
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
@@ -197,6 +196,7 @@ namespace ClinicaWeb.Controllers
                 else
                     lista = lista.OrderByDescending(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
 
+                // ⚠️ Devolvemos { data: lista } porque el JS lo espera así
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)

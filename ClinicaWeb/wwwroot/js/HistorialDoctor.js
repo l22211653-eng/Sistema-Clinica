@@ -7,11 +7,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
         responsive: true,
         scrollX: true,
         "ajax": {
-            // ⚠️ CAMBIO: Ahora llamamos al endpoint enviando el orden por defecto
             "url": `/${controlador}/ListaCitasAtendidas?orden=recientes`,
             "type": "GET",
             "datatype": "json",
             "dataSrc": function (json) {
+                // Si hay error, mostramos alerta
                 if (json && json.error) {
                     Swal.fire("Error", json.error, "error");
                     return [];
@@ -24,7 +24,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
             { title: "Hora Cita", "data": "horaCita", width: "100px" },
             {
                 title: "Paciente", "data": "usuario", render: function (data, type, row) {
-                    return data ? `${data.nombre} ${data.apellido}` : '';
+                    // ⚠️ Validamos si data existe y tiene las propiedades
+                    if (data && data.nombre) {
+                        return `${data.nombre} ${data.apellido}`;
+                    }
+                    return '<span class="text-muted">Sin nombre</span>';
                 }
             },
             {
@@ -38,10 +42,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
         },
     });
 
-    // ⚠️ EVENTO NUEVO: Recargar la tabla cuando se cambia el combo de orden
+    // Evento para el filtro de orden
     $("#cboOrdenFecha").change(function () {
         let orden = $(this).val();
         tablaData.ajax.url(`/${controlador}/ListaCitasAtendidas?orden=${orden}`).load();
     });
-
 });
