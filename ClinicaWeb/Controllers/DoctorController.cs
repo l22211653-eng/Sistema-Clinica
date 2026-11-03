@@ -22,7 +22,7 @@ namespace ClinicaWeb.Controllers
 
         private async Task CargarEspecialidad()
         {
-            // ⚠️ Volvemos a usar el documento
+            // ⚠️ Usamos el documento del doctor logueado
             string documentoLogueado = User.Identity?.Name ?? "";
 
             if (string.IsNullOrEmpty(documentoLogueado))
@@ -160,15 +160,23 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
 
+        // ⚠️ CORREGIDO: Ya no forzamos el ID a 1, buscamos al doctor real
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
             try
             {
-                // ⚠️ PRUEBA: Forzamos el ID a 1 (Alexandra)
-                int idDoctor = 1;
+                var usuarioDoc = User.Identity?.Name?.Trim();
+                if (string.IsNullOrEmpty(usuarioDoc))
+                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor: '{usuarioDoc}'" });
+
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1); // 1 = Pendiente
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -182,21 +190,17 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                var usuarioNombre = User.Identity?.Name?.Trim();
-                if (string.IsNullOrEmpty(usuarioNombre))
+                var usuarioDoc = User.Identity?.Name?.Trim();
+                if (string.IsNullOrEmpty(usuarioDoc))
                     return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
 
                 var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d =>
-                    $"{d.Nombres} {d.Apellidos}".Trim().Equals(usuarioNombre, StringComparison.OrdinalIgnoreCase));
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
 
                 if (doctor == null)
-                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioNombre);
+                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor: '{usuarioDoc}'" });
 
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor: '{usuarioNombre}'" });
-
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2); // 2 = Atendido
 
                 if (orden == "antiguos")
                     lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();

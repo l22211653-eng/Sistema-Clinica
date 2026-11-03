@@ -10,18 +10,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     setInterval(revisarEmergencias, 30000); // Revisar cada 30 seg
 });
 
-// ⚠️ CARGAR LA ESPECIALIDAD EN EL BADGE
-function cargarEspecialidad() {
-    fetch('/Doctor/ObtenerEspecialidad')
-        .then(response => response.text())
-        .then(data => {
-            let especialidadLimpia = data.replace(/['"]+/g, '');
-            $("#txtEspecialidadBadge").text(especialidadLimpia || "Sin especialidad");
-        })
-        .catch(() => {
-            $("#txtEspecialidadBadge").text("Sin especialidad");
-        });
-}
+
 
 function cargarTabla() {
     if ($.fn.DataTable.isDataTable('#tbData')) {
