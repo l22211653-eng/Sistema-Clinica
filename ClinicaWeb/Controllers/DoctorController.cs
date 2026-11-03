@@ -20,34 +20,42 @@ namespace ClinicaWeb.Controllers
             _especialidadRepositorio = especialidadRepositorio;
         }
 
+        // Método auxiliar para obtener el ID del doctor logueado de forma segura
+        private async Task<Doctor?> ObtenerDoctorLogueado()
+        {
+            ClaimsPrincipal claimuser = HttpContext.User;
+            string idUsuarioStr = claimuser.Claims
+                .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                .Select(c => c.Value)
+                .SingleOrDefault()!;
+
+            if (string.IsNullOrEmpty(idUsuarioStr))
+                return null;
+
+            int idUsuario = int.Parse(idUsuarioStr);
+
+            var listaDoctores = await _doctorRepositorio.Lista();
+
+            // 1. Intentamos buscar por IdDoctor == IdUsuario (lo más común)
+            var doctor = listaDoctores.FirstOrDefault(d => d.IdDoctor == idUsuario);
+
+            // 2. Si no, intentamos por documento
+            if (doctor == null)
+            {
+                var usuarioDoc = User.Identity?.Name?.Trim();
+                doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+            }
+
+            return doctor;
+        }
+
         // 1. Vista de Citas Pendientes
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> CitasAsignadas()
         {
             try
             {
-                // ⚠️ Obtenemos el ID del usuario desde el Claim (siempre está disponible)
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims
-                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                    .Select(c => c.Value)
-                    .SingleOrDefault()!;
-
-                if (string.IsNullOrEmpty(idUsuarioStr))
-                    return RedirectToAction("Login", "Acceso");
-
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                // Buscamos al doctor por su IdUsuario (ya que al crear el doctor se crea un usuario con el mismo documento)
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.IdDoctor == idUsuario); // Relación directa si coinciden
-
-                // Si no coincide, buscamos por documento (por si acaso)
-                if (doctor == null)
-                {
-                    var usuarioDoc = User.Identity?.Name?.Trim();
-                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-                }
+                var doctor = await ObtenerDoctorLogueado();
 
                 if (doctor != null)
                     ViewBag.Especialidad = doctor.Especialidad.Nombre;
@@ -61,7 +69,6 @@ namespace ClinicaWeb.Controllers
                 return View("~/Views/Citas/CitasAsignadas.cshtml");
             }
         }
-
 
         [Authorize(Roles = "Administrador")]
         public IActionResult Index()
@@ -87,20 +94,12 @@ namespace ClinicaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> ObtenerEspecialidad()
         {
-            string usuarioLogueado = User.Identity?.Name?.Trim() ?? "";
-            if (string.IsNullOrEmpty(usuarioLogueado)) return Content("");
+            var doctor = await ObtenerDoctorLogueado();
+            if (doctor == null) return Content("");
 
-            var listaDoctores = await _doctorRepositorio.Lista();
-            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioLogueado)
-                      ?? listaDoctores.FirstOrDefault(d => $"{d.Nombres} {d.Apellidos}".Trim().Equals(usuarioLogueado, StringComparison.OrdinalIgnoreCase));
-
-            if (doctor != null)
-            {
-                var listaEspecialidades = await _especialidadRepositorio.Lista();
-                var especialidad = listaEspecialidades.FirstOrDefault(e => e.IdEspecialidad == doctor.Especialidad.IdEspecialidad);
-                return Content(especialidad?.Nombre ?? "");
-            }
-            return Content("");
+            var listaEspecialidades = await _especialidadRepositorio.Lista();
+            var especialidad = listaEspecialidades.FirstOrDefault(e => e.IdEspecialidad == doctor.Especialidad.IdEspecialidad);
+            return Content(especialidad?.Nombre ?? "");
         }
 
         // 2. Vista del Historial de Citas Atendidas
@@ -143,14 +142,11 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                string usuarioLogueado = User.Identity?.Name?.Trim() ?? "";
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioLogueado)
-                          ?? listaDoctores.FirstOrDefault(d => $"{d.Nombres} {d.Apellidos}".Trim().Equals(usuarioLogueado, StringComparison.OrdinalIgnoreCase));
+                var doctor = await ObtenerDoctorLogueado();
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
 
-                int idDoctor = doctor?.IdDoctor ?? 1;
-
-                List<Cita> lista = await _citaRepositorio.ListaEmergenciasDoctor(idDoctor);
+                List<Cita> lista = await _citaRepositorio.ListaEmergenciasDoctor(doctor.IdDoctor);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -179,29 +175,9 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // ⚠️ Obtenemos el ID del usuario desde el Claim
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims
-                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                    .Select(c => c.Value)
-                    .SingleOrDefault()!;
-
-                if (string.IsNullOrEmpty(idUsuarioStr))
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
-
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.IdDoctor == idUsuario);
-
+                var doctor = await ObtenerDoctorLogueado();
                 if (doctor == null)
-                {
-                    var usuarioDoc = User.Identity?.Name?.Trim();
-                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-                }
-
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor con IdUsuario: {idUsuario}" });
+                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa o no se encontró al doctor." });
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
@@ -218,29 +194,9 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // ⚠️ Obtenemos el ID del usuario desde el Claim
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims
-                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                    .Select(c => c.Value)
-                    .SingleOrDefault()!;
-
-                if (string.IsNullOrEmpty(idUsuarioStr))
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
-
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.IdDoctor == idUsuario);
-
+                var doctor = await ObtenerDoctorLogueado();
                 if (doctor == null)
-                {
-                    var usuarioDoc = User.Identity?.Name?.Trim();
-                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-                }
-
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor con IdUsuario: {idUsuario}" });
+                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa o no se encontró al doctor." });
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
 
