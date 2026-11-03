@@ -178,12 +178,13 @@ namespace ClinicaWeb.Controllers
                 if (doctor == null)
                     return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor: '{usuarioDoc}'" });
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1); // 1 = Pendiente
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
+                // ⚠️ Devolvemos el error exacto para que el JS lo muestre
+                return StatusCode(500, new { data = new List<Cita>(), error = "Error C#: " + ex.Message });
             }
         }
 
