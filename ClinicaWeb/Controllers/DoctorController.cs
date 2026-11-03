@@ -20,31 +20,39 @@ namespace ClinicaWeb.Controllers
             _especialidadRepositorio = especialidadRepositorio;
         }
 
-        private async Task CargarEspecialidad()
+        // 1. Vista de Citas Pendientes
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> CitasAsignadas()
         {
-            // ⚠️ Usamos el documento del doctor logueado
-            string documentoLogueado = User.Identity?.Name ?? "";
-
-            if (string.IsNullOrEmpty(documentoLogueado))
+            try
             {
-                ViewBag.Especialidad = "Sin sesión";
-                return;
+                // Obtenemos el IdUsuario
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuarioStr = claimuser.Claims
+                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Select(c => c.Value)
+                    .SingleOrDefault()!;
+
+                if (string.IsNullOrEmpty(idUsuarioStr))
+                    return RedirectToAction("Login", "Acceso");
+
+                // Buscamos al doctor por su documento
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == User.Identity?.Name);
+
+                if (doctor != null)
+                    ViewBag.Especialidad = doctor.Especialidad.Nombre;
+                else
+                    ViewBag.Especialidad = "Sin especialidad";
+
+                return View("~/Views/Citas/CitasAsignadas.cshtml");
             }
-
-            var listaDoctores = await _doctorRepositorio.Lista();
-            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoLogueado);
-
-            if (doctor == null)
+            catch (Exception)
             {
-                ViewBag.Especialidad = "Doctor no encontrado";
-                return;
+                return View("~/Views/Citas/CitasAsignadas.cshtml");
             }
-
-            var listaEspecialidades = await _especialidadRepositorio.Lista();
-            var especialidad = listaEspecialidades.FirstOrDefault(e => e.IdEspecialidad == doctor.Especialidad.IdEspecialidad);
-
-            ViewBag.Especialidad = especialidad?.Nombre ?? "Sin especialidad";
         }
+
 
         [Authorize(Roles = "Administrador")]
         public IActionResult Index()
@@ -85,17 +93,11 @@ namespace ClinicaWeb.Controllers
             return Content("");
         }
 
-        [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> CitasAsignadas()
-        {
-            await CargarEspecialidad();
-            return View("~/Views/Citas/CitasAsignadas.cshtml");
-        }
-
+        // 2. Vista del Historial de Citas Atendidas
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> HistorialDoctor()
         {
-            await CargarEspecialidad();
+            // Aquí también podrías cargar la especialidad si la necesitas en la vista
             return View("~/Views/Citas/HistorialDoctor.cshtml");
         }
 
@@ -160,23 +162,20 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
 
-        // ⚠️ CORREGIDO: Ya no forzamos el ID a 1, buscamos al doctor real
+        // 2. Endpoint para cargar las Pendientes
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
             try
             {
-                var usuarioDoc = User.Identity?.Name?.Trim();
-                if (string.IsNullOrEmpty(usuarioDoc))
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
-
+                var documentoDoc = User.Identity?.Name?.Trim();
                 var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
 
                 if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor: '{usuarioDoc}'" });
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor: " + documentoDoc });
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1); // 1 = Pendiente
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -185,22 +184,20 @@ namespace ClinicaWeb.Controllers
             }
         }
 
+        // 3. Endpoint para cargar las Atendidas
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
             try
             {
-                var usuarioDoc = User.Identity?.Name?.Trim();
-                if (string.IsNullOrEmpty(usuarioDoc))
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
-
+                var documentoDoc = User.Identity?.Name?.Trim();
                 var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
 
                 if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor: '{usuarioDoc}'" });
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor: " + documentoDoc });
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2); // 2 = Atendido
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
 
                 if (orden == "antiguos")
                     lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
@@ -211,7 +208,7 @@ namespace ClinicaWeb.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { data = new List<Cita>(), error = "Error C#: " + ex.Message });
+                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
             }
         }
 
