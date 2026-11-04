@@ -20,10 +20,9 @@ namespace ClinicaWeb.Controllers
             _especialidadRepositorio = especialidadRepositorio;
         }
 
-        // ⚠️ MÉTODO AUXILIAR: Busca al doctor usando el IdUsuario del Claim
+        // Método auxiliar para obtener el doctor logueado
         private async Task<Doctor?> ObtenerDoctorLogueado()
         {
-            // 1. Obtenemos el IdUsuario del Claim (esto es 100% confiable)
             ClaimsPrincipal claimuser = HttpContext.User;
             string idUsuarioStr = claimuser.Claims
                 .Where(c => c.Type == ClaimTypes.NameIdentifier)
@@ -37,16 +36,9 @@ namespace ClinicaWeb.Controllers
 
             var listaDoctores = await _doctorRepositorio.Lista();
 
-            // 2. ⚠️ LA CLAVE: Buscamos al doctor usando el IdUsuario
+            // ⚠️ LA CLAVE: Buscamos al doctor usando el IdUsuario
             // Asumiendo que el IdUsuario del doctor es el mismo que el IdDoctor
             var doctor = listaDoctores.FirstOrDefault(d => d.IdDoctor == idUsuario);
-
-            // 3. Si no coincide, intentamos por el documento (por si acaso)
-            if (doctor == null)
-            {
-                var usuarioDoc = User.Identity?.Name?.Trim();
-                doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-            }
 
             return doctor;
         }
@@ -78,10 +70,11 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // ⚠️ PRUEBA DEFINITIVA: Forzamos el ID a 1
-                int idDoctor = 1;
+                var doctor = await ObtenerDoctorLogueado();
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -90,14 +83,17 @@ namespace ClinicaWeb.Controllers
             }
         }
 
+        // 4. Endpoint para cargar las Atendidas (Estado 2)
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
             try
             {
-                int idDoctor = 1; // ⚠️ PRUEBA DEFINITIVA
+                var doctor = await ObtenerDoctorLogueado();
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
 
                 if (orden == "antiguos")
                     lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
