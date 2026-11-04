@@ -64,17 +64,18 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 3. Endpoint para cargar las Pendientes (Estado 1)
+        // 1. Método para cargar la tabla de Citas Pendientes (Estado 1)
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
             try
             {
-                var doctor = await ObtenerDoctorLogueado();
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
+                var usuarioDoc = User.Identity?.Name;
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+                int idDoctor = doctor?.IdDoctor ?? 1;
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -83,17 +84,18 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 4. Endpoint para cargar las Atendidas (Estado 2)
+        // 2. Método para cargar el Historial de Atendidas (Estado 2)
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
             try
             {
-                var doctor = await ObtenerDoctorLogueado();
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
+                var usuarioDoc = User.Identity?.Name;
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+                int idDoctor = doctor?.IdDoctor ?? 1;
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
 
                 if (orden == "antiguos")
                     lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
@@ -104,7 +106,57 @@ namespace ClinicaWeb.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { data = new List<Cita>(), error = "Error C#: " + ex.Message });
+                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
+            }
+        }
+
+        // 3. Método para listar emergencias
+        [HttpGet]
+        public async Task<IActionResult> ListaEmergencias()
+        {
+            try
+            {
+                var usuarioDoc = User.Identity?.Name;
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+                int idDoctor = doctor?.IdDoctor ?? 1;
+
+                List<Cita> lista = await _citaRepositorio.ListaEmergenciasDoctor(idDoctor);
+                return StatusCode(StatusCodes.Status200OK, new { data = lista });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
+            }
+        }
+
+        // 4. Método para Aceptar Emergencia
+        [HttpPost]
+        public async Task<IActionResult> AceptarEmergencia(int idCita)
+        {
+            try
+            {
+                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 2, "Emergencia aceptada.");
+                return Json(new { data = respuesta });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { data = "Error: " + ex.Message });
+            }
+        }
+
+        // 5. Método para Descartar Emergencia
+        [HttpPost]
+        public async Task<IActionResult> DescartarEmergencia(int idCita)
+        {
+            try
+            {
+                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 3, "Emergencia descartada.");
+                return Json(new { success = true, message = "Descartada" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
@@ -161,54 +213,6 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> ListaEmergencias()
-        {
-            try
-            {
-                var usuarioDoc = User.Identity?.Name;
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-                int idDoctor = doctor?.IdDoctor ?? 1;
-
-                List<Cita> lista = await _citaRepositorio.ListaEmergenciasDoctor(idDoctor);
-                return StatusCode(StatusCodes.Status200OK, new { data = lista });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> AceptarEmergencia(int idCita)
-        {
-            try
-            {
-                // Aquí debes implementar la lógica para aceptar la emergencia
-                // Por ahora, solo cambiamos el estado a "Atendido" (2) o el que uses
-                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 2, "Emergencia aceptada por el doctor.");
-                return Json(new { data = respuesta });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { data = "Error: " + ex.Message });
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DescartarEmergencia(int idCita)
-        {
-            try
-            {
-                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 3, "Emergencia descartada.");
-                return Json(new { success = true, message = "Descartada" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
 
         [HttpPut]
         public async Task<IActionResult> Editar([FromBody] Doctor objeto)
