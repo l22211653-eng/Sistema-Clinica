@@ -23,33 +23,22 @@ namespace ClinicaWeb.Controllers
         // ⚠️ MÉTODO AUXILIAR: Obtiene el doctor logueado usando el IdUsuario del Claim
         private async Task<Doctor?> ObtenerDoctorLogueado()
         {
-            ClaimsPrincipal claimuser = HttpContext.User;
+            // 1. Intentamos leer el documento desde el Cookie
+            string? documentoDoc = HttpContext.Request.Cookies["DoctorDocumento"];
 
-            // 1. Obtenemos el IdUsuario del Claim NameIdentifier
-            string idUsuarioStr = claimuser.Claims
-                .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                .Select(c => c.Value)
-                .SingleOrDefault()!;
+            // 2. Si no está en el Cookie, lo buscamos en el Claim (respaldo)
+            if (string.IsNullOrEmpty(documentoDoc))
+            {
+                documentoDoc = User.Identity?.Name?.Trim();
+            }
 
-            if (string.IsNullOrEmpty(idUsuarioStr))
+            if (string.IsNullOrEmpty(documentoDoc))
                 return null;
-
-            int idUsuario = int.Parse(idUsuarioStr);
 
             var listaDoctores = await _doctorRepositorio.Lista();
 
-            // 2. Buscamos al doctor por su IdDoctor == IdUsuario
-            var doctor = listaDoctores.FirstOrDefault(d => d.IdDoctor == idUsuario);
-
-            // 3. Si no coincide, intentamos por documento (User.Identity.Name)
-            if (doctor == null)
-            {
-                var documentoDoc = User.Identity?.Name?.Trim();
-                if (!string.IsNullOrEmpty(documentoDoc))
-                {
-                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
-                }
-            }
+            // 3. Buscamos al doctor por su documento
+            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
 
             return doctor;
         }

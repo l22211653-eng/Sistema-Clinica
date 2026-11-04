@@ -64,8 +64,14 @@ namespace ClinicaWeb.Controllers
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), properties);
 
-            // ⚠️ NUEVO: Guardamos el IdUsuario en la sesión
-            HttpContext.Session.SetInt32("IdUsuario", usuario_encontrado.IdUsuario);
+            // ⚠️ NUEVO: Guardamos el documento en un Cookie persistente
+            HttpContext.Response.Cookies.Append("DoctorDocumento", usuario_encontrado.NumeroDocumentoIdentidad, new CookieOptions
+            {
+                Expires = DateTime.Now.AddDays(7), // Dura 7 días
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax
+            });
 
             string rol = usuario_encontrado.RolUsuario.Nombre;
             if (rol == "Paciente") return RedirectToAction("Index", "Citas");

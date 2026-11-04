@@ -71,9 +71,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
 }
 app.UseStaticFiles();
-
-app.UseSession();
-
+app.UseSession();      // ⚠️ Antes de Routing
 app.UseRouting();
 
 app.UseAuthentication();
