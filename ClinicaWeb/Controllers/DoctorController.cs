@@ -81,11 +81,10 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                var doctor = await ObtenerDoctorLogueado();
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
+                // ⚠️ PRUEBA: Forzamos el ID a 1
+                int idDoctor = 1;
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -100,11 +99,10 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                var doctor = await ObtenerDoctorLogueado();
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
+                // ⚠️ PRUEBA: Forzamos el ID a 1
+                int idDoctor = 1;
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
 
                 if (orden == "antiguos")
                     lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
