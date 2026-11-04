@@ -46,10 +46,11 @@ namespace ClinicaWeb.Controllers
 
             ViewData["Mensaje"] = null;
 
-            // ⚠️ AQUÍ GUARDAMOS EL DOCUMENTO EN EL NAME
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, usuario_encontrado.NumeroDocumentoIdentidad), // Documento
+                // ⚠️ Guardamos el DOCUMENTO
+                new Claim(ClaimTypes.Name, usuario_encontrado.NumeroDocumentoIdentidad),
+
                 new Claim("NombreCompleto", $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"),
                 new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()),
                 new Claim(ClaimTypes.Role, usuario_encontrado.RolUsuario.Nombre)
