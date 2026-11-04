@@ -49,6 +49,7 @@ namespace ClinicaWeb.Controllers
             return doctor;
         }
 
+        // 1. Vista de Citas Pendientes
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> CitasAsignadas()
         {
@@ -68,6 +69,62 @@ namespace ClinicaWeb.Controllers
             catch (Exception)
             {
                 return View("~/Views/Citas/CitasAsignadas.cshtml");
+            }
+        }
+
+        // 3. Endpoint para cargar las Pendientes (Estado 1)
+        [HttpGet]
+        public async Task<IActionResult> ListaCitasAsignadas()
+        {
+            try
+            {
+                var documentoDoc = User.Identity?.Name?.Trim();
+                if (string.IsNullOrEmpty(documentoDoc))
+                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
+
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
+
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor: {documentoDoc}" });
+
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
+                return StatusCode(StatusCodes.Status200OK, new { data = lista });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
+            }
+        }
+
+        // 4. Endpoint para cargar las Atendidas (Estado 2)
+        [HttpGet]
+        public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
+        {
+            try
+            {
+                var documentoDoc = User.Identity?.Name?.Trim();
+                if (string.IsNullOrEmpty(documentoDoc))
+                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
+
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
+
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor: {documentoDoc}" });
+
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
+
+                if (orden == "antiguos")
+                    lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
+                else
+                    lista = lista.OrderByDescending(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
+
+                return StatusCode(StatusCodes.Status200OK, new { data = lista });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = new List<Cita>(), error = "Error C#: " + ex.Message });
             }
         }
 
@@ -168,68 +225,6 @@ namespace ClinicaWeb.Controllers
         {
             int respuesta = await _doctorRepositorio.Eliminar(Id);
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
-        }
-
-        // 3. Endpoint para cargar las Pendientes (Estado 1)
-        [HttpGet]
-        public async Task<IActionResult> ListaCitasAsignadas()
-        {
-            try
-            {
-                // ⚠️ Obtenemos el DOCUMENTO del doctor desde la sesión
-                var documentoDoc = User.Identity?.Name?.Trim();
-
-                if (string.IsNullOrEmpty(documentoDoc))
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
-
-                // Buscamos al doctor por su documento
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
-
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor con documento: {documentoDoc}" });
-
-                // ⚠️ Ahora usamos el ID REAL del doctor
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
-                return StatusCode(StatusCodes.Status200OK, new { data = lista });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
-            }
-        }
-
-        // 4. Endpoint para cargar las Atendidas (Estado 2)
-        [HttpGet]
-        public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
-        {
-            try
-            {
-                var documentoDoc = User.Identity?.Name?.Trim();
-
-                if (string.IsNullOrEmpty(documentoDoc))
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
-
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
-
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor con documento: {documentoDoc}" });
-
-                // ⚠️ Usamos el ID REAL del doctor
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
-
-                if (orden == "antiguos")
-                    lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
-                else
-                    lista = lista.OrderByDescending(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
-
-                return StatusCode(StatusCodes.Status200OK, new { data = lista });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { data = new List<Cita>(), error = "Error C#: " + ex.Message });
-            }
         }
 
         [HttpPost]
