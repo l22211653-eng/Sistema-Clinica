@@ -169,17 +169,15 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
 
-        // 3. Endpoint para cargar las Pendientes (Estado 1)
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
             try
             {
-                var doctor = await ObtenerDoctorLogueado();
-                if (doctor == null)
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa o no se encontró al doctor." });
+                // ⚠️ PRUEBA: Forzamos el ID a 1 (Alexandra)
+                int idDoctor = 1;
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -188,17 +186,15 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 4. Endpoint para cargar las Atendidas (Estado 2)
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
             try
             {
-                var doctor = await ObtenerDoctorLogueado();
-                if (doctor == null)
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa o no se encontró al doctor." });
+                // ⚠️ PRUEBA: Forzamos el ID a 1 (Alexandra)
+                int idDoctor = 1;
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
 
                 if (orden == "antiguos")
                     lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
