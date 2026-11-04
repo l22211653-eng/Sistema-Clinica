@@ -48,14 +48,16 @@ namespace ClinicaWeb.Controllers
 
             // ⚠️ AQUÍ ESTÁ LA CORRECCIÓN (usamos usuario_encontrado)
             var claims = new List<Claim>
-                {
-                    // ⚠️ CAMBIO CLAVE: Guardamos el DOCUMENTO
-                    new Claim(ClaimTypes.Name, usuario_encontrado.NumeroDocumentoIdentidad),
+            {
+                // ⚠️ Guardamos el DOCUMENTO en el Name
+                new Claim(ClaimTypes.Name, usuario_encontrado.NumeroDocumentoIdentidad), 
+    
+                // Guardamos el NOMBRE COMPLETO en un Claim aparte
+                new Claim("NombreCompleto", $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"),
 
-                    new Claim("NombreCompleto", $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"),
-                    new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()),
-                    new Claim(ClaimTypes.Role, usuario_encontrado.RolUsuario.Nombre)
-                };
+                new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()),
+                new Claim(ClaimTypes.Role, usuario_encontrado.RolUsuario.Nombre)
+            };
 
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             AuthenticationProperties properties = new AuthenticationProperties()
