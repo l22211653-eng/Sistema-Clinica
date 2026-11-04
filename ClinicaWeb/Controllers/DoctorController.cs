@@ -20,19 +20,36 @@ namespace ClinicaWeb.Controllers
             _especialidadRepositorio = especialidadRepositorio;
         }
 
-        // Método auxiliar para obtener el doctor logueado por DOCUMENTO
+        // ⚠️ MÉTODO AUXILIAR: Busca al doctor por IdUsuario (que es lo que sí tenemos seguro)
         private async Task<Doctor?> ObtenerDoctorLogueado()
         {
-            // ⚠️ Obtenemos el documento desde el ClaimTypes.Name
-            var documentoDoc = User.Identity?.Name?.Trim();
+            ClaimsPrincipal claimuser = HttpContext.User;
 
-            if (string.IsNullOrEmpty(documentoDoc))
+            // Obtenemos el IdUsuario del Claim NameIdentifier
+            string idUsuarioStr = claimuser.Claims
+                .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                .Select(c => c.Value)
+                .SingleOrDefault()!;
+
+            if (string.IsNullOrEmpty(idUsuarioStr))
                 return null;
+
+            int idUsuario = int.Parse(idUsuarioStr);
 
             var listaDoctores = await _doctorRepositorio.Lista();
 
-            // Buscamos al doctor por su documento
-            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
+            // 1. Buscamos por IdDoctor == IdUsuario (lo más común)
+            var doctor = listaDoctores.FirstOrDefault(d => d.IdDoctor == idUsuario);
+
+            // 2. Si no coincide, intentamos por el documento (User.Identity.Name)
+            if (doctor == null)
+            {
+                var documentoDoc = User.Identity?.Name?.Trim();
+                if (!string.IsNullOrEmpty(documentoDoc))
+                {
+                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
+                }
+            }
 
             return doctor;
         }
@@ -66,7 +83,7 @@ namespace ClinicaWeb.Controllers
             {
                 var doctor = await ObtenerDoctorLogueado();
                 if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor con el documento proporcionado." });
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
@@ -85,7 +102,7 @@ namespace ClinicaWeb.Controllers
             {
                 var doctor = await ObtenerDoctorLogueado();
                 if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor con el documento proporcionado." });
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
 
@@ -101,7 +118,6 @@ namespace ClinicaWeb.Controllers
                 return StatusCode(500, new { data = new List<Cita>(), error = "Error C#: " + ex.Message });
             }
         }
-        
 
         [Authorize(Roles = "Administrador")]
         public IActionResult Index()
