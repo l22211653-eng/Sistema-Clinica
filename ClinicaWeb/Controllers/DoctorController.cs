@@ -76,10 +76,21 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // ⚠️ PRUEBA: Usamos el ID real de Alexandra (cámbialo si es otro)
-                int idDoctor = 1;
+                // ⚠️ Obtenemos el documento del doctor desde la sesión
+                var documentoDoc = User.Identity?.Name?.Trim();
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
+                if (string.IsNullOrEmpty(documentoDoc))
+                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
+
+                // Buscamos al doctor por su documento en la base de datos
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
+
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor con documento: {documentoDoc}" });
+
+                // ⚠️ Usamos el ID REAL del doctor
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -94,10 +105,18 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                var doctor = await ObtenerDoctorLogueado();
-                if (doctor == null)
-                    return StatusCode(401, new { data = new List<Cita>(), error = "No se encontró al doctor." });
+                var documentoDoc = User.Identity?.Name?.Trim();
 
+                if (string.IsNullOrEmpty(documentoDoc))
+                    return StatusCode(401, new { data = new List<Cita>(), error = "No hay sesión activa." });
+
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
+
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = $"No se encontró al doctor con documento: {documentoDoc}" });
+
+                // ⚠️ Usamos el ID REAL del doctor
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
 
                 if (orden == "antiguos")
