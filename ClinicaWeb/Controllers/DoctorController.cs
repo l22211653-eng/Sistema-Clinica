@@ -73,7 +73,7 @@ namespace ClinicaWeb.Controllers
                 var usuarioDoc = User.Identity?.Name;
                 var listaDoctores = await _doctorRepositorio.Lista();
                 var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-                int idDoctor = doctor?.IdDoctor ?? 1;
+                int idDoctor = 1; // ⚠️ FORZADO PARA PROBAR
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
