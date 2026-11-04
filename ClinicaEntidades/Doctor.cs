@@ -9,6 +9,7 @@ namespace ClinicaEntidades
     public class Doctor
     {
         public int IdDoctor { get; set; }
+        public int IdUsuario { get; set; }
         public string NumeroDocumentoIdentidad { get; set; } = null!;
         public string Nombres { get; set; } = null!;
         public string Apellidos { get; set; } = null!;

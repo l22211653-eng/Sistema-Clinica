@@ -64,16 +64,29 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 1. Método para cargar la tabla de Citas Pendientes (Estado 1)
+        // 1. Listar Citas Pendientes (Estado 1)
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
             try
             {
-                var usuarioDoc = User.Identity?.Name;
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuarioStr = claimuser.Claims
+                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Select(c => c.Value)
+                    .SingleOrDefault()!;
+
+                if (string.IsNullOrEmpty(idUsuarioStr))
+                    return Unauthorized();
+
+                int idUsuario = int.Parse(idUsuarioStr);
+
+                // Buscamos al doctor usando el IdUsuario
                 var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
-                int idDoctor = 1; // ⚠️ FORZADO PARA PROBAR
+                var doctor = listaDoctores.FirstOrDefault(d => d.IdUsuario == idUsuario);
+
+                // Si no encontramos el doctor, usamos 1 por defecto para no romper la página
+                int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
@@ -84,15 +97,25 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 2. Método para cargar el Historial de Atendidas (Estado 2)
+        // 2. Listar Citas Atendidas (Estado 2)
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
             try
             {
-                var usuarioDoc = User.Identity?.Name;
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuarioStr = claimuser.Claims
+                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Select(c => c.Value)
+                    .SingleOrDefault()!;
+
+                if (string.IsNullOrEmpty(idUsuarioStr))
+                    return Unauthorized();
+
+                int idUsuario = int.Parse(idUsuarioStr);
+
                 var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+                var doctor = listaDoctores.FirstOrDefault(d => d.IdUsuario == idUsuario);
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
@@ -110,15 +133,22 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 3. Método para listar emergencias
+        // 3. Listar Emergencias
         [HttpGet]
         public async Task<IActionResult> ListaEmergencias()
         {
             try
             {
-                var usuarioDoc = User.Identity?.Name;
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuarioStr = claimuser.Claims
+                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Select(c => c.Value)
+                    .SingleOrDefault()!;
+
+                int idUsuario = int.Parse(idUsuarioStr);
+
                 var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+                var doctor = listaDoctores.FirstOrDefault(d => d.IdUsuario == idUsuario);
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _citaRepositorio.ListaEmergenciasDoctor(idDoctor);
