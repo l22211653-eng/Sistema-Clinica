@@ -20,73 +20,37 @@ namespace ClinicaWeb.Controllers
             _especialidadRepositorio = especialidadRepositorio;
         }
 
-        // ⚠️ MÉTODO AUXILIAR: Obtiene el doctor logueado usando el IdUsuario del Claim
+        // ⚠️ MÉTODO AUXILIAR: Obtiene el doctor logueado
         private async Task<Doctor?> ObtenerDoctorLogueado()
         {
-            // 1. Intentamos leer el documento desde el Cookie
             string? documentoDoc = HttpContext.Request.Cookies["DoctorDocumento"];
-
-            // 2. Si no está en el Cookie, lo buscamos en el Claim (respaldo)
             if (string.IsNullOrEmpty(documentoDoc))
-            {
                 documentoDoc = User.Identity?.Name?.Trim();
-            }
 
             if (string.IsNullOrEmpty(documentoDoc))
                 return null;
 
             var listaDoctores = await _doctorRepositorio.Lista();
-
-            // 3. Buscamos al doctor por su documento
-            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
-
-            return doctor;
+            return listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
         }
 
         // 1. Vista de Citas Pendientes
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> CitasAsignadas()
         {
-            try
-            {
-                var doctor = await ObtenerDoctorLogueado();
-
-                if (doctor != null)
-                    ViewBag.Especialidad = doctor.Especialidad.Nombre;
-                else
-                    ViewBag.Especialidad = "Sin especialidad";
-
-                return View("~/Views/Citas/CitasAsignadas.cshtml");
-            }
-            catch (Exception)
-            {
-                return View("~/Views/Citas/CitasAsignadas.cshtml");
-            }
+            var doctor = await ObtenerDoctorLogueado();
+            ViewBag.Especialidad = doctor != null ? doctor.Especialidad.Nombre : "Sin especialidad";
+            return View("~/Views/Citas/CitasAsignadas.cshtml");
         }
 
-        // 1. Listar Citas Pendientes (Estado 1)
+        // 2. Endpoint para cargar la tabla de Citas Pendientes
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
             try
             {
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims
-                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                    .Select(c => c.Value)
-                    .SingleOrDefault()!;
-
-                if (string.IsNullOrEmpty(idUsuarioStr))
-                    return Unauthorized();
-
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                // Buscamos al doctor usando el IdUsuario
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.IdUsuario == idUsuario);
-
-                // Si no encontramos el doctor, usamos 1 por defecto para no romper la página
-                int idDoctor = doctor?.IdDoctor ?? 1;
+                var doctor = await ObtenerDoctorLogueado();
+                int idDoctor = doctor?.IdDoctor ?? 1; // 1 por defecto si falla
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
@@ -97,25 +61,13 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 2. Listar Citas Atendidas (Estado 2)
+        // 3. Endpoint para cargar el Historial de Atendidas
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
             try
             {
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims
-                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                    .Select(c => c.Value)
-                    .SingleOrDefault()!;
-
-                if (string.IsNullOrEmpty(idUsuarioStr))
-                    return Unauthorized();
-
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.IdUsuario == idUsuario);
+                var doctor = await ObtenerDoctorLogueado();
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
@@ -133,22 +85,13 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 3. Listar Emergencias
+        // 4. Endpoint para listar emergencias
         [HttpGet]
         public async Task<IActionResult> ListaEmergencias()
         {
             try
             {
-                ClaimsPrincipal claimuser = HttpContext.User;
-                string idUsuarioStr = claimuser.Claims
-                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                    .Select(c => c.Value)
-                    .SingleOrDefault()!;
-
-                int idUsuario = int.Parse(idUsuarioStr);
-
-                var listaDoctores = await _doctorRepositorio.Lista();
-                var doctor = listaDoctores.FirstOrDefault(d => d.IdUsuario == idUsuario);
+                var doctor = await ObtenerDoctorLogueado();
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
                 List<Cita> lista = await _citaRepositorio.ListaEmergenciasDoctor(idDoctor);
@@ -160,7 +103,7 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 4. Método para Aceptar Emergencia
+        // 5. Método para Aceptar Emergencia
         [HttpPost]
         public async Task<IActionResult> AceptarEmergencia(int idCita)
         {
@@ -175,7 +118,7 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 5. Método para Descartar Emergencia
+        // 6. Método para Descartar Emergencia
         [HttpPost]
         public async Task<IActionResult> DescartarEmergencia(int idCita)
         {
@@ -190,6 +133,14 @@ namespace ClinicaWeb.Controllers
             }
         }
 
+        // 7. Vista del Historial
+        [Authorize(Roles = "Doctor")]
+        public IActionResult HistorialDoctor()
+        {
+            return View("~/Views/Citas/HistorialDoctor.cshtml");
+        }
+
+        // ... (El resto de métodos como Index, Lista, Guardar, Editar, Eliminar, etc. se mantienen igual)
         [Authorize(Roles = "Administrador")]
         public IActionResult Index()
         {
@@ -222,13 +173,6 @@ namespace ClinicaWeb.Controllers
             return Content(especialidad?.Nombre ?? "");
         }
 
-        // 2. Vista del Historial de Citas Atendidas
-        [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> HistorialDoctor()
-        {
-            return View("~/Views/Citas/HistorialDoctor.cshtml");
-        }
-
         [HttpPost]
         public async Task<IActionResult> GuardarReceta([FromBody] Receta objeto)
         {
@@ -242,7 +186,6 @@ namespace ClinicaWeb.Controllers
                 return StatusCode(500, new { data = "Error: " + ex.Message });
             }
         }
-
 
         [HttpPut]
         public async Task<IActionResult> Editar([FromBody] Doctor objeto)
