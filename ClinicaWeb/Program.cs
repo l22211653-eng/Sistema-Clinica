@@ -11,8 +11,7 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://*:{port}");
 
 // ⚠️ FORZAR la lectura de la cadena de conexión desde variables de entorno
-// Esto sobrescribe lo que esté en appsettings.json si la variable existe
-var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__CadenaSQL") 
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__CadenaSQL")
                        ?? builder.Configuration.GetConnectionString("CadenaSQL");
 
 // Registrar manualmente la configuración con la cadena obtenida
@@ -23,6 +22,17 @@ builder.Services.Configure<ConnectionStrings>(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// ⚠️ REGISTRAR EL SERVICIO DE CACHÉ (necesario para la sesión)
+builder.Services.AddDistributedMemoryCache();
+
+// ⚠️ REGISTRAR EL SERVICIO DE SESIÓN
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 builder.Services.AddScoped<ICitaRepositorio, CitaRepositorio>();
 builder.Services.AddScoped<IDoctorRepositorio, DoctorRepositorio>();
@@ -51,6 +61,7 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStaticFiles();
 
+// ⚠️ USE SESSION ANTES DE ROUTING
 app.UseSession();
 
 app.UseRouting();
