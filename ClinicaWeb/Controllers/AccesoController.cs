@@ -64,6 +64,9 @@ namespace ClinicaWeb.Controllers
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), properties);
 
+            // ⚠️ NUEVO: Guardamos el IdUsuario en la sesión
+            HttpContext.Session.SetInt32("IdUsuario", usuario_encontrado.IdUsuario);
+
             string rol = usuario_encontrado.RolUsuario.Nombre;
             if (rol == "Paciente") return RedirectToAction("Index", "Citas");
             if (rol == "Doctor") return RedirectToAction("CitasAsignadas", "Citas");

@@ -23,33 +23,29 @@ namespace ClinicaWeb.Controllers
         // ⚠️ MÉTODO AUXILIAR: Busca al doctor por IdUsuario (que es lo que sí tenemos seguro)
         private async Task<Doctor?> ObtenerDoctorLogueado()
         {
-            ClaimsPrincipal claimuser = HttpContext.User;
+            // 1. Intentamos obtener el IdUsuario desde la Sesión
+            int? idUsuario = HttpContext.Session.GetInt32("IdUsuario");
 
-            // Obtenemos el IdUsuario del Claim NameIdentifier
-            string idUsuarioStr = claimuser.Claims
-                .Where(c => c.Type == ClaimTypes.NameIdentifier)
-                .Select(c => c.Value)
-                .SingleOrDefault()!;
+            // 2. Si no está en sesión, lo buscamos en el Claim (respaldo)
+            if (idUsuario == null)
+            {
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuarioStr = claimuser.Claims
+                    .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Select(c => c.Value)
+                    .SingleOrDefault()!;
 
-            if (string.IsNullOrEmpty(idUsuarioStr))
+                if (!string.IsNullOrEmpty(idUsuarioStr))
+                    idUsuario = int.Parse(idUsuarioStr);
+            }
+
+            if (idUsuario == null)
                 return null;
-
-            int idUsuario = int.Parse(idUsuarioStr);
 
             var listaDoctores = await _doctorRepositorio.Lista();
 
-            // 1. Buscamos por IdDoctor == IdUsuario (lo más común)
+            // 3. Buscamos al doctor por IdUsuario
             var doctor = listaDoctores.FirstOrDefault(d => d.IdDoctor == idUsuario);
-
-            // 2. Si no coincide, intentamos por el documento (User.Identity.Name)
-            if (doctor == null)
-            {
-                var documentoDoc = User.Identity?.Name?.Trim();
-                if (!string.IsNullOrEmpty(documentoDoc))
-                {
-                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
-                }
-            }
 
             return doctor;
         }
@@ -81,10 +77,11 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // ⚠️ PRUEBA: Forzamos el ID a 1
-                int idDoctor = 1;
+                var doctor = await ObtenerDoctorLogueado();
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
@@ -99,21 +96,16 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // ⚠️ PRUEBA: Forzamos el ID a 1
-                int idDoctor = 1;
+                var doctor = await ObtenerDoctorLogueado();
+                if (doctor == null)
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
-
-                if (orden == "antiguos")
-                    lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
-                else
-                    lista = lista.OrderByDescending(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
-
+                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { data = new List<Cita>(), error = "Error C#: " + ex.Message });
+                return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
             }
         }
 

@@ -2,6 +2,7 @@ using ClinicaData.Configuracion;
 using ClinicaData.Contrato;
 using ClinicaData.Implementacion;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         option.LoginPath = "/Acceso/Login";
         option.ExpireTimeSpan = TimeSpan.FromMinutes(20);
         option.AccessDeniedPath = "/Acceso/Denegado";
+        option.Cookie.HttpOnly = true;
+        option.Cookie.IsEssential = true;
         option.Cookie.SameSite = SameSiteMode.Lax;
         option.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
@@ -47,6 +50,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
 }
 app.UseStaticFiles();
+
+app.UseSession();
 
 app.UseRouting();
 
