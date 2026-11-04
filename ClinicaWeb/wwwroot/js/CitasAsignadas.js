@@ -5,8 +5,8 @@ let recetasTemporales = [];
 
 document.addEventListener("DOMContentLoaded", function (event) {
     cargarTabla();
-    revisarEmergencias();
-    setInterval(revisarEmergencias, 30000);
+    revisarEmergencias(); // Iniciar revisión de emergencias
+    setInterval(revisarEmergencias, 30000); // Revisar cada 30 segundos
 });
 
 function cargarTabla() {
@@ -22,10 +22,6 @@ function cargarTabla() {
             "type": "GET",
             "datatype": "json",
             "dataSrc": function (json) {
-                if (json && json.error) {
-                    Swal.fire("Error del Servidor", json.error, "error");
-                    return [];
-                }
                 return json.data || [];
             }
         },
@@ -60,14 +56,14 @@ function revisarEmergencias() {
                         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
                             <div>
                                 <i class="fas fa-user-injured me-2"></i>
-                                <strong>${em.usuario.nombre}</strong> - Hoy a las ${em.horaCita}
+                                <strong>${em.usuario.nombre}</strong> - Solicitada: ${em.fechaCita}
                             </div>
                             <div>
-                                <button class="btn btn-sm btn-outline-primary btn-aceptar-emergencia me-2" data-id="${em.idCita}">
+                                <button class="btn btn-sm btn-success btn-aceptar-emergencia me-2" data-id="${em.idCita}">
                                     <i class="fas fa-check me-1"></i> Aceptar
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger btn-descartar-emergencia" data-id="${em.idCita}">
-                                    <i class="fas fa-times me-1"></i> Descartar
+                                    <i class="fas fa-times"></i> Descartar
                                 </button>
                             </div>
                         </div>
@@ -81,46 +77,48 @@ function revisarEmergencias() {
 }
 
 // ==========================================
-// ACEPTAR / DESCARTAR EMERGENCIA
+// ACEPTAR EMERGENCIA
 // ==========================================
 $(document).on("click", ".btn-aceptar-emergencia", function () {
-    let idSolicitud = $(this).data("id");
+    let idCita = $(this).data("id");
+
     Swal.fire({
         title: "¿Aceptar emergencia?",
-        text: "Se asignará el turno más próximo disponible hoy.",
+        text: "Se asignará la cita y se notificará al paciente.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "Sí, aceptar",
         cancelButtonText: "Cancelar"
     }).then((result) => {
         if (result.isConfirmed) {
-            Swal.fire({ title: 'Aceptando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-            fetch(`/Doctor/AceptarEmergencia?idSolicitud=${idSolicitud}`, { method: "POST" })
+            fetch(`/Doctor/AceptarEmergencia?idCita=${idCita}`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
                     if (data.data === "") {
                         Swal.fire("Aceptada", "El paciente ha sido notificado.", "success");
-                        revisarEmergencias();
-                        cargarTabla();
+                        revisarEmergencias(); // Recargar panel
+                        tablaData.ajax.reload(); // Recargar tabla
                     } else {
                         Swal.fire("Error", data.data, "error");
                     }
-                })
-                .catch(() => Swal.fire("Error", "No se pudo aceptar.", "error"));
+                });
         }
     });
 });
 
+// ==========================================
+// DESCARTAR EMERGENCIA
+// ==========================================
 $(document).on("click", ".btn-descartar-emergencia", function () {
     let idCita = $(this).data("id");
     let boton = $(this);
+
     Swal.fire({
         title: "¿Descartar emergencia?",
-        text: "Esto eliminará la alerta de emergencia del panel.",
+        text: "Se eliminará la alerta. Úsalo si ya atendiste al paciente.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
-        cancelButtonColor: "#6c757d",
         confirmButtonText: "Sí, descartar",
         cancelButtonText: "Cancelar"
     }).then((result) => {
@@ -143,7 +141,7 @@ $(document).on("click", ".btn-descartar-emergencia", function () {
 });
 
 // ==========================================
-// ATENDER CITA NORMAL
+// MODAL DE INDICACIONES Y RECETA
 // ==========================================
 $("#tbData tbody").on("click", ".btn-indicaciones", function () {
     const filaSeleccionada = $(this).closest('tr');
@@ -228,7 +226,7 @@ $("#btnTerminarCita").click(function () {
                 Swal.fire("Error", data.data, "error");
             }
         })
-        .catch(() => {
+        .catch(error => {
             Swal.fire("Error", "Ocurrió un error al guardar.", "error");
         });
 });

@@ -161,35 +161,52 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> DescartarEmergencia(int idCita)
-        {
-            try
-            {
-                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 3, "Emergencia atendida en consultorio por el doctor.");
-                return Json(new { success = true, message = "Descartada" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
-
         [HttpGet]
         public async Task<IActionResult> ListaEmergencias()
         {
             try
             {
-                var doctor = await ObtenerDoctorLogueado();
-                if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
+                var usuarioDoc = User.Identity?.Name;
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuarioDoc);
+                int idDoctor = doctor?.IdDoctor ?? 1;
 
-                List<Cita> lista = await _citaRepositorio.ListaEmergenciasDoctor(doctor.IdDoctor);
+                List<Cita> lista = await _citaRepositorio.ListaEmergenciasDoctor(idDoctor);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AceptarEmergencia(int idCita)
+        {
+            try
+            {
+                // Aquí debes implementar la lógica para aceptar la emergencia
+                // Por ahora, solo cambiamos el estado a "Atendido" (2) o el que uses
+                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 2, "Emergencia aceptada por el doctor.");
+                return Json(new { data = respuesta });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { data = "Error: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DescartarEmergencia(int idCita)
+        {
+            try
+            {
+                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 3, "Emergencia descartada.");
+                return Json(new { success = true, message = "Descartada" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
