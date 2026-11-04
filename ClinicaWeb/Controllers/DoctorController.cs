@@ -20,12 +20,12 @@ namespace ClinicaWeb.Controllers
             _especialidadRepositorio = especialidadRepositorio;
         }
 
-        // ⚠️ MÉTODO AUXILIAR: Busca al doctor por IdUsuario (que es lo que sí tenemos seguro)
+        // ⚠️ MÉTODO AUXILIAR MEJORADO: Busca al doctor de todas las formas posibles
         private async Task<Doctor?> ObtenerDoctorLogueado()
         {
             ClaimsPrincipal claimuser = HttpContext.User;
 
-            // 1. Obtenemos el IdUsuario del Claim NameIdentifier (esto SIEMPRE está disponible)
+            // 1. Obtenemos el IdUsuario del Claim NameIdentifier
             string idUsuarioStr = claimuser.Claims
                 .Where(c => c.Type == ClaimTypes.NameIdentifier)
                 .Select(c => c.Value)
@@ -38,8 +38,18 @@ namespace ClinicaWeb.Controllers
 
             var listaDoctores = await _doctorRepositorio.Lista();
 
-            // 2. Buscamos al doctor por su IdDoctor == IdUsuario
+            // 2. Buscamos por IdDoctor == IdUsuario
             var doctor = listaDoctores.FirstOrDefault(d => d.IdDoctor == idUsuario);
+
+            // 3. Si no, buscamos por documento (User.Identity.Name)
+            if (doctor == null)
+            {
+                var documentoDoc = User.Identity?.Name?.Trim();
+                if (!string.IsNullOrEmpty(documentoDoc))
+                {
+                    doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
+                }
+            }
 
             return doctor;
         }
@@ -73,7 +83,7 @@ namespace ClinicaWeb.Controllers
             {
                 var doctor = await ObtenerDoctorLogueado();
                 if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor con el IdUsuario proporcionado." });
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 1);
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
@@ -92,7 +102,7 @@ namespace ClinicaWeb.Controllers
             {
                 var doctor = await ObtenerDoctorLogueado();
                 if (doctor == null)
-                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor con el IdUsuario proporcionado." });
+                    return StatusCode(500, new { data = new List<Cita>(), error = "No se encontró al doctor." });
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(doctor.IdDoctor, 2);
 

@@ -5,12 +5,9 @@ let recetasTemporales = [];
 
 document.addEventListener("DOMContentLoaded", function (event) {
     cargarTabla();
-    cargarEspecialidad();
     revisarEmergencias();
-    setInterval(revisarEmergencias, 30000); // Revisar cada 30 seg
+    setInterval(revisarEmergencias, 30000);
 });
-
-
 
 function cargarTabla() {
     if ($.fn.DataTable.isDataTable('#tbData')) {
@@ -48,7 +45,7 @@ function cargarTabla() {
 }
 
 // ==========================================
-// 1. REVISAR EMERGENCIAS
+// REVISAR EMERGENCIAS
 // ==========================================
 function revisarEmergencias() {
     fetch('/Doctor/ListaEmergencias')
@@ -84,11 +81,10 @@ function revisarEmergencias() {
 }
 
 // ==========================================
-// 2. ACEPTAR EMERGENCIA (Doctor)
+// ACEPTAR / DESCARTAR EMERGENCIA
 // ==========================================
 $(document).on("click", ".btn-aceptar-emergencia", function () {
     let idSolicitud = $(this).data("id");
-
     Swal.fire({
         title: "¿Aceptar emergencia?",
         text: "Se asignará el turno más próximo disponible hoy.",
@@ -99,14 +95,13 @@ $(document).on("click", ".btn-aceptar-emergencia", function () {
     }).then((result) => {
         if (result.isConfirmed) {
             Swal.fire({ title: 'Aceptando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-
             fetch(`/Doctor/AceptarEmergencia?idSolicitud=${idSolicitud}`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
                     if (data.data === "") {
                         Swal.fire("Aceptada", "El paciente ha sido notificado.", "success");
-                        revisarEmergencias(); // Recargar panel
-                        cargarTabla(); // Recargar tabla de pendientes
+                        revisarEmergencias();
+                        cargarTabla();
                     } else {
                         Swal.fire("Error", data.data, "error");
                     }
@@ -116,16 +111,12 @@ $(document).on("click", ".btn-aceptar-emergencia", function () {
     });
 });
 
-// ==========================================
-// 3. DESCARTAR EMERGENCIA
-// ==========================================
 $(document).on("click", ".btn-descartar-emergencia", function () {
     let idCita = $(this).data("id");
     let boton = $(this);
-
     Swal.fire({
         title: "¿Descartar emergencia?",
-        text: "Esto eliminará la alerta de emergencia del panel. Úsalo si ya atendiste al paciente en consultorio.",
+        text: "Esto eliminará la alerta de emergencia del panel.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
@@ -144,7 +135,7 @@ $(document).on("click", ".btn-descartar-emergencia", function () {
                             $("#panelEmergencias").addClass("d-none");
                         }
                     } else {
-                        Swal.fire("Error", "No se pudo descartar la emergencia.", "error");
+                        Swal.fire("Error", "No se pudo descartar.", "error");
                     }
                 });
         }
@@ -152,7 +143,7 @@ $(document).on("click", ".btn-descartar-emergencia", function () {
 });
 
 // ==========================================
-// 4. ATENDER CITA NORMAL
+// ATENDER CITA NORMAL
 // ==========================================
 $("#tbData tbody").on("click", ".btn-indicaciones", function () {
     const filaSeleccionada = $(this).closest('tr');
@@ -169,9 +160,6 @@ $("#tbData tbody").on("click", ".btn-indicaciones", function () {
     $(`#${modal}`).modal('show');
 });
 
-// ==========================================
-// 5. AGREGAR MEDICAMENTO A LA RECETA
-// ==========================================
 $("#btnAgregarMedicamento").click(function () {
     let medicamento = $("#txtMedicamento").val().trim();
     let dosis = $("#txtDosis").val().trim();
@@ -202,9 +190,6 @@ $("#tbRecetaTemporal").on("click", ".btn-eliminar-medicamento", function () {
     $(this).closest("tr").remove();
 });
 
-// ==========================================
-// 6. TERMINAR CITA (Guardar todo)
-// ==========================================
 $("#btnTerminarCita").click(function () {
     let idCita = parseInt($("#txtIdCita").val());
     let indicaciones = $("#txtIndicaciones").val().trim();
