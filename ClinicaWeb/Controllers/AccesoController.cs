@@ -48,9 +48,11 @@ namespace ClinicaWeb.Controllers
 
             var claims = new List<Claim>
             {
+                // ⚠️ CAMBIO CLAVE: Guardamos el DOCUMENTO, no el nombre
                 new Claim(ClaimTypes.Name, usuario_encontrado.NumeroDocumentoIdentidad),
+
                 new Claim("NombreCompleto", $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"),
-                new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()), // ⚠️ ESTO ES CLAVE
+                new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()),
                 new Claim(ClaimTypes.Role, usuario_encontrado.RolUsuario.Nombre)
             };
 
