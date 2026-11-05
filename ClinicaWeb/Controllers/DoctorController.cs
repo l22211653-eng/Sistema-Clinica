@@ -23,15 +23,40 @@ namespace ClinicaWeb.Controllers
         // ⚠️ MÉTODO AUXILIAR: Obtiene el doctor logueado
         private async Task<Doctor?> ObtenerDoctorLogueado()
         {
+            // 1. Leer del Cookie
             string? documentoDoc = HttpContext.Request.Cookies["DoctorDocumento"];
+
+            // 2. Si no está, leer del Claim
             if (string.IsNullOrEmpty(documentoDoc))
+            {
                 documentoDoc = User.Identity?.Name?.Trim();
+            }
+
+            // ⚠️ LOGS PARA DEPURAR
+            Console.WriteLine("=== DEPURANDO DOCTOR ===");
+            Console.WriteLine("Documento leído: " + (documentoDoc ?? "NULL"));
+            Console.WriteLine("Cookie: " + (HttpContext.Request.Cookies["DoctorDocumento"] ?? "NULL"));
+            Console.WriteLine("User.Identity.Name: " + (User.Identity?.Name ?? "NULL"));
 
             if (string.IsNullOrEmpty(documentoDoc))
+            {
+                Console.WriteLine("No se encontró documento.");
                 return null;
+            }
 
             var listaDoctores = await _doctorRepositorio.Lista();
-            return listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
+            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
+
+            if (doctor == null)
+            {
+                Console.WriteLine("No se encontró doctor con ese documento. Documentos en BD: " + string.Join(", ", listaDoctores.Select(d => d.NumeroDocumentoIdentidad)));
+            }
+            else
+            {
+                Console.WriteLine("Doctor encontrado: " + doctor.Nombres + " " + doctor.Apellidos + " (ID: " + doctor.IdDoctor + ")");
+            }
+
+            return doctor;
         }
 
         // 1. Vista de Citas Pendientes
