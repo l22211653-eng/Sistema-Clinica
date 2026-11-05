@@ -71,8 +71,13 @@ $("#tbData tbody").on("click", ".btn-indicaciones", function () {
     const filaSeleccionada = $(this).closest('tr');
     const data = tablaData.row(filaSeleccionada).data();
 
-    // ⚠️ Cargamos las indicaciones reales
+    // ⚠️ DEBUG: Vamos a ver qué datos está recibiendo el paciente
+    console.log("Datos de la cita:", data);
+
+    // Asignamos el valor. Si viene nulo, mostramos "Sin indicaciones".
+    // Asegúrate de que la propiedad se llame exactamente "indicaciones" (minúscula).
     $("#txtIndicaciones").val(data.indicaciones || "Sin indicaciones registradas.");
+
     $(`#${modal}`).modal('show');
     $("#txtIndicaciones").prop('disabled', true);
 });

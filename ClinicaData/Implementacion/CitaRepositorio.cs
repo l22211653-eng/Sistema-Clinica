@@ -206,8 +206,8 @@ namespace ClinicaData.Implementacion
                                 IdCita = Convert.ToInt32(dr["IdCita"]),
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
+                                // ⚠️ ESTA LÍNEA ES LA CLAVE
                                 Indicaciones = dr["Indicaciones"].ToString()!,
-                                YaCalificado = Convert.ToBoolean(dr["YaCalificado"]), // ⚠️ Este sí viene en el historial
                                 Especialidad = new Especialidad()
                                 {
                                     Nombre = dr["NombreEspecialidad"].ToString()!,
