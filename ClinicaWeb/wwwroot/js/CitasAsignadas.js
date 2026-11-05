@@ -209,14 +209,20 @@ $("#btnTerminarCita").click(function () {
     let idCita = parseInt($("#txtIdCita").val());
     let indicaciones = $("#txtIndicaciones").val().trim();
 
+    // ⚠️ VALIDACIÓN ESTRICTA: Si no hay indicaciones, no deja guardar
     if (indicaciones === "") {
-        Swal.fire("Atención", "Por favor, ingrese las indicaciones médicas.", "warning");
-        return;
+        Swal.fire({
+            title: "Atención",
+            text: "Debe ingresar las indicaciones médicas antes de finalizar la emergencia.",
+            icon: "warning",
+            confirmButtonText: "Entendido"
+        });
+        return; // Se detiene aquí y no cierra el modal
     }
 
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-    // ⚠️ 1. Guardamos las recetas (si hay)
+    // Guardamos las recetas (si hay)
     let promesasRecetas = recetasTemporales.map(receta => {
         let objetoReceta = {
             IdCita: idCita,
@@ -231,12 +237,12 @@ $("#btnTerminarCita").click(function () {
         });
     });
 
-    // ⚠️ 2. Esperamos las recetas y luego cambiamos el estado y las indicaciones
+    // Esperamos las recetas y luego guardamos las indicaciones
     Promise.all(promesasRecetas).then(() => {
         let objetoCita = {
             IdCita: idCita,
             EstadoCita: { IdEstadoCita: 2 },
-            Indicaciones: indicaciones // Aquí van las indicaciones reales
+            Indicaciones: indicaciones // Aquí va el texto real
         };
         return fetch(`/${controlador}/CambiarEstado`, {
             method: 'POST',
