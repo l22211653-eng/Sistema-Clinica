@@ -216,7 +216,7 @@ $("#btnTerminarCita").click(function () {
 
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-    // ⚠️ 1. Definimos el array de promesas (esto faltaba)
+    // ⚠️ Definimos el array de promesas
     let promesasRecetas = recetasTemporales.map(receta => {
         let objetoReceta = {
             IdCita: idCita,
@@ -231,12 +231,12 @@ $("#btnTerminarCita").click(function () {
         });
     });
 
-    // ⚠️ 2. Esperamos a que se guarden las recetas y luego cambiamos el estado
+    // ⚠️ Esperamos las recetas y luego guardamos las indicaciones reales
     Promise.all(promesasRecetas).then(() => {
         let objetoCita = {
             IdCita: idCita,
             EstadoCita: { IdEstadoCita: 2 },
-            Indicaciones: indicaciones
+            Indicaciones: indicaciones // Aquí van las indicaciones reales
         };
         return fetch(`/${controlador}/CambiarEstado`, {
             method: 'POST',

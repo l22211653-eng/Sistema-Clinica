@@ -134,7 +134,7 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // ⚠️ Solo cambiamos el estado a "Atendido" (2) o "Aceptada", SIN texto en indicaciones
+                // ⚠️ Enviamos vacío ("") para que NO se guarde "Emergencia aceptada." en las indicaciones
                 string respuesta = await _citaRepositorio.CambiarEstado(idCita, 2, "");
                 return Json(new { data = respuesta });
             }
