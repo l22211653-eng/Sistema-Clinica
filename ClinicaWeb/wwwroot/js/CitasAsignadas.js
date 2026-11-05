@@ -99,29 +99,22 @@ $(document).on("click", ".btn-aceptar-emergencia", function () {
                 .then(res => res.json())
                 .then(data => {
                     if (data.data === "") {
-                        // Mostramos alerta de éxito
-                        Swal.fire({
-                            title: "Aceptada",
-                            text: "El paciente ha sido notificado.",
-                            icon: "success",
-                            confirmButtonText: "OK"
-                        }).then(() => {
-                            // ⚠️ CUANDO CIERRA LA ALERTA, ABRIMOS EL MODAL
-                            $("#txtIdCita").val(idCita);
-                            $("#txtIndicaciones").val("");
-                            recetasTemporales = [];
-                            $("#tbRecetaTemporal tbody").empty();
-                            $("#txtMedicamento").val("");
-                            $("#txtDosis").val("");
-
-                            $("#mdData .modal-title").html('<i class="fas fa-ambulance me-2"></i>Atender Emergencia');
-                            $("#btnTerminarCita").text("Finalizar Emergencia");
-
-                            $("#mdData").modal('show');
-                        });
-
+                        Swal.fire("Aceptada", "El paciente ha sido notificado.", "success");
                         revisarEmergencias(); // Recargar el panel rojo
                         tablaData.ajax.reload(); // Recargar la tabla
+
+                        // ⚠️ Abrimos el modal SIN cerrar la alerta anterior, pero cargando la cita
+                        $("#txtIdCita").val(idCita);
+                        $("#txtIndicaciones").val(""); // Vacío para que el doctor escriba
+                        recetasTemporales = [];
+                        $("#tbRecetaTemporal tbody").empty();
+                        $("#txtMedicamento").val("");
+                        $("#txtDosis").val("");
+
+                        $("#mdData .modal-title").html('<i class="fas fa-ambulance me-2"></i>Atender Emergencia');
+                        $("#btnTerminarCita").text("Finalizar Emergencia");
+
+                        $("#mdData").modal('show');
                     } else {
                         Swal.fire("Error", data.data, "error");
                     }
@@ -223,7 +216,6 @@ $("#btnTerminarCita").click(function () {
 
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-    // 1. Guardar recetas (si hay)
     let promesasRecetas = recetasTemporales.map(receta => {
         let objetoReceta = { IdCita: idCita, Medicamento: receta.Medicamento, Dosis: receta.Dosis, Indicaciones: receta.Indicaciones };
         return fetch(`/${controlador}/GuardarReceta`, {
@@ -234,8 +226,11 @@ $("#btnTerminarCita").click(function () {
     });
 
     Promise.all(promesasRecetas).then(() => {
-        // 2. Cambiar estado a Atendido (2) y guardar las indicaciones
-        let objetoCita = { IdCita: idCita, EstadoCita: { IdEstadoCita: 2 }, Indicaciones: indicaciones };
+        let objetoCita = {
+            IdCita: idCita,
+            EstadoCita: { IdEstadoCita: 2 },
+            Indicaciones: indicaciones // ⚠️ Aquí van las indicaciones reales
+        };
         return fetch(`/${controlador}/CambiarEstado`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -245,8 +240,8 @@ $("#btnTerminarCita").click(function () {
         .then(response => response.json())
         .then(data => {
             if (data.data === "") {
-                Swal.fire("¡Listo!", "La emergencia ha sido atendida.", "success");
-                $("#mdData").modal('hide'); // ⚠️ CERRAR EL MODAL
+                Swal.fire("¡Listo!", "La emergencia ha sido atendida y las indicaciones guardadas.", "success");
+                $("#mdData").modal('hide');
                 tablaData.ajax.reload();
             } else {
                 Swal.fire("Error", data.data, "error");
