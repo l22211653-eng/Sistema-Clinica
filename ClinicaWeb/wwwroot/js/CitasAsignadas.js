@@ -207,7 +207,7 @@ $("#tbRecetaTemporal").on("click", ".btn-eliminar-medicamento", function () {
 
 $("#btnTerminarCita").click(function () {
     let idCita = parseInt($("#txtIdCita").val());
-    let indicaciones = $("#txtIndicaciones").val().trim(); // ⚠️ Texto del doctor
+    let indicaciones = $("#txtIndicaciones").val().trim();
 
     if (indicaciones === "") {
         Swal.fire("Atención", "Por favor, ingrese las indicaciones médicas.", "warning");
@@ -216,7 +216,7 @@ $("#btnTerminarCita").click(function () {
 
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-    // ⚠️ Definimos el array de promesas
+    // ⚠️ 1. Guardamos las recetas (si hay)
     let promesasRecetas = recetasTemporales.map(receta => {
         let objetoReceta = {
             IdCita: idCita,
@@ -231,12 +231,12 @@ $("#btnTerminarCita").click(function () {
         });
     });
 
-    // ⚠️ Esperamos las recetas y luego guardamos las indicaciones reales
+    // ⚠️ 2. Esperamos las recetas y luego cambiamos el estado y las indicaciones
     Promise.all(promesasRecetas).then(() => {
         let objetoCita = {
             IdCita: idCita,
             EstadoCita: { IdEstadoCita: 2 },
-            Indicaciones: indicaciones // ⚠️ AQUÍ VA EL TEXTO REAL
+            Indicaciones: indicaciones // Aquí van las indicaciones reales
         };
         return fetch(`/${controlador}/CambiarEstado`, {
             method: 'POST',

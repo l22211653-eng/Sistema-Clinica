@@ -71,7 +71,8 @@ $("#tbData tbody").on("click", ".btn-indicaciones", function () {
     const filaSeleccionada = $(this).closest('tr');
     const data = tablaData.row(filaSeleccionada).data();
 
-    $("#txtIndicaciones").val(data.indicaciones);
+    // ⚠️ Cargamos las indicaciones reales
+    $("#txtIndicaciones").val(data.indicaciones || "Sin indicaciones registradas.");
     $(`#${modal}`).modal('show');
     $("#txtIndicaciones").prop('disabled', true);
 });
