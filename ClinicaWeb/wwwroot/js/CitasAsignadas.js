@@ -57,9 +57,11 @@ function revisarEmergencias() {
                             <div>
                                 <i class="fas fa-user-injured me-2"></i>
                                 <strong>${em.usuario.nombre}</strong> - Solicitada: ${em.fechaCita}<br>
-                                <small class="text-muted"><strong>Motivo:</strong> ${em.indicaciones || 'No especificado'}</small>
+                                <!-- ⚠️ AQUÍ MOSTRAMOS EL MOTIVO -->
+                                <small class="text-danger"><strong>Motivo:</strong> ${em.indicaciones || 'No especificado'}</small>
                             </div>
                             <div>
+                                <!-- ⚠️ BOTÓN ACEPTAR (con una clase única) -->
                                 <button class="btn btn-sm btn-success btn-aceptar-emergencia me-2" data-id="${em.idCita}">
                                     <i class="fas fa-check me-1"></i> Aceptar
                                 </button>
@@ -80,21 +82,46 @@ function revisarEmergencias() {
 // ==========================================
 // ACEPTAR EMERGENCIA
 // ==========================================
+// ⚠️ EVENTO PARA ACEPTAR LA EMERGENCIA
 $(document).on("click", ".btn-aceptar-emergencia", function () {
     let idCita = $(this).data("id");
-    // Abrimos el modal de indicaciones y receta, pero marcamos que es emergencia
-    $("#txtIdCita").val(idCita);
-    $("#txtIndicaciones").val("");
-    recetasTemporales = [];
-    $("#tbRecetaTemporal tbody").empty();
-    $("#txtMedicamento").val("");
-    $("#txtDosis").val("");
 
-    // Cambiamos el título del modal para que sea de emergencia
-    $("#mdData .modal-title").html('<i class="fas fa-ambulance me-2"></i>Atender Emergencia');
-    $("#btnTerminarCita").text("Finalizar Emergencia");
+    Swal.fire({
+        title: "¿Aceptar emergencia?",
+        text: "Se notificará al paciente y podrás dar las indicaciones.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, aceptar",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // 1. Llamamos al backend para cambiar el estado
+            fetch(`/Doctor/AceptarEmergencia?idCita=${idCita}`, { method: "POST" })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.data === "") {
+                        Swal.fire("Aceptada", "El paciente ha sido notificado.", "success");
+                        revisarEmergencias(); // Recargar el panel rojo
+                        tablaData.ajax.reload(); // Recargar la tabla
 
-    $("#mdData").modal('show');
+                        // 2. Abrimos el modal de indicaciones para que el doctor recete
+                        $("#txtIdCita").val(idCita);
+                        $("#txtIndicaciones").val("");
+                        recetasTemporales = [];
+                        $("#tbRecetaTemporal tbody").empty();
+                        $("#txtMedicamento").val("");
+                        $("#txtDosis").val("");
+
+                        $("#mdData .modal-title").html('<i class="fas fa-ambulance me-2"></i>Atender Emergencia');
+                        $("#btnTerminarCita").text("Finalizar Emergencia");
+
+                        $("#mdData").modal('show');
+                    } else {
+                        Swal.fire("Error", data.data, "error");
+                    }
+                });
+        }
+    });
 });
 
 // ==========================================

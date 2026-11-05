@@ -175,7 +175,9 @@ namespace ClinicaData.Implementacion
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
                                 Usuario = new Usuario { Nombre = dr["Paciente"].ToString()! },
-                                EstadoCita = new EstadoCita { Nombre = dr["Estado"].ToString()! }
+                                EstadoCita = new EstadoCita { Nombre = dr["Estado"].ToString()! },
+                                // ⚠️ LEEMOS EL MOTIVO
+                                Indicaciones = dr["Motivo"].ToString()!
                             });
                         }
                     }
