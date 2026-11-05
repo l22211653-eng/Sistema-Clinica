@@ -216,14 +216,22 @@ $("#btnTerminarCita").click(function () {
 
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-    let promesasRecetas = recetasTemporales.map(receta => {
-        let objetoReceta = { IdCita: idCita, Medicamento: receta.Medicamento, Dosis: receta.Dosis, Indicaciones: receta.Indicaciones };
-        return fetch(`/${controlador}/GuardarReceta`, {
+    // ... (código de recetas) ...
+
+    Promise.all(promesasRecetas).then(() => {
+        let objetoCita = {
+            IdCita: idCita,
+            EstadoCita: { IdEstadoCita: 2 },
+            Indicaciones: indicaciones // ⚠️ AQUÍ VAN LAS INDICACIONES REALES
+        };
+
+        // ⚠️ IMPORTANTE: Asegúrate de que llame al endpoint correcto
+        return fetch(`/${controlador}/CambiarEstado`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(objetoReceta)
+            body: JSON.stringify(objetoCita)
         });
-    });
+    })
 
     Promise.all(promesasRecetas).then(() => {
         let objetoCita = {

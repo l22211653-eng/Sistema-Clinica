@@ -24,7 +24,8 @@ namespace ClinicaData.Implementacion
                 {
                     cmd.Parameters.AddWithValue("p_IdCita", IdCita);
                     cmd.Parameters.AddWithValue("p_IdEstado", IdEstado);
-                    cmd.Parameters.AddWithValue("p_Indicaciones", (object)Indicaciones ?? DBNull.Value);
+                    // ⚠️ Aseguramos que si viene nulo, se envíe vacío
+                    cmd.Parameters.AddWithValue("p_Indicaciones", (object)Indicaciones ?? "");
 
                     try
                     {
