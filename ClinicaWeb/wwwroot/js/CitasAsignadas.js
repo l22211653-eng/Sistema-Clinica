@@ -95,27 +95,33 @@ $(document).on("click", ".btn-aceptar-emergencia", function () {
         cancelButtonText: "Cancelar"
     }).then((result) => {
         if (result.isConfirmed) {
-            // 1. Llamamos al backend para cambiar el estado
             fetch(`/Doctor/AceptarEmergencia?idCita=${idCita}`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
                     if (data.data === "") {
-                        Swal.fire("Aceptada", "El paciente ha sido notificado.", "success");
+                        // Mostramos alerta de éxito
+                        Swal.fire({
+                            title: "Aceptada",
+                            text: "El paciente ha sido notificado.",
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            // ⚠️ CUANDO CIERRA LA ALERTA, ABRIMOS EL MODAL
+                            $("#txtIdCita").val(idCita);
+                            $("#txtIndicaciones").val("");
+                            recetasTemporales = [];
+                            $("#tbRecetaTemporal tbody").empty();
+                            $("#txtMedicamento").val("");
+                            $("#txtDosis").val("");
+
+                            $("#mdData .modal-title").html('<i class="fas fa-ambulance me-2"></i>Atender Emergencia');
+                            $("#btnTerminarCita").text("Finalizar Emergencia");
+
+                            $("#mdData").modal('show');
+                        });
+
                         revisarEmergencias(); // Recargar el panel rojo
                         tablaData.ajax.reload(); // Recargar la tabla
-
-                        // 2. Abrimos el modal de indicaciones para que el doctor recete
-                        $("#txtIdCita").val(idCita);
-                        $("#txtIndicaciones").val("");
-                        recetasTemporales = [];
-                        $("#tbRecetaTemporal tbody").empty();
-                        $("#txtMedicamento").val("");
-                        $("#txtDosis").val("");
-
-                        $("#mdData .modal-title").html('<i class="fas fa-ambulance me-2"></i>Atender Emergencia');
-                        $("#btnTerminarCita").text("Finalizar Emergencia");
-
-                        $("#mdData").modal('show');
                     } else {
                         Swal.fire("Error", data.data, "error");
                     }
@@ -217,6 +223,7 @@ $("#btnTerminarCita").click(function () {
 
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
+    // 1. Guardar recetas (si hay)
     let promesasRecetas = recetasTemporales.map(receta => {
         let objetoReceta = { IdCita: idCita, Medicamento: receta.Medicamento, Dosis: receta.Dosis, Indicaciones: receta.Indicaciones };
         return fetch(`/${controlador}/GuardarReceta`, {
@@ -227,6 +234,7 @@ $("#btnTerminarCita").click(function () {
     });
 
     Promise.all(promesasRecetas).then(() => {
+        // 2. Cambiar estado a Atendido (2) y guardar las indicaciones
         let objetoCita = { IdCita: idCita, EstadoCita: { IdEstadoCita: 2 }, Indicaciones: indicaciones };
         return fetch(`/${controlador}/CambiarEstado`, {
             method: 'POST',
@@ -237,8 +245,8 @@ $("#btnTerminarCita").click(function () {
         .then(response => response.json())
         .then(data => {
             if (data.data === "") {
-                Swal.fire("¡Listo!", "La cita ha sido atendida.", "success");
-                $("#mdData").modal('hide');
+                Swal.fire("¡Listo!", "La emergencia ha sido atendida.", "success");
+                $("#mdData").modal('hide'); // ⚠️ CERRAR EL MODAL
                 tablaData.ajax.reload();
             } else {
                 Swal.fire("Error", data.data, "error");
