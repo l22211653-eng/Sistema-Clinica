@@ -216,28 +216,27 @@ $("#btnTerminarCita").click(function () {
 
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-    // ... (código de recetas) ...
-
-    Promise.all(promesasRecetas).then(() => {
-        let objetoCita = {
+    // ⚠️ 1. Definimos el array de promesas (esto faltaba)
+    let promesasRecetas = recetasTemporales.map(receta => {
+        let objetoReceta = {
             IdCita: idCita,
-            EstadoCita: { IdEstadoCita: 2 },
-            Indicaciones: indicaciones // ⚠️ AQUÍ VAN LAS INDICACIONES REALES
+            Medicamento: receta.Medicamento,
+            Dosis: receta.Dosis,
+            Indicaciones: receta.Indicaciones
         };
-
-        // ⚠️ IMPORTANTE: Asegúrate de que llame al endpoint correcto
-        return fetch(`/${controlador}/CambiarEstado`, {
+        return fetch(`/${controlador}/GuardarReceta`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(objetoCita)
+            body: JSON.stringify(objetoReceta)
         });
-    })
+    });
 
+    // ⚠️ 2. Esperamos a que se guarden las recetas y luego cambiamos el estado
     Promise.all(promesasRecetas).then(() => {
         let objetoCita = {
             IdCita: idCita,
             EstadoCita: { IdEstadoCita: 2 },
-            Indicaciones: indicaciones // ⚠️ Aquí van las indicaciones reales
+            Indicaciones: indicaciones
         };
         return fetch(`/${controlador}/CambiarEstado`, {
             method: 'POST',
