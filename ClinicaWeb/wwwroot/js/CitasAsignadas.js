@@ -56,7 +56,8 @@ function revisarEmergencias() {
                         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
                             <div>
                                 <i class="fas fa-user-injured me-2"></i>
-                                <strong>${em.usuario.nombre}</strong> - Solicitada: ${em.fechaCita}
+                                <strong>${em.usuario.nombre}</strong> - Solicitada: ${em.fechaCita}<br>
+                                <small class="text-muted"><strong>Motivo:</strong> ${em.indicaciones || 'No especificado'}</small>
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-success btn-aceptar-emergencia me-2" data-id="${em.idCita}">
@@ -81,29 +82,19 @@ function revisarEmergencias() {
 // ==========================================
 $(document).on("click", ".btn-aceptar-emergencia", function () {
     let idCita = $(this).data("id");
+    // Abrimos el modal de indicaciones y receta, pero marcamos que es emergencia
+    $("#txtIdCita").val(idCita);
+    $("#txtIndicaciones").val("");
+    recetasTemporales = [];
+    $("#tbRecetaTemporal tbody").empty();
+    $("#txtMedicamento").val("");
+    $("#txtDosis").val("");
 
-    Swal.fire({
-        title: "¿Aceptar emergencia?",
-        text: "Se asignará la cita y se notificará al paciente.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Sí, aceptar",
-        cancelButtonText: "Cancelar"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/Doctor/AceptarEmergencia?idCita=${idCita}`, { method: "POST" })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.data === "") {
-                        Swal.fire("Aceptada", "El paciente ha sido notificado.", "success");
-                        revisarEmergencias(); // Recargar panel
-                        tablaData.ajax.reload(); // Recargar tabla
-                    } else {
-                        Swal.fire("Error", data.data, "error");
-                    }
-                });
-        }
-    });
+    // Cambiamos el título del modal para que sea de emergencia
+    $("#mdData .modal-title").html('<i class="fas fa-ambulance me-2"></i>Atender Emergencia');
+    $("#btnTerminarCita").text("Finalizar Emergencia");
+
+    $("#mdData").modal('show');
 });
 
 // ==========================================

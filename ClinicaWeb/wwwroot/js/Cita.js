@@ -48,51 +48,59 @@ document.addEventListener("DOMContentLoaded", function (event) {
 });
 
 $("#btnEmergencia").click(async function () {
-
-    // 1. Mostrar carga mientras traemos las especialidades
     Swal.fire({ title: 'Cargando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
     try {
-        // 2. Obtener las especialidades de la base de datos
         const response = await fetch('/Especialidad/Lista');
         const data = await response.json();
 
-        // 3. Crear un objeto con el formato { id: nombre } para el select de SweetAlert
         let opcionesEspecialidades = {};
         data.data.forEach(esp => {
             opcionesEspecialidades[esp.idEspecialidad] = esp.nombre;
         });
 
-        // 4. Mostrar el modal de emergencia con las especialidades cargadas
+        // ⚠️ PASO 1: Seleccionar especialidad
         const { value: idEspecialidad } = await Swal.fire({
             title: '¡Emergencia Médica!',
-            text: 'Selecciona la especialidad que necesitas. Buscaremos al primer doctor disponible hoy.',
+            text: 'Selecciona la especialidad que necesitas.',
             input: 'select',
-            inputOptions: opcionesEspecialidades, // ⚠️ AQUÍ INYECTAMOS LOS DATOS
+            inputOptions: opcionesEspecialidades,
             inputPlaceholder: 'Selecciona una especialidad',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Solicitar Emergencia',
+            confirmButtonText: 'Siguiente',
             cancelButtonText: 'Cancelar'
         });
 
-        // 5. Si el usuario seleccionó una y le dio a "Solicitar"
         if (idEspecialidad) {
-            Swal.fire({ title: 'Buscando doctor...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            // ⚠️ PASO 2: Pedir el motivo
+            const { value: motivo } = await Swal.fire({
+                title: 'Describe tu emergencia',
+                input: 'textarea',
+                inputPlaceholder: 'Ej: Me duele mucho el pecho y no puedo respirar...',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Solicitar Emergencia',
+                cancelButtonText: 'Cancelar',
+                inputValidator: (value) => {
+                    if (!value) return '¡Necesitas escribir el motivo!';
+                }
+            });
 
-            const res = await fetch('/Citas/SolicitarEmergencia?idEspecialidad=' + idEspecialidad, { method: 'POST' });
-            const resultado = await res.json();
+            if (motivo) {
+                Swal.fire({ title: 'Buscando doctor...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-            if (resultado.data === "") {
-                Swal.fire('¡Atendido!', 'Un doctor te atenderá en breve. Revisa tu historial.', 'success');
-            } else {
-                Swal.fire('Lo sentimos', resultado.data, 'error');
+                const res = await fetch(`/Citas/SolicitarEmergencia?idEspecialidad=${idEspecialidad}&motivo=${encodeURIComponent(motivo)}`, { method: 'POST' });
+                const resultado = await res.json();
+
+                if (resultado.data === "") {
+                    Swal.fire('¡Atendido!', 'Un doctor revisará tu emergencia en breve.', 'success');
+                } else {
+                    Swal.fire('Lo sentimos', resultado.data, 'error');
+                }
             }
         }
-
     } catch (error) {
-        Swal.fire('Error', 'No se pudieron cargar las especialidades. Intente más tarde.', 'error');
+        Swal.fire('Error', 'No se pudieron cargar las especialidades.', 'error');
     }
 });
 

@@ -129,18 +129,28 @@ namespace ClinicaData.Implementacion
             return lista;
         }
 
-        public async Task<string> CrearEmergencia(int idUsuario, int idEspecialidad)
+        public async Task<string> CrearEmergencia(int idUsuario, int idEspecialidad, string motivo)
         {
             string respuesta = "";
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
-                using (var cmd = new NpgsqlCommand("SELECT sp_crearEmergencia(@p_User, @p_Esp)", conexion))
+                // ⚠️ Le pasamos el motivo a la función de PostgreSQL
+                using (var cmd = new NpgsqlCommand("SELECT sp_crearEmergencia(@p_User, @p_Esp, @p_Motivo)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_User", idUsuario);
                     cmd.Parameters.AddWithValue("p_Esp", idEspecialidad);
-                    var result = await cmd.ExecuteScalarAsync();
-                    respuesta = result?.ToString() ?? "";
+                    cmd.Parameters.AddWithValue("p_Motivo", motivo);
+
+                    try
+                    {
+                        var result = await cmd.ExecuteScalarAsync();
+                        respuesta = result?.ToString() ?? "";
+                    }
+                    catch (Exception ex)
+                    {
+                        respuesta = "Error al crear emergencia: " + ex.Message;
+                    }
                 }
             }
             return respuesta;

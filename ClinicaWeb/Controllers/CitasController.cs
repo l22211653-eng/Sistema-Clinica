@@ -56,14 +56,14 @@ namespace ClinicaWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
         [HttpPost]
-        public async Task<IActionResult> SolicitarEmergencia(int idEspecialidad)
+        public async Task<IActionResult> SolicitarEmergencia(int idEspecialidad, string motivo)
         {
             try
             {
                 ClaimsPrincipal claimuser = HttpContext.User;
                 string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
 
-                string respuesta = await _repositorioCita.CrearEmergencia(int.Parse(idUsuario), idEspecialidad);
+                string respuesta = await _repositorioCita.CrearEmergencia(int.Parse(idUsuario), idEspecialidad, motivo);
                 return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
             }
             catch (Exception ex)
