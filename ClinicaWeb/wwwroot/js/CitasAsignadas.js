@@ -207,7 +207,7 @@ $("#tbRecetaTemporal").on("click", ".btn-eliminar-medicamento", function () {
 
 $("#btnTerminarCita").click(function () {
     let idCita = parseInt($("#txtIdCita").val());
-    let indicaciones = $("#txtIndicaciones").val().trim();
+    let indicaciones = $("#txtIndicaciones").val().trim(); // ⚠️ Texto del doctor
 
     if (indicaciones === "") {
         Swal.fire("Atención", "Por favor, ingrese las indicaciones médicas.", "warning");
@@ -236,7 +236,7 @@ $("#btnTerminarCita").click(function () {
         let objetoCita = {
             IdCita: idCita,
             EstadoCita: { IdEstadoCita: 2 },
-            Indicaciones: indicaciones // Aquí van las indicaciones reales
+            Indicaciones: indicaciones // ⚠️ AQUÍ VA EL TEXTO REAL
         };
         return fetch(`/${controlador}/CambiarEstado`, {
             method: 'POST',
