@@ -201,13 +201,15 @@ namespace ClinicaData.Implementacion
                     {
                         while (await dr.ReadAsync())
                         {
+                            // ⚠️ Leemos el campo Indicaciones de la base de datos
+                            string indicaciones = dr["Indicaciones"].ToString()!;
+
                             lista.Add(new Cita()
                             {
                                 IdCita = Convert.ToInt32(dr["IdCita"]),
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
-                                // ⚠️ ESTA LÍNEA ES LA CLAVE
-                                Indicaciones = dr["Indicaciones"].ToString()!,
+                                Indicaciones = indicaciones, // ⚠️ Asignamos el valor
                                 Especialidad = new Especialidad()
                                 {
                                     Nombre = dr["NombreEspecialidad"].ToString()!,
