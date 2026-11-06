@@ -68,16 +68,22 @@ document.addEventListener("DOMContentLoaded", function (event) {
 // 1. EVENTO: VER INDICACIONES
 // ==========================================
 $("#tbData tbody").on("click", ".btn-indicaciones", function () {
+    // Obtenemos la fila y los datos de la cita específica que se clickeó
     const filaSeleccionada = $(this).closest('tr');
     const data = tablaData.row(filaSeleccionada).data();
 
-    // ⚠️ DEBUG: Vamos a ver qué datos está recibiendo el paciente
-    console.log("Datos de la cita:", data);
+    // ⚠️ VALIDACIÓN: Si el objeto data no tiene las indicaciones, las buscamos en la fila
+    let indicaciones = data.indicaciones;
 
-    // Asignamos el valor. Si viene nulo, mostramos "Sin indicaciones".
-    // Asegúrate de que la propiedad se llame exactamente "indicaciones" (minúscula).
-    $("#txtIndicaciones").val(data.indicaciones || "Sin indicaciones registradas.");
+    // Si viene vacío o nulo, intentamos leerlo directamente del DOM (por si acaso)
+    if (!indicaciones || indicaciones.trim() === "") {
+        indicaciones = "Sin indicaciones registradas.";
+    }
 
+    // Asignamos el valor al modal
+    $("#txtIndicaciones").val(indicaciones);
+
+    // Mostramos el modal
     $(`#${modal}`).modal('show');
     $("#txtIndicaciones").prop('disabled', true);
 });

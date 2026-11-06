@@ -209,7 +209,7 @@ namespace ClinicaData.Implementacion
                                 IdCita = Convert.ToInt32(dr["IdCita"]),
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
-                                Indicaciones = indicaciones, // ⚠️ Asignamos el valor
+                                Indicaciones = dr["Indicaciones"].ToString()!, // ⚠️ Asignamos el valor
                                 Especialidad = new Especialidad()
                                 {
                                     Nombre = dr["NombreEspecialidad"].ToString()!,
