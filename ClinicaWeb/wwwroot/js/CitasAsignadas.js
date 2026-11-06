@@ -209,15 +209,9 @@ $("#btnTerminarCita").click(function () {
     let idCita = parseInt($("#txtIdCita").val());
     let indicaciones = $("#txtIndicaciones").val().trim();
 
-    // ⚠️ VALIDACIÓN ESTRICTA: Si no hay indicaciones, no deja guardar
     if (indicaciones === "") {
-        Swal.fire({
-            title: "Atención",
-            text: "Debe ingresar las indicaciones médicas antes de finalizar la emergencia.",
-            icon: "warning",
-            confirmButtonText: "Entendido"
-        });
-        return; // Se detiene aquí y no cierra el modal
+        Swal.fire("Atención", "Por favor, ingrese las indicaciones médicas.", "warning");
+        return;
     }
 
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
@@ -242,7 +236,7 @@ $("#btnTerminarCita").click(function () {
         let objetoCita = {
             IdCita: idCita,
             EstadoCita: { IdEstadoCita: 2 },
-            Indicaciones: indicaciones // Aquí va el texto real
+            Indicaciones: indicaciones // ⚠️ AQUÍ VAN LAS INDICACIONES REALES
         };
         return fetch(`/${controlador}/CambiarEstado`, {
             method: 'POST',
@@ -253,7 +247,7 @@ $("#btnTerminarCita").click(function () {
         .then(response => response.json())
         .then(data => {
             if (data.data === "") {
-                Swal.fire("¡Listo!", "La emergencia ha sido atendida y las indicaciones guardadas.", "success");
+                Swal.fire("¡Listo!", "La emergencia ha sido atendida.", "success");
                 $("#mdData").modal('hide');
                 tablaData.ajax.reload();
             } else {
