@@ -4,6 +4,11 @@ const modal = "mdData";
 
 document.addEventListener("DOMContentLoaded", function (event) {
 
+    // ⚠️ Si la tabla ya existe, la destruimos para que se recree con los datos nuevos
+    if ($.fn.DataTable.isDataTable('#tbData')) {
+        $('#tbData').DataTable().destroy();
+    }
+
     tablaData = $('#tbData').DataTable({
         responsive: true,
         scrollX: true,
@@ -18,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 }
                 return json || [];
             }
-        },
+        }, 
         "columns": [
             { title: "Fecha Cita", "data": "fechaCita", width: "120px" },
             {
