@@ -1,4 +1,5 @@
 ﻿using ClinicaData.Contrato;
+using ClinicaData.Implementacion;
 using ClinicaEntidades;
 using ClinicaEntidades.DTO;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +12,7 @@ namespace ClinicaWeb.Controllers
     {
         private readonly IDoctorRepositorio _repositorio;
         private readonly ICitaRepositorio _repositorioCita;
+        private readonly ICitaRepositorio _citaRepositorio;
         public CitasController(IDoctorRepositorio repositorio, ICitaRepositorio repositorioCita)
         {
             _repositorio = repositorio;
@@ -31,6 +33,22 @@ namespace ClinicaWeb.Controllers
         public IActionResult CitasAsignadas()
         {
             return View();
+        }
+        // En HomeController.cs (o donde esté el panel del Admin)
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> ListaEmergenciasAdmin()
+        {
+            try
+            {
+                // ⚠️ AQUÍ DEBE IR EL GUION BAJO
+                List<Cita> lista = await _citaRepositorio.ListaEmergenciasAdmin();
+                return Json(new { data = lista });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { data = new List<Cita>(), error = ex.Message });
+            }
         }
 
         [HttpGet]

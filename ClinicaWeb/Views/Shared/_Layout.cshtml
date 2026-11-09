@@ -239,6 +239,7 @@
         </div>
     </nav>
 
+
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
@@ -272,6 +273,7 @@
                                 <div class="sb-nav-link-icon"><i class="fas fa-calendar-alt"></i></div>
                                 Horarios
                             </a>
+
                         }
 
                         @if (User.IsInRole("Paciente"))
@@ -297,6 +299,13 @@
                                 Mis Citas Atendidas
                             </a>
                         }
+                        <!-- PANEL DE EMERGENCIAS SIN DOCTORES -->
+                        <div class="alert alert-danger mt-4" id="panelEmergenciasAdmin" style="display: none;">
+                            <h5 class="fw-bold"><i class="fas fa-ambulance me-2"></i> Emergencias sin doctores disponibles</h5>
+                            <div id="listaEmergenciasAdmin" class="mt-3">
+                                <!-- Aquí se cargarán las emergencias -->
+                            </div>
+                        </div>
                     </div>
 
                 </div>
