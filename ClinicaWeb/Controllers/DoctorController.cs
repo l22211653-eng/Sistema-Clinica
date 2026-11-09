@@ -77,11 +77,10 @@ namespace ClinicaWeb.Controllers
                 var doctor = await ObtenerDoctorLogueado();
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
-                // ⚠️ Traemos las Pendientes (1) y las Aceptadas (4)
+                // ⚠️ Traemos las Pendientes (1) y las Aceptadas (5)
                 List<Cita> listaPendientes = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
-                List<Cita> listaAceptadas = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 4);
+                List<Cita> listaAceptadas = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 5);
 
-                // Unimos ambas listas
                 List<Cita> listaCompleta = listaPendientes.Concat(listaAceptadas).ToList();
 
                 return StatusCode(StatusCodes.Status200OK, new { data = listaCompleta });
@@ -140,9 +139,8 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // ⚠️ Cambiamos al estado "Aceptada" (ID 4)
-                // Si en tu base de datos el ID es otro, cámbialo aquí.
-                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 4, "");
+                // ⚠️ CAMBIAMOS EL ESTADO A 5 (Aceptada)
+                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 5, "");
                 return Json(new { data = respuesta });
             }
             catch (Exception ex)
