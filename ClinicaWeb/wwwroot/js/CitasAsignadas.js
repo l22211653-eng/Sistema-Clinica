@@ -119,7 +119,7 @@ $(document).on("click", ".btn-descartar-emergencia", function () {
 
     Swal.fire({
         title: "¿Rechazar emergencia?",
-        text: "Se intentará reasignar a otro doctor. Si no hay, se notificará al administrador.",
+        text: "Se intentará reasignar a otro doctor.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
