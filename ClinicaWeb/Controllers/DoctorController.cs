@@ -155,8 +155,13 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 3, "Emergencia descartada.");
-                return Json(new { success = true, message = "Descartada" });
+                // 1. Liberar el turno (para que otro doctor lo pueda tomar)
+                await _citaRepositorio.LiberarTurno(idCita);
+
+                // 2. Cambiar el estado a "Pendiente" (ID 1)
+                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 1, "Emergencia rechazada por el doctor. Reasignando...");
+
+                return Json(new { success = true, message = "Rechazada y reasignada" });
             }
             catch (Exception ex)
             {

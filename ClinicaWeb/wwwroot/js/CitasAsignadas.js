@@ -116,31 +116,31 @@ $(document).on("click", ".btn-aceptar-emergencia", function () {
 // ==========================================
 $(document).on("click", ".btn-descartar-emergencia", function () {
     let idCita = $(this).data("id");
-    let boton = $(this);
 
     Swal.fire({
-        title: "¿Descartar emergencia?",
-        text: "Se eliminará la alerta. Úsalo si ya atendiste al paciente.",
+        title: "¿Rechazar emergencia?",
+        text: "La emergencia volverá a la lista de pendientes para que otro doctor la pueda tomar.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
-        confirmButtonText: "Sí, descartar",
+        confirmButtonText: "Sí, rechazar",
         cancelButtonText: "Cancelar"
     }).then((result) => {
         if (result.isConfirmed) {
+            Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
             fetch(`/Doctor/DescartarEmergencia?idCita=${idCita}`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire("Descartada", "La emergencia ha sido removida.", "success");
-                        boton.closest('.d-flex').remove();
-                        if ($("#listaEmergencias").children().length === 0) {
-                            $("#panelEmergencias").addClass("d-none");
-                        }
+                        Swal.fire("Rechazada", "La emergencia ha sido reasignada a la lista de pendientes.", "success");
+                        revisarEmergencias(); // Recargar el panel rojo
+                        tablaData.ajax.reload(); // Recargar la tabla
                     } else {
-                        Swal.fire("Error", "No se pudo descartar.", "error");
+                        Swal.fire("Error", data.message, "error");
                     }
-                });
+                })
+                .catch(() => Swal.fire("Error", "No se pudo procesar la solicitud.", "error"));
         }
     });
 });

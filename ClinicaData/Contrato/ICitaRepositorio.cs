@@ -15,6 +15,7 @@ namespace ClinicaData.Contrato
         // Métodos de Reseñas
         Task<List<Resena>> ListaResenasDoctor(int IdDoctor);
         Task<string> GuardarResena(Resena objeto);
+        Task LiberarTurno(int idCita);
 
         Task<string> CrearEmergencia(int idUsuario, int idEspecialidad, string motivo);
 

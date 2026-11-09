@@ -41,6 +41,24 @@ namespace ClinicaData.Implementacion
             return respuesta;
         }
 
+        public async Task LiberarTurno(int idCita)
+        {
+            using (var conexion = new NpgsqlConnection(con.CadenaSQL))
+            {
+                await conexion.OpenAsync();
+                using (var cmd = new NpgsqlCommand(
+                    @"UPDATE DoctorHorarioDetalle 
+              SET Reservado = FALSE 
+              WHERE IdDoctorHorarioDetalle = (
+                  SELECT IdDoctorHorarioDetalle FROM Cita WHERE IdCita = @p_Id
+              )", conexion))
+                {
+                    cmd.Parameters.AddWithValue("p_Id", idCita);
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
         public async Task<string> Cancelar(int Id)
         {
             string respuesta = "";
