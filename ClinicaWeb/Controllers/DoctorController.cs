@@ -20,46 +20,19 @@ namespace ClinicaWeb.Controllers
             _especialidadRepositorio = especialidadRepositorio;
         }
 
-        // ⚠️ MÉTODO AUXILIAR: Obtiene el doctor logueado
         private async Task<Doctor?> ObtenerDoctorLogueado()
         {
-            // 1. Leer del Cookie
             string? documentoDoc = HttpContext.Request.Cookies["DoctorDocumento"];
-
-            // 2. Si no está, leer del Claim
             if (string.IsNullOrEmpty(documentoDoc))
-            {
                 documentoDoc = User.Identity?.Name?.Trim();
-            }
-
-            // ⚠️ LOGS PARA DEPURAR
-            Console.WriteLine("=== DEPURANDO DOCTOR ===");
-            Console.WriteLine("Documento leído: " + (documentoDoc ?? "NULL"));
-            Console.WriteLine("Cookie: " + (HttpContext.Request.Cookies["DoctorDocumento"] ?? "NULL"));
-            Console.WriteLine("User.Identity.Name: " + (User.Identity?.Name ?? "NULL"));
 
             if (string.IsNullOrEmpty(documentoDoc))
-            {
-                Console.WriteLine("No se encontró documento.");
                 return null;
-            }
 
             var listaDoctores = await _doctorRepositorio.Lista();
-            var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
-
-            if (doctor == null)
-            {
-                Console.WriteLine("No se encontró doctor con ese documento. Documentos en BD: " + string.Join(", ", listaDoctores.Select(d => d.NumeroDocumentoIdentidad)));
-            }
-            else
-            {
-                Console.WriteLine("Doctor encontrado: " + doctor.Nombres + " " + doctor.Apellidos + " (ID: " + doctor.IdDoctor + ")");
-            }
-
-            return doctor;
+            return listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == documentoDoc);
         }
 
-        // 1. Vista de Citas Pendientes
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> CitasAsignadas()
         {
@@ -68,7 +41,6 @@ namespace ClinicaWeb.Controllers
             return View("~/Views/Citas/CitasAsignadas.cshtml");
         }
 
-        // 2. Endpoint para cargar la tabla de Citas Pendientes
         [HttpGet]
         public async Task<IActionResult> ListaCitasAsignadas()
         {
@@ -77,7 +49,6 @@ namespace ClinicaWeb.Controllers
                 var doctor = await ObtenerDoctorLogueado();
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
-                // ⚠️ Traemos las Pendientes (1) y las Aceptadas (5)
                 List<Cita> listaPendientes = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
                 List<Cita> listaAceptadas = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 5);
 
@@ -91,7 +62,6 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 3. Endpoint para cargar el Historial de Atendidas
         [HttpGet]
         public async Task<IActionResult> ListaCitasAtendidas(string orden = "recientes")
         {
@@ -115,7 +85,6 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 4. Endpoint para listar emergencias
         [HttpGet]
         public async Task<IActionResult> ListaEmergencias()
         {
@@ -133,13 +102,11 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 5. Método para Aceptar Emergencia
         [HttpPost]
         public async Task<IActionResult> AceptarEmergencia(int idCita)
         {
             try
             {
-                // ⚠️ CAMBIAMOS EL ESTADO A 5 (Aceptada)
                 string respuesta = await _citaRepositorio.CambiarEstado(idCita, 5, "");
                 return Json(new { data = respuesta });
             }
@@ -149,19 +116,22 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 6. Método para Descartar Emergencia
+        // ⚠️ MÉTODO MODIFICADO
         [HttpPost]
         public async Task<IActionResult> DescartarEmergencia(int idCita)
         {
             try
             {
-                // 1. Liberar el turno (para que otro doctor lo pueda tomar)
-                await _citaRepositorio.LiberarTurno(idCita);
+                var doctor = await ObtenerDoctorLogueado();
+                int idDoctor = doctor?.IdDoctor ?? 1;
 
-                // 2. Cambiar el estado a "Pendiente" (ID 1)
-                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 1, "Emergencia rechazada por el doctor. Reasignando...");
+                // Usamos el nuevo método que reasigna o deja en emergencia
+                string respuesta = await _citaRepositorio.RechazarEmergencia(idCita, idDoctor);
 
-                return Json(new { success = true, message = "Rechazada y reasignada" });
+                if (string.IsNullOrEmpty(respuesta))
+                    return Json(new { success = true, message = "Rechazada y reasignada" });
+                else
+                    return Json(new { success = false, message = respuesta });
             }
             catch (Exception ex)
             {
@@ -169,14 +139,12 @@ namespace ClinicaWeb.Controllers
             }
         }
 
-        // 7. Vista del Historial
         [Authorize(Roles = "Doctor")]
         public IActionResult HistorialDoctor()
         {
             return View("~/Views/Citas/HistorialDoctor.cshtml");
         }
 
-        // ... (El resto de métodos como Index, Lista, Guardar, Editar, Eliminar, etc. se mantienen igual)
         [Authorize(Roles = "Administrador")]
         public IActionResult Index()
         {

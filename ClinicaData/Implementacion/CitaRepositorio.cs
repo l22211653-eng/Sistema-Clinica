@@ -24,7 +24,6 @@ namespace ClinicaData.Implementacion
                 {
                     cmd.Parameters.AddWithValue("p_IdCita", IdCita);
                     cmd.Parameters.AddWithValue("p_IdEstado", IdEstado);
-                    // ⚠️ Aseguramos que si viene nulo, se envíe vacío
                     cmd.Parameters.AddWithValue("p_Indicaciones", (object)Indicaciones ?? "");
 
                     try
@@ -48,10 +47,10 @@ namespace ClinicaData.Implementacion
                 await conexion.OpenAsync();
                 using (var cmd = new NpgsqlCommand(
                     @"UPDATE DoctorHorarioDetalle 
-              SET Reservado = FALSE 
-              WHERE IdDoctorHorarioDetalle = (
-                  SELECT IdDoctorHorarioDetalle FROM Cita WHERE IdCita = @p_Id
-              )", conexion))
+                      SET Reservado = FALSE 
+                      WHERE IdDoctorHorarioDetalle = (
+                          SELECT IdDoctorHorarioDetalle FROM Cita WHERE IdCita = @p_Id
+                      )", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_Id", idCita);
                     await cmd.ExecuteNonQueryAsync();
@@ -130,7 +129,6 @@ namespace ClinicaData.Implementacion
                                 IdCita = Convert.ToInt32(dr["IdCita"]),
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
-                                // ⚠️ Quitamos YaCalificado e IdDoctor porque no vienen en esta función
                                 Especialidad = new Especialidad()
                                 {
                                     Nombre = dr["NombreEspecialidad"].ToString()!,
@@ -154,7 +152,6 @@ namespace ClinicaData.Implementacion
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
-                // ⚠️ Le pasamos el motivo a la función de PostgreSQL
                 using (var cmd = new NpgsqlCommand("SELECT sp_crearEmergencia(@p_User, @p_Esp, @p_Motivo)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_User", idUsuario);
@@ -195,7 +192,6 @@ namespace ClinicaData.Implementacion
                                 HoraCita = dr["HoraCita"].ToString()!,
                                 Usuario = new Usuario { Nombre = dr["Paciente"].ToString()! },
                                 EstadoCita = new EstadoCita { Nombre = dr["Estado"].ToString()! },
-                                // ⚠️ LEEMOS EL MOTIVO
                                 Indicaciones = dr["Motivo"].ToString()!
                             });
                         }
@@ -204,6 +200,7 @@ namespace ClinicaData.Implementacion
             }
             return lista;
         }
+
         public async Task<List<Cita>> ListaHistorialCitas(int IdUsuario)
         {
             List<Cita> lista = new List<Cita>();
@@ -219,15 +216,12 @@ namespace ClinicaData.Implementacion
                     {
                         while (await dr.ReadAsync())
                         {
-                            // ⚠️ Leemos el campo Indicaciones de la base de datos
-                            string indicaciones = dr["Indicaciones"].ToString()!;
-
                             lista.Add(new Cita()
                             {
                                 IdCita = Convert.ToInt32(dr["IdCita"]),
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
-                                Indicaciones = dr["Indicaciones"].ToString()!, // ⚠️ Asignamos el valor
+                                Indicaciones = dr["Indicaciones"].ToString()!,
                                 Especialidad = new Especialidad()
                                 {
                                     Nombre = dr["NombreEspecialidad"].ToString()!,
@@ -352,6 +346,32 @@ namespace ClinicaData.Implementacion
                 }
             }
             return lista;
+        }
+
+        // ⚠️ NUEVO MÉTODO: Rechazar Emergencia
+        public async Task<string> RechazarEmergencia(int idCita, int idDoctor)
+        {
+            string respuesta = "";
+            using (var conexion = new NpgsqlConnection(con.CadenaSQL))
+            {
+                await conexion.OpenAsync();
+                using (var cmd = new NpgsqlCommand("SELECT sp_rechazarEmergencia(@p_IdCita, @p_IdDoctor)", conexion))
+                {
+                    cmd.Parameters.AddWithValue("p_IdCita", idCita);
+                    cmd.Parameters.AddWithValue("p_IdDoctor", idDoctor);
+
+                    try
+                    {
+                        var result = await cmd.ExecuteScalarAsync();
+                        respuesta = result?.ToString() ?? "";
+                    }
+                    catch (Exception ex)
+                    {
+                        respuesta = "Error al rechazar: " + ex.Message;
+                    }
+                }
+            }
+            return respuesta;
         }
     }
 }

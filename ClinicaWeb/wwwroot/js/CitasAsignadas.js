@@ -119,7 +119,7 @@ $(document).on("click", ".btn-descartar-emergencia", function () {
 
     Swal.fire({
         title: "¿Rechazar emergencia?",
-        text: "La emergencia volverá a la lista de pendientes para que otro doctor la pueda tomar.",
+        text: "Se intentará reasignar a otro doctor. Si no hay, se notificará al administrador.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
@@ -133,14 +133,13 @@ $(document).on("click", ".btn-descartar-emergencia", function () {
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire("Rechazada", "La emergencia ha sido reasignada a la lista de pendientes.", "success");
-                        revisarEmergencias(); // Recargar el panel rojo
-                        tablaData.ajax.reload(); // Recargar la tabla
+                        Swal.fire("Rechazada", data.message, "success");
+                        revisarEmergencias();
+                        tablaData.ajax.reload();
                     } else {
                         Swal.fire("Error", data.message, "error");
                     }
-                })
-                .catch(() => Swal.fire("Error", "No se pudo procesar la solicitud.", "error"));
+                });
         }
     });
 });

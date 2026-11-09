@@ -1,5 +1,4 @@
-﻿
-using ClinicaEntidades;
+﻿using ClinicaEntidades;
 
 namespace ClinicaData.Contrato
 {
@@ -15,15 +14,17 @@ namespace ClinicaData.Contrato
         // Métodos de Reseñas
         Task<List<Resena>> ListaResenasDoctor(int IdDoctor);
         Task<string> GuardarResena(Resena objeto);
+
+        // Métodos de Emergencias
         Task LiberarTurno(int idCita);
-
         Task<string> CrearEmergencia(int idUsuario, int idEspecialidad, string motivo);
-
         Task<List<Cita>> ListaEmergenciasDoctor(int idDoctor);
+
+        // ⚠️ NUEVO MÉTODO
+        Task<string> RechazarEmergencia(int idCita, int idDoctor);
 
         // Métodos de Recetas
         Task<List<Receta>> ListaRecetasCita(int IdCita);
         Task<string> GuardarReceta(Receta objeto);
-
     }
 }
