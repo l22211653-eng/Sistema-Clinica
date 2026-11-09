@@ -80,15 +80,14 @@ function revisarEmergencias() {
 }
 
 // ==========================================
-// ACEPTAR EMERGENCIA
+// ACEPTAR EMERGENCIA (Solo cambia estado, no abre modal)
 // ==========================================
-// ⚠️ EVENTO PARA ACEPTAR LA EMERGENCIA
 $(document).on("click", ".btn-aceptar-emergencia", function () {
     let idCita = $(this).data("id");
 
     Swal.fire({
         title: "¿Aceptar emergencia?",
-        text: "Se notificará al paciente y podrás dar las indicaciones.",
+        text: "Se notificará al paciente para que acuda a su cita.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "Sí, aceptar",
@@ -99,22 +98,11 @@ $(document).on("click", ".btn-aceptar-emergencia", function () {
                 .then(res => res.json())
                 .then(data => {
                     if (data.data === "") {
-                        Swal.fire("Aceptada", "El paciente ha sido notificado.", "success");
+                        Swal.fire("Aceptada", "El paciente ha sido notificado. La cita está pendiente de atención.", "success");
                         revisarEmergencias(); // Recargar el panel rojo
                         tablaData.ajax.reload(); // Recargar la tabla
 
-                        // ⚠️ Abrimos el modal SIN cerrar la alerta anterior, pero cargando la cita
-                        $("#txtIdCita").val(idCita);
-                        $("#txtIndicaciones").val(""); // Vacío para que el doctor escriba
-                        recetasTemporales = [];
-                        $("#tbRecetaTemporal tbody").empty();
-                        $("#txtMedicamento").val("");
-                        $("#txtDosis").val("");
-
-                        $("#mdData .modal-title").html('<i class="fas fa-ambulance me-2"></i>Atender Emergencia');
-                        $("#btnTerminarCita").text("Finalizar Emergencia");
-
-                        $("#mdData").modal('show');
+                        // ⚠️ AQUÍ NO ABRIMOS EL MODAL
                     } else {
                         Swal.fire("Error", data.data, "error");
                     }

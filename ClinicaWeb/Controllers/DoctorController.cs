@@ -75,10 +75,16 @@ namespace ClinicaWeb.Controllers
             try
             {
                 var doctor = await ObtenerDoctorLogueado();
-                int idDoctor = doctor?.IdDoctor ?? 1; // 1 por defecto si falla
+                int idDoctor = doctor?.IdDoctor ?? 1;
 
-                List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
-                return StatusCode(StatusCodes.Status200OK, new { data = lista });
+                // ⚠️ Traemos las Pendientes (1) y las Aceptadas (4)
+                List<Cita> listaPendientes = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 1);
+                List<Cita> listaAceptadas = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 4);
+
+                // Unimos ambas listas
+                List<Cita> listaCompleta = listaPendientes.Concat(listaAceptadas).ToList();
+
+                return StatusCode(StatusCodes.Status200OK, new { data = listaCompleta });
             }
             catch (Exception ex)
             {
@@ -134,8 +140,9 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // ⚠️ Enviamos vacío para que NO se guarde "Emergencia aceptada"
-                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 2, "");
+                // ⚠️ Cambiamos al estado "Aceptada" (ID 4)
+                // Si en tu base de datos el ID es otro, cámbialo aquí.
+                string respuesta = await _citaRepositorio.CambiarEstado(idCita, 4, "");
                 return Json(new { data = respuesta });
             }
             catch (Exception ex)
