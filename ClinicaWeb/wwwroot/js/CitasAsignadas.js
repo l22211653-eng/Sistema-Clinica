@@ -132,14 +132,12 @@ $(document).on("click", ".btn-descartar-emergencia", function () {
             fetch(`/Doctor/DescartarEmergencia?idCita=${idCita}`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.success) {
-                        Swal.fire("Rechazada", data.message, "success");
-                        revisarEmergencias();
-                        tablaData.ajax.reload();
-                    } else {
-                        Swal.fire("Error", data.message, "error");
-                    }
-                });
+                    // ⚠️ Mostramos el mensaje y RECARGAMOS siempre
+                    Swal.fire(data.success ? "Rechazada" : "Aviso", data.message, data.success ? "success" : "info");
+                    revisarEmergencias();
+                    tablaData.ajax.reload();
+                })
+                .catch(() => Swal.fire("Error", "No se pudo procesar.", "error"));
         }
     });
 });
