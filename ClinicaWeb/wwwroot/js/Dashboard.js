@@ -17,14 +17,10 @@
                                 <br>
                                 <small class="text-danger">${em.indicaciones}</small>
                             </div>
-                            <div>
-                                <button class="btn btn-sm btn-success btn-asignar-admin" data-id="${em.idCita}">
-                                    <i class="fas fa-check me-1"></i> Asignar Manualmente
-                                </button>
-                            </div>
                         </div>
                     `);
                 });
             }
-        });
+        })
+        .catch(err => console.log("Error al cargar emergencias admin", err));
 });

@@ -5,7 +5,6 @@
     <link href="~/lib/select2/css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
     <style>
-        /* Estilos personalizados para esta vista */
         .page-header {
             background: #ffffff;
             border-radius: 16px;
@@ -15,7 +14,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-left: 5px solid #10b981; /* Verde esmeralda para salud */
+            border-left: 5px solid #10b981;
         }
 
             .page-header h2 {
@@ -31,7 +30,6 @@
                 color: #10b981;
             }
 
-        /* Botón de Nueva Cita destacado */
         .btn-new-cita {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
@@ -64,6 +62,17 @@
     </div>
 </div>
 
+<!-- ⚠️ BANNER DE EMERGENCIA ACEPTADA -->
+@if (ViewBag.EmergenciasAceptadas != null && ViewBag.EmergenciasAceptadas.Count > 0)
+{
+    <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert" style="border-radius: 16px;">
+        <h4 class="alert-heading fw-bold"><i class="fas fa-ambulance me-2"></i> ¡Emergencia Aceptada!</h4>
+        <p>Un doctor ha aceptado tu emergencia. Por favor, preséntate a la clínica a las <strong>@ViewBag.EmergenciasAceptadas[0].HoraCita</strong>.</p>
+        <hr>
+        <p class="mb-0 text-muted"><strong>Motivo:</strong> @ViewBag.EmergenciasAceptadas[0].Indicaciones</p>
+    </div>
+}
+
 <div class="row">
     <div class="col-sm-12">
         <div class="card shadow-sm border-0" style="border-radius: 16px;">
@@ -77,19 +86,15 @@
                     <table class="display" id="tbData" cellspacing="0" style="width:100%">
                         <tbody></tbody>
                     </table>
-
                 </div>
-
-
             </div>
-
         </div>
     </div>
 </div>
-
 
 @section Scripts {
     <script src="~/lib/datatables2/js/moment.min.js"></script>
     <script src="~/lib/datatables2/js/dataTables.js"></script>
     <script src="~/lib/select2/js/select2.min.js"></script>
-    <script src="~/js/Cita.js"></script>}
+    <script src="~/js/Cita.js"></script>
+}

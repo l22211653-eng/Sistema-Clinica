@@ -12,17 +12,29 @@ namespace ClinicaWeb.Controllers
     {
         private readonly IDoctorRepositorio _repositorio;
         private readonly ICitaRepositorio _repositorioCita;
-        private readonly ICitaRepositorio _citaRepositorio;
+
         public CitasController(IDoctorRepositorio repositorio, ICitaRepositorio repositorioCita)
         {
             _repositorio = repositorio;
             _repositorioCita = repositorioCita;
         }
+
         [Authorize(Roles = "Paciente")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            // ⚠️ Lógica para mostrar emergencias aceptadas al paciente
+            ClaimsPrincipal claimuser = HttpContext.User;
+            string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
+
+            List<Cita> lista = await _repositorioCita.ListaCitasPendiente(int.Parse(idUsuario));
+            // Filtramos las que están en estado "Aceptada" (asumiendo que tu objeto Cita trae el estado)
+            // Si tu objeto no trae EstadoCita en ListaCitasPendiente, esta línea dará error. 
+            // En ese caso, deberías modificar el repositorio para que lo incluya.
+            ViewBag.EmergenciasAceptadas = lista.Where(e => e.EstadoCita != null && e.EstadoCita.Nombre == "Aceptada").ToList();
+
             return View();
         }
+
         [Authorize(Roles = "Paciente")]
         public IActionResult NuevaCita()
         {
@@ -34,15 +46,15 @@ namespace ClinicaWeb.Controllers
         {
             return View();
         }
-        // En HomeController.cs (o donde esté el panel del Admin)
+
+        // Endpoint para listar emergencias en el Admin (usado en el Dashboard)
         [Authorize(Roles = "Administrador")]
         [HttpGet]
         public async Task<IActionResult> ListaEmergenciasAdmin()
         {
             try
             {
-                // ⚠️ AQUÍ DEBE IR EL GUION BAJO
-                List<Cita> lista = await _citaRepositorio.ListaEmergenciasAdmin();
+                List<Cita> lista = await _repositorioCita.ListaEmergenciasAdmin();
                 return Json(new { data = lista });
             }
             catch (Exception ex)
@@ -61,18 +73,15 @@ namespace ClinicaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> Guardar([FromBody] Cita objeto)
         {
-
             ClaimsPrincipal claimuser = HttpContext.User;
             string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
 
-            objeto.Usuario = new Usuario
-            {
-                IdUsuario = int.Parse(idUsuario)
-            };
+            objeto.Usuario = new Usuario { IdUsuario = int.Parse(idUsuario) };
 
             string respuesta = await _repositorioCita.Guardar(objeto);
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
+
         [HttpPost]
         public async Task<IActionResult> SolicitarEmergencia(int idEspecialidad, string motivo)
         {
@@ -106,7 +115,5 @@ namespace ClinicaWeb.Controllers
             string respuesta = await _repositorioCita.Cancelar(Id);
             return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
         }
-
-       
     }
 }

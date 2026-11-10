@@ -47,6 +47,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
     });
 });
 
+// ==========================================
+// BOTÓN DE EMERGENCIA
+// ==========================================
 $("#btnEmergencia").click(async function () {
     Swal.fire({ title: 'Cargando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
@@ -59,7 +62,7 @@ $("#btnEmergencia").click(async function () {
             opcionesEspecialidades[esp.idEspecialidad] = esp.nombre;
         });
 
-        // ⚠️ PASO 1: Seleccionar especialidad
+        // 1. Seleccionar especialidad
         const { value: idEspecialidad } = await Swal.fire({
             title: '¡Emergencia Médica!',
             text: 'Selecciona la especialidad que necesitas.',
@@ -72,7 +75,7 @@ $("#btnEmergencia").click(async function () {
         });
 
         if (idEspecialidad) {
-            // ⚠️ PASO 2: Pedir el motivo
+            // 2. Pedir el motivo
             const { value: motivo } = await Swal.fire({
                 title: 'Describe tu emergencia',
                 input: 'textarea',
@@ -87,13 +90,24 @@ $("#btnEmergencia").click(async function () {
             });
 
             if (motivo) {
-                Swal.fire({ title: 'Buscando doctor...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                Swal.fire({ title: 'Enviando solicitud...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
                 const res = await fetch(`/Citas/SolicitarEmergencia?idEspecialidad=${idEspecialidad}&motivo=${encodeURIComponent(motivo)}`, { method: 'POST' });
                 const resultado = await res.json();
 
                 if (resultado.data === "") {
-                    Swal.fire('¡Atendido!', 'Un doctor revisará tu emergencia en breve.', 'success');
+                    // ⚠️ MENSAJE MEJORADO PARA EL PACIENTE
+                    Swal.fire({
+                        title: '¡Solicitud Enviada!',
+                        html: `
+                            <p>Un doctor revisará tu emergencia en breve.</p>
+                            <p class="text-muted small">Recibirás una notificación cuando sea aceptada. Si tu vida corre peligro, acude inmediatamente a urgencias.</p>
+                        `,
+                        icon: 'info',
+                        confirmButtonText: 'Entendido'
+                    }).then(() => {
+                        tablaData.ajax.reload(); // Recargar la tabla para ver si ya se asignó
+                    });
                 } else {
                     Swal.fire('Lo sentimos', resultado.data, 'error');
                 }
@@ -104,6 +118,9 @@ $("#btnEmergencia").click(async function () {
     }
 });
 
+// ==========================================
+// CANCELAR CITA
+// ==========================================
 $("#tbData tbody").on("click", ".btn-cancelar", function () {
     let filaSeleccionada = $(this).closest('tr');
     let data = tablaData.row(filaSeleccionada).data();
@@ -122,35 +139,19 @@ $("#tbData tbody").on("click", ".btn-cancelar", function () {
                 method: "DELETE",
                 headers: { 'Content-Type': 'application/json;charset=utf-8' }
             }).then(response => {
-                // Si la respuesta HTTP no es OK, lanzamos el error para que lo atrape el catch
                 if (!response.ok) {
                     return response.json().then(err => { throw new Error(err.data || "Error desconocido"); });
                 }
                 return response.json();
             }).then(responseJson => {
-                // Si "data" está vacío (""), se canceló correctamente
                 if (responseJson.data === "") {
-                    Swal.fire({
-                        title: "¡Listo!",
-                        text: confirmaEliminar,
-                        icon: "success"
-                    });
+                    Swal.fire({ title: "¡Listo!", text: confirmaEliminar, icon: "success" });
                     tablaData.ajax.reload();
                 } else {
-                    // Si hay texto, mostramos el error real de la BD
-                    Swal.fire({
-                        title: "Atención",
-                        text: responseJson.data,
-                        icon: "warning"
-                    });
+                    Swal.fire({ title: "Atención", text: responseJson.data, icon: "warning" });
                 }
             }).catch((error) => {
-                // Errores de red o excepciones del servidor
-                Swal.fire({
-                    title: "Error del Servidor",
-                    text: error.message,
-                    icon: "error"
-                });
+                Swal.fire({ title: "Error del Servidor", text: error.message, icon: "error" });
             });
         }
     });

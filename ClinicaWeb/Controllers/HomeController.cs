@@ -1,3 +1,5 @@
+﻿using ClinicaData.Contrato; // ⚠️ NUEVO: Para usar ICitaRepositorio
+using ClinicaEntidades;     // ⚠️ NUEVO: Para usar Cita
 using ClinicaWeb.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
@@ -10,10 +12,13 @@ namespace ClinicaWeb.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly ICitaRepositorio _citaRepositorio; // ⚠️ NUEVO
 
-        public HomeController(ILogger<HomeController> logger)
+        // ⚠️ Constructor actualizado para recibir el repositorio
+        public HomeController(ILogger<HomeController> logger, ICitaRepositorio citaRepositorio)
         {
             _logger = logger;
+            _citaRepositorio = citaRepositorio;
         }
 
         [Authorize(Roles = "Administrador")]
@@ -22,12 +27,27 @@ namespace ClinicaWeb.Controllers
             return View();
         }
 
+        // ⚠️ MÉTODO NUEVO: Para el panel de emergencias del Admin
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> ListaEmergenciasAdmin()
+        {
+            try
+            {
+                List<Cita> lista = await _citaRepositorio.ListaEmergenciasAdmin();
+                return Json(new { data = lista });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { data = new List<Cita>(), error = ex.Message });
+            }
+        }
+
         [Authorize(Roles = "Administrador")]
         public IActionResult Privacy()
         {
             return View();
         }
-
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
