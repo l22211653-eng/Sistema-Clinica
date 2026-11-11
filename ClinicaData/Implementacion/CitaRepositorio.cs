@@ -409,5 +409,25 @@ namespace ClinicaData.Implementacion
             }
             return respuesta;
         }
+
+        public async Task<List<(string Fecha, int Total)>> GraficaEmergenciasRechazadas()
+        {
+            var lista = new List<(string, int)>();
+            using (var conexion = new NpgsqlConnection(con.CadenaSQL))
+            {
+                await conexion.OpenAsync();
+                using (var cmd = new NpgsqlCommand("SELECT * FROM sp_graficaEmergenciasRechazadas()", conexion))
+                {
+                    using (var dr = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await dr.ReadAsync())
+                        {
+                            lista.Add((dr["Fecha"].ToString()!, Convert.ToInt32(dr["Total"])));
+                        }
+                    }
+                }
+            }
+            return lista;
+        }
     }
 }

@@ -44,6 +44,13 @@ namespace ClinicaWeb.Controllers
         }
 
         [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> GraficaEmergenciasRechazadas()
+        {
+            var lista = await _citaRepositorio.GraficaEmergenciasRechazadas();
+            return Json(new { data = lista });
+        }
+        [Authorize(Roles = "Administrador")]
         public IActionResult Privacy()
         {
             return View();

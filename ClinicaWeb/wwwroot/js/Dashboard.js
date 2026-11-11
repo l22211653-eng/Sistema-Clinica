@@ -1,29 +1,53 @@
 ﻿$(document).ready(function () {
+    // 1. Cargar Panel de Emergencias
     fetch('/Home/ListaEmergenciasAdmin')
         .then(res => res.json())
         .then(data => {
             if (data.data && data.data.length > 0) {
                 $("#panelEmergenciasAdmin").show();
-                $("#listaEmergenciasAdmin").html("");
-
                 data.data.forEach(em => {
-                    $("#listaEmergenciasAdmin").append(`
-                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-                            <div>
-                                <i class="fas fa-user-injured me-2"></i>
-                                <strong>${em.usuario.nombre}</strong> - ${em.fechaCita} ${em.horaCita}
-                                <br>
-                                <small class="text-muted">Especialidad: ${em.especialidad.nombre}</small>
-                                <br>
-                                <small class="text-danger">${em.indicaciones}</small>
-                            </div>
-                        </div>
+                    $("#tbEmergenciasAdmin tbody").append(`
+                        <tr>
+                            <td>${em.usuario.nombre}</td>
+                            <td>${em.especialidad.nombre}</td>
+                            <td>${em.fechaCita}</td>
+                            <td>${em.horaCita}</td>
+                            <td class="text-danger">${em.indicaciones}</td>
+                        </tr>
                     `);
                 });
             }
-        })
-        .catch(err => console.log("Error al cargar emergencias admin", err));
+        });
+
+    // 2. Cargar Gráfica de Urgencias
+    fetch('/Home/GraficaEmergenciasRechazadas')
+        .then(res => res.json())
+        .then(data => {
+            const labels = data.data.map(x => x.fecha);
+            const valores = data.data.map(x => x.total);
+
+            new Chart(document.getElementById('graficaUrgencias'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Urgencias Rechazadas',
+                        data: valores,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        });
 });
+
 $(document).ready(function () {
     cargarEmergenciasAdmin();
 });

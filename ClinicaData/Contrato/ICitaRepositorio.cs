@@ -15,6 +15,7 @@ namespace ClinicaData.Contrato
         Task<List<Resena>> ListaResenasDoctor(int IdDoctor);
         Task<string> GuardarResena(Resena objeto);
         Task<List<Cita>> ListaEmergenciasAdmin();
+        Task<List<(string Fecha, int Total)>> GraficaEmergenciasRechazadas();
 
         // Métodos de Emergencias
         Task LiberarTurno(int idCita);
