@@ -115,7 +115,6 @@ namespace ClinicaData.Implementacion
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
-                // ⚠️ Asegúrate de que esta función traiga el nombre del estado
                 using (var cmd = new NpgsqlCommand("SELECT * FROM sp_ListaCitasPendiente(@p_IdUsuario)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_IdUsuario", IdUsuario);
@@ -128,7 +127,8 @@ namespace ClinicaData.Implementacion
                                 IdCita = Convert.ToInt32(dr["IdCita"]),
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
-                                // ⚠️ LEEMOS EL ESTADO
+                                // ⚠️ LEEMOS EL MOTIVO
+                                Indicaciones = dr["Indicaciones"].ToString()!,
                                 EstadoCita = new EstadoCita { Nombre = dr["NombreEstado"].ToString()! },
                                 Especialidad = new Especialidad { Nombre = dr["NombreEspecialidad"].ToString()! },
                                 Doctor = new Doctor { Nombres = dr["Nombres"].ToString()!, Apellidos = dr["Apellidos"].ToString()! }
