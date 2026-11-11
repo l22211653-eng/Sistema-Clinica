@@ -27,7 +27,6 @@ namespace ClinicaWeb.Controllers
             return View();
         }
 
-        // ⚠️ MÉTODO NUEVO: Para el panel de emergencias del Admin
         [Authorize(Roles = "Administrador")]
         [HttpGet]
         public async Task<IActionResult> ListaEmergenciasAdmin()
@@ -35,11 +34,21 @@ namespace ClinicaWeb.Controllers
             try
             {
                 List<Cita> lista = await _citaRepositorio.ListaEmergenciasAdmin();
-                return Json(new { data = lista });
+                // ⚠️ Formateamos la salida para que el JS la lea fácilmente
+                var data = lista.Select(c => new {
+                    idCita = c.IdCita,
+                    fechaCita = c.FechaCita,
+                    horaCita = c.HoraCita,
+                    paciente = c.Usuario?.Nombre,
+                    especialidad = c.Especialidad?.Nombre,
+                    motivo = c.Indicaciones
+                }).ToList();
+
+                return Json(new { data = data });
             }
             catch (Exception ex)
             {
-                return Json(new { data = new List<Cita>(), error = ex.Message });
+                return Json(new { data = new List<object>(), error = ex.Message });
             }
         }
 
@@ -48,7 +57,6 @@ namespace ClinicaWeb.Controllers
         public async Task<IActionResult> GraficaEmergenciasRechazadas()
         {
             var lista = await _citaRepositorio.GraficaEmergenciasRechazadas();
-            // Convertimos a un objeto anónimo para que JSON lo serialice bien
             var data = lista.Select(x => new { fecha = x.Fecha, total = x.Total }).ToList();
             return Json(new { data = data });
         }

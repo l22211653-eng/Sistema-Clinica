@@ -1,23 +1,25 @@
 ﻿$(document).ready(function () {
 
+    // ==========================================
     // 1. CARGAR PANEL DE EMERGENCIAS
+    // ==========================================
     fetch('/Home/ListaEmergenciasAdmin')
         .then(res => res.json())
         .then(data => {
-            console.log("Datos Emergencias:", data); // ⚠️ Para depurar
             if (data.data && data.data.length > 0) {
                 $("#panelEmergenciasAdmin").show();
                 let tbody = $("#tbEmergenciasAdmin tbody");
                 tbody.empty();
 
                 data.data.forEach(em => {
+                    // ⚠️ Usamos los nombres exactos que devuelve tu C# (minúsculas o como estén en el JSON)
                     tbody.append(`
                         <tr>
-                            <td>${em.usuario.nombre}</td>
-                            <td>${em.especialidad.nombre}</td>
-                            <td>${em.fechaCita}</td>
-                            <td>${em.horaCita}</td>
-                            <td class="text-danger">${em.indicaciones}</td>
+                            <td>${em.fechaCita || ''}</td>
+                            <td>${em.horaCita || ''}</td>
+                            <td>${em.usuario ? em.usuario.nombre : ''}</td>
+                            <td>${em.especialidad ? em.especialidad.nombre : ''}</td>
+                            <td><small class="text-danger">${em.indicaciones || ''}</small></td>
                         </tr>
                     `);
                 });
@@ -27,38 +29,46 @@
         })
         .catch(err => console.error("Error al cargar emergencias:", err));
 
+    // ==========================================
     // 2. CARGAR GRÁFICA
+    // ==========================================
     fetch('/Home/GraficaEmergenciasRechazadas')
         .then(res => res.json())
         .then(data => {
-            console.log("Datos Gráfica:", data); // ⚠️ Para depurar
             if (!data.data || data.data.length === 0) {
                 console.log("No hay urgencias rechazadas para graficar.");
                 return;
             }
 
+            // ⚠️ Aquí también usamos los nombres exactos del JSON
             const labels = data.data.map(x => x.fecha);
             const valores = data.data.map(x => x.total);
 
             const canvas = document.getElementById('graficaUrgencias');
             if (canvas) {
                 new Chart(canvas, {
-                    type: 'line',
+                    type: 'bar', // ⚠️ Cambiado a barras para que se vea mejor
                     data: {
                         labels: labels,
                         datasets: [{
                             label: 'Urgencias Rechazadas',
                             data: valores,
-                            borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            fill: true,
-                            tension: 0.3
+                            backgroundColor: '#ef4444',
+                            borderRadius: 6
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1 }
+                            }
+                        }
                     }
                 });
             }
