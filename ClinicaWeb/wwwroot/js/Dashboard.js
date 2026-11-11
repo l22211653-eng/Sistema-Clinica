@@ -1,11 +1,10 @@
 ﻿$(document).ready(function () {
 
-    // ==========================================
-    // 1. CARGAR PANEL DE EMERGENCIAS (ADMIN)
-    // ==========================================
+    // 1. CARGAR PANEL DE EMERGENCIAS
     fetch('/Home/ListaEmergenciasAdmin')
         .then(res => res.json())
         .then(data => {
+            console.log("Datos Emergencias:", data); // ⚠️ Para depurar
             if (data.data && data.data.length > 0) {
                 $("#panelEmergenciasAdmin").show();
                 let tbody = $("#tbEmergenciasAdmin tbody");
@@ -14,18 +13,11 @@
                 data.data.forEach(em => {
                     tbody.append(`
                         <tr>
-                            <td>${em.fechaCita}</td>
-                            <td>${em.horaCita}</td>
                             <td>${em.usuario.nombre}</td>
                             <td>${em.especialidad.nombre}</td>
-                            <td><small class="text-danger">${em.indicaciones}</small></td>
-                            <td>
-                                <button class="btn btn-sm btn-primary btn-asignar-emergencia" 
-                                        data-idcita="${em.idCita}" 
-                                        data-especialidad="${em.especialidad.nombre}">
-                                    <i class="fas fa-user-md me-1"></i> Asignar Doctor
-                                </button>
-                            </td>
+                            <td>${em.fechaCita}</td>
+                            <td>${em.horaCita}</td>
+                            <td class="text-danger">${em.indicaciones}</td>
                         </tr>
                     `);
                 });
@@ -33,14 +25,13 @@
                 $("#panelEmergenciasAdmin").hide();
             }
         })
-        .catch(err => console.log("Error al cargar emergencias admin", err));
+        .catch(err => console.error("Error al cargar emergencias:", err));
 
-    // ==========================================
-    // 2. CARGAR GRÁFICA DE URGENCIAS RECHAZADAS
-    // ==========================================
+    // 2. CARGAR GRÁFICA
     fetch('/Home/GraficaEmergenciasRechazadas')
         .then(res => res.json())
         .then(data => {
+            console.log("Datos Gráfica:", data); // ⚠️ Para depurar
             if (!data.data || data.data.length === 0) {
                 console.log("No hay urgencias rechazadas para graficar.");
                 return;
@@ -49,7 +40,6 @@
             const labels = data.data.map(x => x.fecha);
             const valores = data.data.map(x => x.total);
 
-            // ⚠️ Verificamos que el canvas exista en la página
             const canvas = document.getElementById('graficaUrgencias');
             if (canvas) {
                 new Chart(canvas, {
@@ -62,36 +52,13 @@
                             borderColor: '#ef4444',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             fill: true,
-                            tension: 0.3,
-                            pointBackgroundColor: '#ef4444',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5
+                            tension: 0.3
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: '#1e293b',
-                                titleFont: { size: 14 },
-                                bodyFont: { size: 14 },
-                                padding: 10,
-                                cornerRadius: 8
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { precision: 0, stepSize: 1 },
-                                grid: { color: '#f1f5f9' }
-                            },
-                            x: {
-                                grid: { display: false }
-                            }
-                        }
+                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                     }
                 });
             }

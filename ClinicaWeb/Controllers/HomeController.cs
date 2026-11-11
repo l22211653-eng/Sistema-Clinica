@@ -48,12 +48,9 @@ namespace ClinicaWeb.Controllers
         public async Task<IActionResult> GraficaEmergenciasRechazadas()
         {
             var lista = await _citaRepositorio.GraficaEmergenciasRechazadas();
-            return Json(new { data = lista });
-        }
-        [Authorize(Roles = "Administrador")]
-        public IActionResult Privacy()
-        {
-            return View();
+            // Convertimos a un objeto anónimo para que JSON lo serialice bien
+            var data = lista.Select(x => new { fecha = x.Fecha, total = x.Total }).ToList();
+            return Json(new { data = data });
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
