@@ -34,14 +34,15 @@ namespace ClinicaWeb.Controllers
             try
             {
                 List<Cita> lista = await _citaRepositorio.ListaEmergenciasAdmin();
+
                 // ⚠️ Formateamos la salida para que el JS la lea fácilmente
                 var data = lista.Select(c => new {
                     idCita = c.IdCita,
                     fechaCita = c.FechaCita,
                     horaCita = c.HoraCita,
-                    paciente = c.Usuario?.Nombre,
-                    especialidad = c.Especialidad?.Nombre,
-                    motivo = c.Indicaciones
+                    paciente = c.Usuario?.Nombre ?? "Sin nombre",
+                    especialidad = c.Especialidad?.Nombre ?? "Sin especialidad",
+                    motivo = c.Indicaciones ?? "Sin motivo"
                 }).ToList();
 
                 return Json(new { data = data });

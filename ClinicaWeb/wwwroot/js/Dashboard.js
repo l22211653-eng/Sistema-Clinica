@@ -6,20 +6,21 @@
     fetch('/Home/ListaEmergenciasAdmin')
         .then(res => res.json())
         .then(data => {
+            console.log("Datos Emergencias:", data); // ⚠️ Para depurar
             if (data.data && data.data.length > 0) {
                 $("#panelEmergenciasAdmin").show();
                 let tbody = $("#tbEmergenciasAdmin tbody");
                 tbody.empty();
 
                 data.data.forEach(em => {
-                    // ⚠️ Usamos los nombres exactos que devuelve tu C# (minúsculas o como estén en el JSON)
+                    // ⚠️ Usamos los nombres exactos del JSON
                     tbody.append(`
                         <tr>
-                            <td>${em.fechaCita || ''}</td>
-                            <td>${em.horaCita || ''}</td>
-                            <td>${em.usuario ? em.usuario.nombre : ''}</td>
-                            <td>${em.especialidad ? em.especialidad.nombre : ''}</td>
-                            <td><small class="text-danger">${em.indicaciones || ''}</small></td>
+                            <td>${em.fechaCita}</td>
+                            <td>${em.horaCita}</td>
+                            <td>${em.paciente}</td>
+                            <td>${em.especialidad}</td>
+                            <td><small class="text-danger">${em.motivo}</small></td>
                         </tr>
                     `);
                 });
