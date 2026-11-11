@@ -348,21 +348,8 @@ namespace ClinicaData.Implementacion
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
-                using (var cmd = new NpgsqlCommand(
-                    @"SELECT c.IdCita, TO_CHAR(c.FechaCita,'DD/MM/YYYY')::TEXT as FechaCita, 
-                     TO_CHAR(c.FechaCita,'HH24:MI')::TEXT as HoraCita,
-                     CONCAT(u.Nombre, ' ', u.Apellido) as Paciente,
-                     e.Nombre as Especialidad,
-                     c.Indicaciones
-              FROM Cita c
-              INNER JOIN Usuario u ON u.IdUsuario = c.IdUsuario
-              INNER JOIN DoctorHorarioDetalle dhd ON dhd.IdDoctorHorarioDetalle = c.IdDoctorHorarioDetalle
-              INNER JOIN DoctorHorario dh ON dh.IdDoctorHorario = dhd.IdDoctorHorario
-              INNER JOIN Doctor d ON d.IdDoctor = dh.IdDoctor
-              INNER JOIN Especialidad e ON e.IdEspecialidad = d.IdEspecialidad
-              WHERE c.IdEstadoCita = 4 
-                AND c.Indicaciones LIKE 'Sin doctores disponibles%'
-              ORDER BY c.FechaCita DESC", conexion))
+                // ⚠️ Usamos la función que devuelve solo las rechazadas
+                using (var cmd = new NpgsqlCommand("SELECT * FROM sp_emergenciasRechazadasAdmin()", conexion))
                 {
                     using (var dr = await cmd.ExecuteReaderAsync())
                     {
@@ -375,7 +362,7 @@ namespace ClinicaData.Implementacion
                                 HoraCita = dr["HoraCita"].ToString()!,
                                 Usuario = new Usuario { Nombre = dr["Paciente"].ToString()! },
                                 Especialidad = new Especialidad { Nombre = dr["Especialidad"].ToString()! },
-                                Indicaciones = dr["Indicaciones"].ToString()!
+                                Indicaciones = dr["Motivo"].ToString()!
                             });
                         }
                     }
