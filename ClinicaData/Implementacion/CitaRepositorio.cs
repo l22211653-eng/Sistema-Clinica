@@ -112,14 +112,13 @@ namespace ClinicaData.Implementacion
         public async Task<List<Cita>> ListaCitasPendiente(int IdUsuario)
         {
             List<Cita> lista = new List<Cita>();
-
             using (var conexion = new NpgsqlConnection(con.CadenaSQL))
             {
                 await conexion.OpenAsync();
+                // ⚠️ Asegúrate de que esta función traiga el nombre del estado
                 using (var cmd = new NpgsqlCommand("SELECT * FROM sp_ListaCitasPendiente(@p_IdUsuario)", conexion))
                 {
                     cmd.Parameters.AddWithValue("p_IdUsuario", IdUsuario);
-
                     using (var dr = await cmd.ExecuteReaderAsync())
                     {
                         while (await dr.ReadAsync())
@@ -129,15 +128,10 @@ namespace ClinicaData.Implementacion
                                 IdCita = Convert.ToInt32(dr["IdCita"]),
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
-                                Especialidad = new Especialidad()
-                                {
-                                    Nombre = dr["NombreEspecialidad"].ToString()!,
-                                },
-                                Doctor = new Doctor()
-                                {
-                                    Nombres = dr["Nombres"].ToString()!,
-                                    Apellidos = dr["Apellidos"].ToString()!,
-                                }
+                                // ⚠️ LEEMOS EL ESTADO
+                                EstadoCita = new EstadoCita { Nombre = dr["NombreEstado"].ToString()! },
+                                Especialidad = new Especialidad { Nombre = dr["NombreEspecialidad"].ToString()! },
+                                Doctor = new Doctor { Nombres = dr["Nombres"].ToString()!, Apellidos = dr["Apellidos"].ToString()! }
                             });
                         }
                     }

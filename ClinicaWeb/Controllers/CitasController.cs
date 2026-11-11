@@ -22,17 +22,26 @@ namespace ClinicaWeb.Controllers
         [Authorize(Roles = "Paciente")]
         public async Task<IActionResult> Index()
         {
-            // ⚠️ Lógica para mostrar emergencias aceptadas al paciente
-            ClaimsPrincipal claimuser = HttpContext.User;
-            string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
+            try
+            {
+                // 1. Obtenemos el ID del usuario logueado
+                ClaimsPrincipal claimuser = HttpContext.User;
+                string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
 
-            List<Cita> lista = await _repositorioCita.ListaCitasPendiente(int.Parse(idUsuario));
-            // Filtramos las que están en estado "Aceptada" (asumiendo que tu objeto Cita trae el estado)
-            // Si tu objeto no trae EstadoCita en ListaCitasPendiente, esta línea dará error. 
-            // En ese caso, deberías modificar el repositorio para que lo incluya.
-            ViewBag.EmergenciasAceptadas = lista.Where(e => e.EstadoCita != null && e.EstadoCita.Nombre == "Aceptada").ToList();
+                // 2. Traemos todas las citas pendientes del paciente
+                List<Cita> lista = await _repositorioCita.ListaCitasPendiente(int.Parse(idUsuario));
 
-            return View();
+                // 3. Filtramos las que están en estado "Aceptada" (ID 5)
+                // Nota: Asumimos que tu método ListaCitasPendiente ya trae el EstadoCita
+                ViewBag.EmergenciasAceptadas = lista.Where(e => e.EstadoCita != null && e.EstadoCita.Nombre == "Aceptada").ToList();
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewBag.EmergenciasAceptadas = new List<Cita>();
+                return View();
+            }
         }
 
         [Authorize(Roles = "Paciente")]
@@ -62,6 +71,7 @@ namespace ClinicaWeb.Controllers
                 return Json(new { data = new List<Cita>(), error = ex.Message });
             }
         }
+
 
         [HttpGet]
         public async Task<IActionResult> ListaDoctorHorarioDetalle(int Id)
