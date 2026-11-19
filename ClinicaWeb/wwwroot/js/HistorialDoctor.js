@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         return;
     }
 
-    // Destruir si ya existe
     if ($.fn.DataTable.isDataTable('#tbDataHistorial')) {
         $('#tbDataHistorial').DataTable().destroy();
     }
@@ -51,7 +50,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         }
     });
 
-    // Evento para el filtro de orden
     $("#cboOrdenFecha").change(function () {
         let orden = $(this).val();
         tablaData.ajax.url(`/${controlador}/ListaCitasAtendidas?orden=${orden}`).load();
