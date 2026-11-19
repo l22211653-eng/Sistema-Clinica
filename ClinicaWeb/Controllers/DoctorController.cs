@@ -70,7 +70,7 @@ namespace ClinicaWeb.Controllers
                 var doctor = await ObtenerDoctorLogueado();
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
-                // ⚠️ Traemos SOLO las atendidas (Estado 2) del doctor logueado
+                // ⚠️ Estado 2 = Atendido
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
 
                 if (orden == "antiguos")

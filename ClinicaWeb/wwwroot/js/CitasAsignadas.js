@@ -220,7 +220,7 @@ $("#btnTerminarCita").click(function () {
     Promise.all(promesasRecetas).then(() => {
         let objetoCita = {
             IdCita: idCita,
-            EstadoCita: { IdEstadoCita: 2 }, // ⚠️ Estado Atendido
+            EstadoCita: { IdEstadoCita: 2 }, // ⚠️ Atendido
             Indicaciones: indicaciones
         };
         return fetch(`/${controlador}/CambiarEstado`, {
