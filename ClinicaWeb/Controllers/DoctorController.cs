@@ -72,17 +72,17 @@ namespace ClinicaWeb.Controllers
 
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
 
+                if (lista == null) lista = new List<Cita>();
+
                 if (orden == "antiguos")
                     lista = lista.OrderBy(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
                 else
                     lista = lista.OrderByDescending(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
 
-                // ⚠️ IMPORTANTE: Devolver la lista envuelta en "data"
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
             {
-                // Si hay error, devolver un array vacío para que DataTables no explote
                 return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
             }
         }
