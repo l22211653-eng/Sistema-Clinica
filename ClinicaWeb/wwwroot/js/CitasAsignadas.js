@@ -201,7 +201,7 @@ $("#btnTerminarCita").click(function () {
 
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-    // Guardamos las recetas (si hay)
+    // Guardar recetas (si hay)
     let promesasRecetas = recetasTemporales.map(receta => {
         let objetoReceta = {
             IdCita: idCita,
@@ -216,11 +216,11 @@ $("#btnTerminarCita").click(function () {
         });
     });
 
-    // Esperamos las recetas y luego guardamos las indicaciones
     Promise.all(promesasRecetas).then(() => {
+        // ⚠️ FORZAMOS EL ESTADO 2 (Atendido)
         let objetoCita = {
             IdCita: idCita,
-            EstadoCita: { IdEstadoCita: 2 }, // ⚠️ Atendido
+            EstadoCita: { IdEstadoCita: 2 },
             Indicaciones: indicaciones
         };
         return fetch(`/${controlador}/CambiarEstado`, {
@@ -232,7 +232,7 @@ $("#btnTerminarCita").click(function () {
         .then(response => response.json())
         .then(data => {
             if (data.data === "") {
-                Swal.fire("¡Listo!", "La emergencia ha sido atendida.", "success");
+                Swal.fire("¡Listo!", "La cita ha sido atendida.", "success");
                 $("#mdData").modal('hide');
                 tablaData.ajax.reload();
             } else {

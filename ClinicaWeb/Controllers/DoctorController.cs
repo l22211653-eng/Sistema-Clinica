@@ -209,8 +209,16 @@ namespace ClinicaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> CambiarEstado([FromBody] Cita objeto)
         {
-            string respuesta = await _citaRepositorio.CambiarEstado(objeto.IdCita, objeto.EstadoCita.IdEstadoCita, objeto.Indicaciones);
-            return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+            try
+            {
+                // ⚠️ Forzamos el estado 2 (Atendido)
+                string respuesta = await _citaRepositorio.CambiarEstado(objeto.IdCita, 2, objeto.Indicaciones);
+                return StatusCode(StatusCodes.Status200OK, new { data = respuesta });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { data = "Error: " + ex.Message });
+            }
         }
 
         [HttpGet]
