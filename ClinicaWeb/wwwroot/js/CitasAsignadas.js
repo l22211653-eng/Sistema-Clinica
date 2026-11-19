@@ -57,11 +57,9 @@ function revisarEmergencias() {
                             <div>
                                 <i class="fas fa-user-injured me-2"></i>
                                 <strong>${em.usuario.nombre}</strong> - Solicitada: ${em.fechaCita}<br>
-                                <!-- ⚠️ AQUÍ MOSTRAMOS EL MOTIVO -->
                                 <small class="text-danger"><strong>Motivo:</strong> ${em.indicaciones || 'No especificado'}</small>
                             </div>
                             <div>
-                                <!-- ⚠️ BOTÓN ACEPTAR (con una clase única) -->
                                 <button class="btn btn-sm btn-success btn-aceptar-emergencia me-2" data-id="${em.idCita}">
                                     <i class="fas fa-check me-1"></i> Aceptar
                                 </button>
@@ -99,10 +97,8 @@ $(document).on("click", ".btn-aceptar-emergencia", function () {
                 .then(data => {
                     if (data.data === "") {
                         Swal.fire("Aceptada", "El paciente ha sido notificado. La cita está pendiente de atención.", "success");
-                        revisarEmergencias(); // Recargar el panel rojo
-                        tablaData.ajax.reload(); // Recargar la tabla
-
-                        // ⚠️ AQUÍ NO ABRIMOS EL MODAL
+                        revisarEmergencias();
+                        tablaData.ajax.reload();
                     } else {
                         Swal.fire("Error", data.data, "error");
                     }
@@ -132,7 +128,6 @@ $(document).on("click", ".btn-descartar-emergencia", function () {
             fetch(`/Doctor/DescartarEmergencia?idCita=${idCita}`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
-                    // ⚠️ Mostramos el mensaje y RECARGAMOS siempre
                     Swal.fire(data.success ? "Rechazada" : "Aviso", data.message, data.success ? "success" : "info");
                     revisarEmergencias();
                     tablaData.ajax.reload();
@@ -201,7 +196,6 @@ $("#btnTerminarCita").click(function () {
 
     Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-    // Guardar recetas (si hay)
     let promesasRecetas = recetasTemporales.map(receta => {
         let objetoReceta = {
             IdCita: idCita,
@@ -217,7 +211,6 @@ $("#btnTerminarCita").click(function () {
     });
 
     Promise.all(promesasRecetas).then(() => {
-        // ⚠️ FORZAMOS EL ESTADO 2 (Atendido)
         let objetoCita = {
             IdCita: idCita,
             EstadoCita: { IdEstadoCita: 2 },
@@ -235,6 +228,11 @@ $("#btnTerminarCita").click(function () {
                 Swal.fire("¡Listo!", "La cita ha sido atendida.", "success");
                 $("#mdData").modal('hide');
                 tablaData.ajax.reload();
+
+                // ⚠️ IMPORTANTE: Destruir la tabla del historial para que se recree limpia
+                if ($.fn.DataTable.isDataTable('#tbDataHistorial')) {
+                    $('#tbDataHistorial').DataTable().destroy();
+                }
             } else {
                 Swal.fire("Error", data.data, "error");
             }

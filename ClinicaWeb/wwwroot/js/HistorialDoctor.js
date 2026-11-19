@@ -3,11 +3,16 @@ const controlador = "Doctor";
 
 document.addEventListener("DOMContentLoaded", function (event) {
 
-    tablaData = $('#tbData').DataTable({
+    // ⚠️ Destruir si ya existe para forzar recarga
+    if ($.fn.DataTable.isDataTable('#tbDataHistorial')) {
+        $('#tbDataHistorial').DataTable().destroy();
+    }
+
+    tablaData = $('#tbDataHistorial').DataTable({
         responsive: true,
         scrollX: true,
         "ajax": {
-            "url": `/${controlador}/ListaCitasAsignadas`,
+            "url": `/${controlador}/ListaCitasAtendidas`,
             "type": "GET",
             "datatype": "json",
             "dataSrc": function (json) {
@@ -23,7 +28,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
             { title: "Hora Cita", "data": "horaCita", width: "100px" },
             {
                 title: "Paciente", "data": "usuario", render: function (data, type, row) {
-                    // ⚠️ Validamos si data existe y tiene las propiedades
                     if (data && data.nombre) {
                         return `${data.nombre} ${data.apellido}`;
                     }
