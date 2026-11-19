@@ -70,7 +70,6 @@ namespace ClinicaWeb.Controllers
                 var doctor = await ObtenerDoctorLogueado();
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
-                // ⚠️ Estado 2 = Atendido
                 List<Cita> lista = await _doctorRepositorio.ListaCitasAsignadas(idDoctor, 2);
 
                 if (orden == "antiguos")
@@ -78,10 +77,12 @@ namespace ClinicaWeb.Controllers
                 else
                     lista = lista.OrderByDescending(x => DateTime.ParseExact(x.FechaCita, "dd/MM/yyyy", null)).ToList();
 
+                // ⚠️ IMPORTANTE: Devolver la lista envuelta en "data"
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
             {
+                // Si hay error, devolver un array vacío para que DataTables no explote
                 return StatusCode(500, new { data = new List<Cita>(), error = ex.Message });
             }
         }
