@@ -3,7 +3,13 @@ const controlador = "Doctor";
 
 document.addEventListener("DOMContentLoaded", function (event) {
 
-    // ⚠️ Destruir si ya existe para forzar recarga
+    // ⚠️ Verificar que la tabla exista antes de inicializar
+    if ($('#tbDataHistorial').length === 0) {
+        console.error("No se encontró la tabla con id 'tbDataHistorial'");
+        return;
+    }
+
+    // Destruir si ya existe
     if ($.fn.DataTable.isDataTable('#tbDataHistorial')) {
         $('#tbDataHistorial').DataTable().destroy();
     }
