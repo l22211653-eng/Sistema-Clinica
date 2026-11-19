@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         ],
         language: {
             url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
-        },
+        }
     });
 
     // Evento para el filtro de orden
@@ -51,9 +51,3 @@ document.addEventListener("DOMContentLoaded", function (event) {
         tablaData.ajax.url(`/${controlador}/ListaCitasAtendidas?orden=${orden}`).load();
     });
 });
-
-@section Scripts {
-    <script src="~/lib/datatables2/js/moment.min.js"></script>
-    <script src="~/lib/datatables2/js/dataTables.js"></script>
-    <script src="~/js/HistorialDoctor.js"></script>
-}
