@@ -370,6 +370,22 @@ namespace ClinicaData.Implementacion
             }
             return lista;
         }
+        public async Task<string> AceptarEmergencia(int idCita, int idDoctor)
+        {
+            string respuesta = "";
+            using (var conexion = new NpgsqlConnection(con.CadenaSQL))
+            {
+                await conexion.OpenAsync();
+                using (var cmd = new NpgsqlCommand("SELECT sp_aceptarEmergencia(@p_IdCita, @p_IdDoctor)", conexion))
+                {
+                    cmd.Parameters.AddWithValue("p_IdCita", idCita);
+                    cmd.Parameters.AddWithValue("p_IdDoctor", idDoctor);
+                    var result = await cmd.ExecuteScalarAsync();
+                    respuesta = result?.ToString() ?? "";
+                }
+            }
+            return respuesta;
+        }
 
         // ⚠️ NUEVO MÉTODO: Rechazar Emergencia
         public async Task<string> RechazarEmergencia(int idCita, int idDoctor)
