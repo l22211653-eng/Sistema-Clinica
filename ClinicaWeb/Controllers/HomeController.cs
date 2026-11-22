@@ -35,9 +35,8 @@ namespace ClinicaWeb.Controllers
             {
                 List<Cita> lista = await _citaRepositorio.ListaEmergenciasAdmin();
 
-                // ⚠️ Formateamos la salida para que el JS la lea fácilmente
                 var data = lista.Select(c => new {
-                    idCita = c.IdCita,
+                    idCita = c.IdCita, // ⚠️ Asegúrate de que se envíe como idCita
                     fechaCita = c.FechaCita,
                     horaCita = c.HoraCita,
                     paciente = c.Usuario?.Nombre ?? "Sin nombre",

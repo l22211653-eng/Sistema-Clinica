@@ -369,7 +369,7 @@ namespace ClinicaData.Implementacion
                         {
                             lista.Add(new Cita()
                             {
-                                IdCita = Convert.ToInt32(dr["IdCita"]),
+                                IdCita = Convert.ToInt32(dr["IdCita"]), // ⚠️ Leer bien el ID
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
                                 Usuario = new Usuario { Nombre = dr["Paciente"].ToString()! },

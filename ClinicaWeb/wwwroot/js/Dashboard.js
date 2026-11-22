@@ -20,6 +20,13 @@
                             <td>${em.paciente}</td>
                             <td>${em.especialidad}</td>
                             <td><small class="text-danger">${em.motivo}</small></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary btn-asignar-emergencia" 
+                                        data-idcita="${em.idCita}" 
+                                        data-especialidad="${em.especialidad}">
+                                    <i class="fas fa-user-md me-1"></i> Asignar Doctor
+                                </button>
+                            </td>
                         </tr>
                     `);
                 });
