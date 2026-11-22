@@ -79,27 +79,26 @@ $(document).on("click", ".btn-asignar-emergencia", function () {
     let idCita = $(this).data("idcita");
     let especialidad = $(this).data("especialidad");
 
-    // Cargar doctores de la especialidad
+    // ⚠️ Cargar TODOS los doctores, sin filtrar por especialidad
     fetch('/Doctor/Lista')
         .then(res => res.json())
         .then(data => {
-            let doctoresFiltrados = {};
+            let doctores = {};
             data.data.forEach(doc => {
-                if (doc.especialidad.nombre === especialidad) {
-                    doctoresFiltrados[doc.idDoctor] = `Dr. ${doc.nombres} ${doc.apellidos}`;
-                }
+                // Mostramos el nombre y su especialidad (para que el admin sepa)
+                doctores[doc.idDoctor] = `Dr. ${doc.nombres} ${doc.apellidos} (${doc.especialidad.nombre})`;
             });
 
-            if (Object.keys(doctoresFiltrados).length === 0) {
-                Swal.fire("Aviso", "No hay doctores registrados para esta especialidad.", "info");
+            if (Object.keys(doctores).length === 0) {
+                Swal.fire("Aviso", "No hay doctores registrados en el sistema.", "info");
                 return;
             }
 
             Swal.fire({
                 title: 'Asignar Emergencia',
-                text: `Selecciona un doctor de ${especialidad}`,
+                text: `Selecciona un doctor para atender la emergencia (Especialidad original: ${especialidad})`,
                 input: 'select',
-                inputOptions: doctoresFiltrados,
+                inputOptions: doctores,
                 inputPlaceholder: 'Selecciona un doctor',
                 showCancelButton: true,
                 confirmButtonText: 'Asignar',
@@ -118,5 +117,6 @@ $(document).on("click", ".btn-asignar-emergencia", function () {
                         });
                 }
             });
-        });
+        })
+        .catch(err => console.log("Error al cargar doctores", err));
 });
