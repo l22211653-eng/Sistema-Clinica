@@ -360,7 +360,7 @@ namespace ClinicaData.Implementacion
               INNER JOIN Doctor d ON d.IdDoctor = dh.IdDoctor
               INNER JOIN Especialidad e ON e.IdEspecialidad = d.IdEspecialidad
               WHERE c.IdEstadoCita = 4 
-                AND c.Indicaciones LIKE 'Sin doctores disponibles%'
+                AND c.Indicaciones LIKE '%Sin doctores disponibles%' -- ⚠️ Búsqueda flexible
               ORDER BY c.FechaCita DESC", conexion))
                 {
                     using (var dr = await cmd.ExecuteReaderAsync())
@@ -369,7 +369,7 @@ namespace ClinicaData.Implementacion
                         {
                             lista.Add(new Cita()
                             {
-                                IdCita = Convert.ToInt32(dr["IdCita"]), // ⚠️ Leer bien el ID
+                                IdCita = Convert.ToInt32(dr["IdCita"]),
                                 FechaCita = dr["FechaCita"].ToString()!,
                                 HoraCita = dr["HoraCita"].ToString()!,
                                 Usuario = new Usuario { Nombre = dr["Paciente"].ToString()! },

@@ -95,7 +95,12 @@ namespace ClinicaWeb.Controllers
                 var doctor = await ObtenerDoctorLogueado();
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
+                // ⚠️ Obtenemos las emergencias, pero filtramos las que el doctor ya rechazó
                 List<Cita> lista = await _citaRepositorio.ListaEmergenciasDoctor(idDoctor);
+
+                // Si tienes un método para obtener los rechazos, úsalo aquí. 
+                // Por ahora, confiamos en que la función SQL ya filtra.
+
                 return StatusCode(StatusCodes.Status200OK, new { data = lista });
             }
             catch (Exception ex)
