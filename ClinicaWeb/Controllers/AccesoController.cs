@@ -1,20 +1,24 @@
-﻿using ClinicaEntidades;
+﻿using ClinicaData.Contrato;
+using ClinicaEntidades;
 using ClinicaWeb.Models.DTOs;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using ClinicaData.Contrato;
 
 namespace ClinicaWeb.Controllers
 {
     public class AccesoController : Controller
     {
         private readonly IUsuarioRepositorio _repositorio;
-        public AccesoController(IUsuarioRepositorio repositorio)
+        private readonly IDoctorRepositorio _doctorRepositorio; // ⚠️ NUEVO
+
+        public AccesoController(IUsuarioRepositorio repositorio, IDoctorRepositorio doctorRepositorio)
         {
             _repositorio = repositorio;
+            _doctorRepositorio = doctorRepositorio; // ⚠️ NUEVO
         }
+
         public IActionResult Login()
         {
             ClaimsPrincipal claimuser = HttpContext.User;
@@ -23,10 +27,11 @@ namespace ClinicaWeb.Controllers
                 string rol = claimuser.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).SingleOrDefault()!;
                 if (rol == "Administrador") return RedirectToAction("Index", "Home");
                 if (rol == "Paciente") return RedirectToAction("Index", "Citas");
-                if (rol == "Doctor") return RedirectToAction("Index", "Home");
+                if (rol == "Doctor") return RedirectToAction("CitasAsignadas", "Doctor");
             }
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Login(VMUsuarioLogin modelo)
         {
@@ -46,28 +51,36 @@ namespace ClinicaWeb.Controllers
 
             ViewData["Mensaje"] = null;
 
+            // ⚠️ Creamos la lista de claims PRIMERO
             var claims = new List<Claim>
             {
-                // ⚠️ CAMBIO CLAVE: Guardamos el DOCUMENTO, no el nombre
                 new Claim(ClaimTypes.Name, usuario_encontrado.NumeroDocumentoIdentidad),
-
                 new Claim("NombreCompleto", $"{usuario_encontrado.Nombre} {usuario_encontrado.Apellido}"),
                 new Claim(ClaimTypes.NameIdentifier, usuario_encontrado.IdUsuario.ToString()),
                 new Claim(ClaimTypes.Role, usuario_encontrado.RolUsuario.Nombre)
             };
 
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            AuthenticationProperties properties = new AuthenticationProperties()
+            // ⚠️ Si es doctor, buscamos su especialidad y la guardamos en un Claim
+            if (usuario_encontrado.RolUsuario.Nombre == "Doctor")
             {
-                AllowRefresh = true
-            };
+                var listaDoctores = await _doctorRepositorio.Lista();
+                var doctor = listaDoctores.FirstOrDefault(d => d.NumeroDocumentoIdentidad == usuario_encontrado.NumeroDocumentoIdentidad);
+
+                if (doctor != null)
+                {
+                    claims.Add(new Claim("Especialidad", doctor.Especialidad.Nombre));
+                }
+            }
+
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            AuthenticationProperties properties = new AuthenticationProperties() { AllowRefresh = true };
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), properties);
 
-            // ⚠️ NUEVO: Guardamos el documento en un Cookie persistente
+            // ⚠️ Guardamos el documento en un Cookie persistente
             HttpContext.Response.Cookies.Append("DoctorDocumento", usuario_encontrado.NumeroDocumentoIdentidad, new CookieOptions
             {
-                Expires = DateTime.Now.AddDays(7), // Dura 7 días
+                Expires = DateTime.Now.AddDays(7),
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Lax
@@ -75,14 +88,16 @@ namespace ClinicaWeb.Controllers
 
             string rol = usuario_encontrado.RolUsuario.Nombre;
             if (rol == "Paciente") return RedirectToAction("Index", "Citas");
-            if (rol == "Doctor") return RedirectToAction("CitasAsignadas", "Citas");
+            if (rol == "Doctor") return RedirectToAction("CitasAsignadas", "Doctor");
 
             return RedirectToAction("Index", "Home");
         }
+
         public IActionResult Registrarse()
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Registrarse(VMPaciente modelo)
         {
@@ -99,10 +114,7 @@ namespace ClinicaWeb.Controllers
                 Apellido = modelo.Apellido,
                 Correo = modelo.Correo,
                 Clave = modelo.Clave,
-                RolUsuario = new RolUsuario()
-                {
-                    IdRolUsuario = 2
-                }
+                RolUsuario = new RolUsuario() { IdRolUsuario = 2 }
             };
             string resultado = await _repositorio.Guardar(objeto);
             ViewBag.Mensaje = resultado;
