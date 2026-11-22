@@ -29,7 +29,7 @@ namespace ClinicaWeb.Controllers
 
                 List<Cita> lista = await _repositorioCita.ListaCitasPendiente(int.Parse(idUsuario));
 
-                // ⚠️ Filtramos las que están en estado "Aceptada"
+                // ⚠️ Filtramos SOLO las aceptadas
                 ViewBag.EmergenciasAceptadas = lista.Where(e => e.EstadoCita != null && e.EstadoCita.Nombre == "Aceptada").ToList();
 
                 return View();
