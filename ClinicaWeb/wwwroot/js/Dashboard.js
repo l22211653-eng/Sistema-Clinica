@@ -36,6 +36,49 @@
         })
         .catch(err => console.error("Error al cargar emergencias:", err));
 
+    // 3. CARGAR GRÁFICA DE URGENCIAS ATENDIDAS
+    fetch('/Home/GraficaEmergenciasAtendidas')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.data || data.data.length === 0) {
+                console.log("No hay urgencias atendidas para graficar.");
+                return;
+            }
+
+            const labels = data.data.map(x => x.fecha);
+            const valores = data.data.map(x => x.total);
+
+            const canvas = document.getElementById('graficaUrgenciasAtendidas');
+            if (canvas) {
+                new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Urgencias Atendidas',
+                            data: valores,
+                            backgroundColor: '#10b981', // ⚠️ Verde para atendidas
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1 }
+                            }
+                        }
+                    }
+                });
+            }
+        })
+        .catch(err => console.error("Error al cargar gráfica de atendidas:", err));
+
     // ==========================================
     // 2. CARGAR GRÁFICA
     // ==========================================

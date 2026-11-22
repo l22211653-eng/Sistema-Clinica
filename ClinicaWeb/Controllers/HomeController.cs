@@ -35,7 +35,8 @@ namespace ClinicaWeb.Controllers
             {
                 List<Cita> lista = await _citaRepositorio.ListaEmergenciasAdmin();
 
-                var data = lista.Select(c => new {
+                var data = lista.Select(c => new
+                {
                     idCita = c.IdCita, // ⚠️ Asegúrate de que se envíe como idCita
                     fechaCita = c.FechaCita,
                     horaCita = c.HoraCita,
@@ -50,6 +51,15 @@ namespace ClinicaWeb.Controllers
             {
                 return Json(new { data = new List<object>(), error = ex.Message });
             }
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> GraficaEmergenciasAtendidas()
+        {
+            var lista = await _citaRepositorio.GraficaEmergenciasAtendidas();
+            var data = lista.Select(x => new { fecha = x.Fecha, total = x.Total }).ToList();
+            return Json(new { data = data });
         }
 
         [HttpPost]
