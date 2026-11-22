@@ -74,3 +74,49 @@
         })
         .catch(err => console.error("Error al cargar gráfica:", err));
 });
+
+$(document).on("click", ".btn-asignar-emergencia", function () {
+    let idCita = $(this).data("idcita");
+    let especialidad = $(this).data("especialidad");
+
+    // Cargar doctores de la especialidad
+    fetch('/Doctor/Lista')
+        .then(res => res.json())
+        .then(data => {
+            let doctoresFiltrados = {};
+            data.data.forEach(doc => {
+                if (doc.especialidad.nombre === especialidad) {
+                    doctoresFiltrados[doc.idDoctor] = `Dr. ${doc.nombres} ${doc.apellidos}`;
+                }
+            });
+
+            if (Object.keys(doctoresFiltrados).length === 0) {
+                Swal.fire("Aviso", "No hay doctores registrados para esta especialidad.", "info");
+                return;
+            }
+
+            Swal.fire({
+                title: 'Asignar Emergencia',
+                text: `Selecciona un doctor de ${especialidad}`,
+                input: 'select',
+                inputOptions: doctoresFiltrados,
+                inputPlaceholder: 'Selecciona un doctor',
+                showCancelButton: true,
+                confirmButtonText: 'Asignar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    fetch(`/Home/AsignarEmergenciaAdmin?idCita=${idCita}&idDoctor=${result.value}`, { method: "POST" })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire("Asignado", "La emergencia ha sido asignada al doctor.", "success");
+                                location.reload();
+                            } else {
+                                Swal.fire("Error", data.message, "error");
+                            }
+                        });
+                }
+            });
+        });
+});

@@ -53,6 +53,23 @@ namespace ClinicaWeb.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> AsignarEmergenciaAdmin(int idCita, int idDoctor)
+        {
+            try
+            {
+                string respuesta = await _citaRepositorio.AsignarEmergenciaAdmin(idCita, idDoctor);
+                if (string.IsNullOrEmpty(respuesta))
+                    return Json(new { success = true });
+                else
+                    return Json(new { success = false, message = respuesta });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         [Authorize(Roles = "Administrador")]
         [HttpGet]
         public async Task<IActionResult> GraficaEmergenciasRechazadas()
