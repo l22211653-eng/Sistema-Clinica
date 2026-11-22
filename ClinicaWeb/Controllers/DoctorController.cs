@@ -112,7 +112,6 @@ namespace ClinicaWeb.Controllers
                 var doctor = await ObtenerDoctorLogueado();
                 int idDoctor = doctor?.IdDoctor ?? 1;
 
-                // ⚠️ Llamamos a la función con el ID del doctor
                 string respuesta = await _citaRepositorio.AceptarEmergencia(idCita, idDoctor);
                 return Json(new { data = respuesta });
             }
