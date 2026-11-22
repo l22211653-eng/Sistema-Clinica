@@ -24,15 +24,12 @@ namespace ClinicaWeb.Controllers
         {
             try
             {
-                // 1. Obtenemos el ID del usuario logueado
                 ClaimsPrincipal claimuser = HttpContext.User;
                 string idUsuario = claimuser.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()!;
 
-                // 2. Traemos todas las citas pendientes del paciente
                 List<Cita> lista = await _repositorioCita.ListaCitasPendiente(int.Parse(idUsuario));
 
-                // 3. Filtramos las que están en estado "Aceptada" (ID 5)
-                // Nota: Asumimos que tu método ListaCitasPendiente ya trae el EstadoCita
+                // ⚠️ Filtramos las que están en estado "Aceptada"
                 ViewBag.EmergenciasAceptadas = lista.Where(e => e.EstadoCita != null && e.EstadoCita.Nombre == "Aceptada").ToList();
 
                 return View();
