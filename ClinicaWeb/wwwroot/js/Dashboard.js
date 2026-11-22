@@ -79,13 +79,11 @@ $(document).on("click", ".btn-asignar-emergencia", function () {
     let idCita = $(this).data("idcita");
     let especialidad = $(this).data("especialidad");
 
-    // ⚠️ Cargar TODOS los doctores, sin filtrar por especialidad
     fetch('/Doctor/Lista')
         .then(res => res.json())
         .then(data => {
             let doctores = {};
             data.data.forEach(doc => {
-                // Mostramos el nombre y su especialidad (para que el admin sepa)
                 doctores[doc.idDoctor] = `Dr. ${doc.nombres} ${doc.apellidos} (${doc.especialidad.nombre})`;
             });
 
@@ -105,16 +103,20 @@ $(document).on("click", ".btn-asignar-emergencia", function () {
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed && result.value) {
+                    Swal.fire({ title: 'Asignando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
                     fetch(`/Home/AsignarEmergenciaAdmin?idCita=${idCita}&idDoctor=${result.value}`, { method: "POST" })
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {
-                                Swal.fire("Asignado", "La emergencia ha sido asignada al doctor.", "success");
-                                location.reload();
+                                Swal.fire("Asignado", "La emergencia ha sido asignada al doctor.", "success").then(() => {
+                                    location.reload();
+                                });
                             } else {
                                 Swal.fire("Error", data.message, "error");
                             }
-                        });
+                        })
+                        .catch(err => Swal.fire("Error", "No se pudo asignar la emergencia.", "error"));
                 }
             });
         })
